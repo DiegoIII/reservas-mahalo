@@ -24,14 +24,14 @@ const EventReservation = () => {
     { id: 'corporate', name: 'Evento Corporativo', minGuests: 30, maxGuests: 150, description: 'Reuniones y eventos empresariales' },
     { id: 'birthday', name: 'Cumpleaños', minGuests: 20, maxGuests: 100, description: 'Celebraciones familiares y de amigos' },
     { id: 'anniversary', name: 'Aniversario', minGuests: 30, maxGuests: 120, description: 'Celebraciones de aniversario y fechas especiales' },
-    { id: 'graduation', name: 'Graduación', minGuests: 25, maxGuests: 150, description: 'Celebraciones de logros académicos' }
+    { id: 'graduation', name: 'Graduación', minGuests: 25, maxGuests: 150, description: 'Celebraciones de logros académicos' },
+    { id: 'baptism', name: 'Bautizo', minGuests: 20, maxGuests: 120, description: 'Ceremonias y convivios familiares' }
   ];
 
   const venues = [
-    { id: 'grand-ballroom', name: 'Salón Principal', capacity: 'Hasta 300 personas', description: 'Espacio amplio con escenario y sistema de sonido' },
-    { id: 'conference-room', name: 'Sala de Conferencias', capacity: 'Hasta 100 personas', description: 'Equipada con proyector y sistema audiovisual' },
-    { id: 'garden-terrace', name: 'Terraza Jardín', capacity: 'Hasta 150 personas', description: 'Espacio al aire libre con vista panorámica' },
-    { id: 'intimate-hall', name: 'Salón Íntimo', capacity: 'Hasta 80 personas', description: 'Espacio acogedor para eventos más pequeños' }
+    { id: 'salon-eventos', name: 'Salon de eventos', capacity: 'Hasta 300 personas', description: 'Espacio amplio para celebraciones y ceremonias' },
+    { id: 'area-restauran', name: 'Área de restaurant', capacity: 'Hasta 120 personas', description: 'Zona gastronómica con ambiente acogedor' },
+    { id: 'area-alberca', name: 'Área de alberca', capacity: 'Hasta 150 personas', description: 'Área al aire libre junto a la alberca' }
   ];
 
   const timeSlots = [

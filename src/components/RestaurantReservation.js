@@ -7,6 +7,7 @@ const RestaurantReservation = () => {
     time: '',
     partySize: 2,
     tableType: '',
+    locationArea: '',
     name: '',
     email: '',
     phone: '',
@@ -14,6 +15,12 @@ const RestaurantReservation = () => {
   });
 
   const [showConfirmation, setShowConfirmation] = useState(false);
+
+  const reservationAreas = [
+    { id: 'salon-eventos', name: 'Salon de eventos', description: 'Espacio amplio para celebraciones y ceremonias' },
+    { id: 'area-restauran', name: 'Área de restaurant', description: 'Zona gastronómica con ambiente acogedor' },
+    { id: 'area-alberca', name: 'Área de alberca', description: 'Área al aire libre junto a la alberca' }
+  ];
 
   const tableTypes = [
     { id: 'standard', name: 'Mesa Estándar', capacity: '2-4 personas', description: 'Mesa interior cómoda' },
@@ -37,7 +44,7 @@ const RestaurantReservation = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (formData.date && formData.time && formData.tableType && formData.name && formData.email) {
+    if (formData.date && formData.time && formData.tableType && formData.locationArea && formData.name && formData.email) {
       setShowConfirmation(true);
     } else {
       alert('Por favor completa todos los campos obligatorios');
@@ -52,6 +59,7 @@ const RestaurantReservation = () => {
       time: '',
       partySize: 2,
       tableType: '',
+      locationArea: '',
       name: '',
       email: '',
       phone: '',
@@ -69,7 +77,7 @@ const RestaurantReservation = () => {
   return (
     <div className="restaurant-reservation">
       <div className="restaurant-header">
-        <h2>Reserva de Mesa</h2>
+        <h2>Reserva daypass</h2>
       </div>
       
       <form onSubmit={handleSubmit} className="reservation-form">
@@ -107,7 +115,7 @@ const RestaurantReservation = () => {
         </div>
 
         <div className="form-section">
-          <h3>Número de Comensales</h3>
+          <h3>Número de Invitados</h3>
           <div className="form-group">
             <label htmlFor="partySize">Personas</label>
             <select
@@ -120,6 +128,27 @@ const RestaurantReservation = () => {
                 <option key={num} value={num}>{num} {num === 1 ? 'persona' : 'personas'}</option>
               ))}
             </select>
+          </div>
+        </div>
+
+        <div className="form-section">
+          <h3>Área de Reserva</h3>
+          <div className="table-selection">
+            <h4>Elige el área</h4>
+            <div className="table-options">
+              {reservationAreas.map(area => (
+                <div
+                  key={area.id}
+                  className={`table-option ${formData.locationArea === area.id ? 'selected' : ''}`}
+                  onClick={() => setFormData(prev => ({ ...prev, locationArea: area.id }))}
+                >
+                  <div className="table-info">
+                    <h5>{area.name}</h5>
+                    <p>{area.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -199,7 +228,8 @@ const RestaurantReservation = () => {
           <div className="reservation-summary">
             <p><strong>Fecha:</strong> {formData.date || 'No seleccionada'}</p>
             <p><strong>Hora:</strong> {formData.time || 'No seleccionada'}</p>
-            <p><strong>Comensales:</strong> {formData.partySize}</p>
+            <p><strong>Invitados:</strong> {formData.partySize}</p>
+            <p><strong>Área:</strong> {reservationAreas.find(a => a.id === formData.locationArea)?.name || 'No seleccionada'}</p>
             <p><strong>Mesa:</strong> {tableTypes.find(t => t.id === formData.tableType)?.name || 'No seleccionada'}</p>
           </div>
         </div>
@@ -212,12 +242,13 @@ const RestaurantReservation = () => {
       {showConfirmation && (
         <div className="confirmation-modal">
           <div className="modal-content">
-            <h3>Confirmar Reserva de Mesa</h3>
+            <h3>Confirmar Reserva daypass</h3>
             <div className="confirmation-details">
               <p><strong>Mesa:</strong> {tableTypes.find(t => t.id === formData.tableType)?.name}</p>
               <p><strong>Fecha:</strong> {formData.date}</p>
               <p><strong>Hora:</strong> {formData.time}</p>
-              <p><strong>Comensales:</strong> {formData.partySize}</p>
+              <p><strong>Invitados:</strong> {formData.partySize}</p>
+              <p><strong>Área:</strong> {reservationAreas.find(a => a.id === formData.locationArea)?.name}</p>
               <p><strong>Nombre:</strong> {formData.name}</p>
               <p><strong>Email:</strong> {formData.email}</p>
               {formData.specialRequests && (

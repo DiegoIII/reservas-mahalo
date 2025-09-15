@@ -8,7 +8,7 @@
 }
 
 .room-reservation h2 {
-  color: #088FFC;
+  color: #0785F2;
   margin-bottom: 2rem;
   text-align: center;
   font-size: 2rem;
@@ -29,11 +29,11 @@
 }
 
 .form-section h3 {
-  color: #088FFC;
+  color: #0785F2;
   margin-bottom: 1rem;
   font-size: 1.3rem;
   font-weight: 600;
-  border-bottom: 2px solid #088FFC;
+  border-bottom: 2px solid #0785F2;
   padding-bottom: 0.5rem;
 }
 
@@ -50,7 +50,7 @@
 }
 
 .form-group label {
-  color: #088FFC;
+  color: #0785F2;
   font-weight: 600;
   margin-bottom: 0.5rem;
   font-size: 0.95rem;
@@ -71,8 +71,8 @@
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #088FFC;
-  box-shadow: 0 0 0 3px rgba(8, 143, 252, 0.15);
+  border-color: #0785F2;
+  box-shadow: 0 0 0 3px rgba(7, 133, 242, 0.15);
 }
 
 .form-group textarea {
@@ -82,7 +82,7 @@
 
 .nights-info {
   background: #dbeafe;
-  color: #088FFC;
+  color: #0785F2;
   padding: 0.5rem 1rem;
   border-radius: 8px;
   font-weight: 600;
@@ -91,7 +91,7 @@
 }
 
 .room-selection h4 {
-  color: #088FFC;
+  color: #0785F2;
   margin-bottom: 1rem;
   font-size: 1.1rem;
 }
@@ -113,15 +113,15 @@
 }
 
 .room-option:hover {
-  border-color: #088FFC;
+  border-color: #0785F2;
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(8, 143, 252, 0.2);
+  box-shadow: 0 5px 15px rgba(7, 133, 242, 0.2);
 }
 
 .room-option.selected {
-  border-color: #088FFC;
+  border-color: #0785F2;
   background: #dbeafe;
-  box-shadow: 0 5px 15px rgba(8, 143, 252, 0.2);
+  box-shadow: 0 5px 15px rgba(7, 133, 242, 0.2);
 }
 
 .room-option.selected::before {
@@ -129,7 +129,7 @@
   position: absolute;
   top: 10px;
   right: 15px;
-  background: #088FFC;
+  background: #0785F2;
   color: #E9E8E9;
   width: 25px;
   height: 25px;
@@ -141,7 +141,7 @@
 }
 
 .room-info h5 {
-  color: #088FFC;
+  color: #0785F2;
   margin-bottom: 0.5rem;
   font-size: 1.1rem;
   font-weight: 600;
@@ -155,7 +155,7 @@
 }
 
 .room-price {
-  color: #088FFC;
+  color: #0785F2;
   font-weight: 700;
   font-size: 1.1rem;
 }
@@ -168,7 +168,7 @@
 }
 
 .total-section h3 {
-  color: #088FFC;
+  color: #0785F2;
   margin-bottom: 1rem;
   text-align: center;
 }
@@ -188,14 +188,14 @@
 .total-price {
   font-size: 1.3rem;
   font-weight: 700;
-  color: #088FFC;
+  color: #0785F2;
   border-top: 2px solid #e9ecef;
   padding-top: 0.5rem;
   margin-top: 1rem;
 }
 
 .submit-button {
-  background: #088FFC;
+  background: #0785F2;
   color: #E9E8E9;
   border: none;
   padding: 1rem 2rem;
@@ -210,7 +210,7 @@
 
 .submit-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(8, 143, 252, 0.3);
+  box-shadow: 0 8px 25px rgba(7, 133, 242, 0.3);
 }
 
 .confirmation-modal {
@@ -238,7 +238,7 @@
 }
 
 .modal-content h3 {
-  color: #088FFC;
+  color: #0785F2;
   margin-bottom: 1.5rem;
   text-align: center;
   font-size: 1.5rem;
@@ -283,12 +283,12 @@
 }
 
 .confirm-button {
-  background: #088FFC;
+  background: #0785F2;
   color: #E9E8E9;
 }
 
 .confirm-button:hover {
-  background: #067edc;
+  background: #0C9AF2;
   transform: translateY(-1px);
 }
 
