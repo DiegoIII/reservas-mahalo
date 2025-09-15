@@ -296,7 +296,7 @@ body {
 
 /* Location section */
 .location-section {
-  margin-top: 4rem;
+  margin-top: 1rem;
   text-align: center;
   padding: 2rem 0;
 }
@@ -350,6 +350,14 @@ body {
   flex-direction: column;
   gap: 2rem;
   padding: 0 1rem;
+}
+
+.about-title {
+  font-size: 2.2rem;
+  color: #0785F2;
+  margin-bottom: 2rem;
+  font-weight: 700;
+  text-align: center;
 }
 
 .zigzag-item {
@@ -541,6 +549,10 @@ body {
     color: #0785F2;
   }
   
+  .about-title {
+    font-size: 1.8rem;
+  }
+  
   .map-container {
     padding: 1rem;
   }
@@ -590,6 +602,10 @@ body {
   .location-section h2 {
     font-size: 1.6rem;
     color: #0785F2;
+  }
+  
+  .about-title {
+    font-size: 1.6rem;
   }
   
   .location-section > p {

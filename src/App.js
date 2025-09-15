@@ -50,12 +50,8 @@ function App() {
         
       </div>
 
-      <div className="welcome-section">
-        <h2>Bienvenido a Mahalo</h2>
-        <p>Tu casa en la playa</p>
-      </div>
-      
       <section className="zigzag-section">
+        <h2 className="about-title">Acerca de Mahalo Beach Club</h2>
         <div className="zigzag-item">
           <div className="zigzag-image">
             <img src={restaurantImg} alt="Área de restaurant" loading="lazy" />
@@ -76,6 +72,11 @@ function App() {
           </div>
         </div>
       </section>
+
+      <div className="welcome-section">
+        <h2>Bienvenido a Mahalo</h2>
+        <p>Tu casa en la playa</p>
+      </div>
     </div>
   );
 
