@@ -7,13 +7,22 @@
   margin-bottom: 2rem;
 }
 
-.restaurant-reservation h2 {
-  color: #1e3a8a;
+.restaurant-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 2rem;
-  text-align: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.restaurant-reservation h2 {
+  color: #088FFC;
   font-size: 2rem;
   font-weight: 700;
+  margin: 0;
 }
+
 
 .reservation-form {
   max-width: 800px;
@@ -29,11 +38,11 @@
 }
 
 .form-section h3 {
-  color: #1e3a8a;
+  color: #088FFC;
   margin-bottom: 1rem;
   font-size: 1.3rem;
   font-weight: 600;
-  border-bottom: 2px solid #1e3a8a;
+  border-bottom: 2px solid #088FFC;
   padding-bottom: 0.5rem;
 }
 
@@ -50,7 +59,7 @@
 }
 
 .form-group label {
-  color: #1e3a8a;
+  color: #088FFC;
   font-weight: 600;
   margin-bottom: 0.5rem;
   font-size: 0.95rem;
@@ -71,8 +80,8 @@
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #1e3a8a;
-  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+  border-color: #088FFC;
+  box-shadow: 0 0 0 3px rgba(8, 143, 252, 0.15);
 }
 
 .form-group textarea {
@@ -81,7 +90,7 @@
 }
 
 .table-selection h4 {
-  color: #1e3a8a;
+  color: #088FFC;
   margin-bottom: 1rem;
   font-size: 1.1rem;
 }
@@ -103,15 +112,15 @@
 }
 
 .table-option:hover {
-  border-color: #1e3a8a;
+  border-color: #088FFC;
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(30, 58, 138, 0.2);
+  box-shadow: 0 5px 15px rgba(8, 143, 252, 0.2);
 }
 
 .table-option.selected {
-  border-color: #1e3a8a;
+  border-color: #088FFC;
   background: #dbeafe;
-  box-shadow: 0 5px 15px rgba(30, 58, 138, 0.2);
+  box-shadow: 0 5px 15px rgba(8, 143, 252, 0.2);
 }
 
 .table-option.selected::before {
@@ -119,8 +128,8 @@
   position: absolute;
   top: 10px;
   right: 15px;
-  background: #1e3a8a;
-  color: white;
+  background: #088FFC;
+  color: #E9E8E9;
   width: 25px;
   height: 25px;
   border-radius: 50%;
@@ -131,7 +140,7 @@
 }
 
 .table-info h5 {
-  color: #1e3a8a;
+  color: #088FFC;
   margin-bottom: 0.5rem;
   font-size: 1.1rem;
   font-weight: 600;
@@ -145,7 +154,7 @@
 }
 
 .table-capacity {
-  color: #1e3a8a;
+  color: #088FFC;
   font-weight: 700;
   font-size: 1rem;
   background: #dbeafe;
@@ -162,10 +171,10 @@
 }
 
 .reservation-summary h3 {
-  color: #1e3a8a;
+  color: #088FFC;
   margin-bottom: 1rem;
   text-align: center;
-  border-bottom: 2px solid #1e3a8a;
+  border-bottom: 2px solid #088FFC;
   padding-bottom: 0.5rem;
 }
 
@@ -175,12 +184,12 @@
   padding: 0.5rem;
   background: white;
   border-radius: 6px;
-  border-left: 4px solid #1e3a8a;
+  border-left: 4px solid #088FFC;
 }
 
 .submit-button {
-  background: linear-gradient(135deg, #1e3a8a, #1e40af);
-  color: white;
+  background: #088FFC;
+  color: #E9E8E9;
   border: none;
   padding: 1rem 2rem;
   border-radius: 25px;
@@ -194,7 +203,7 @@
 
 .submit-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(30, 58, 138, 0.3);
+  box-shadow: 0 8px 25px rgba(8, 143, 252, 0.3);
 }
 
 .confirmation-modal {
@@ -222,7 +231,7 @@
 }
 
 .modal-content h3 {
-  color: #1e3a8a;
+  color: #088FFC;
   margin-bottom: 1.5rem;
   text-align: center;
   font-size: 1.5rem;
@@ -267,20 +276,26 @@
 }
 
 .confirm-button {
-  background: #1e3a8a;
-  color: white;
+  background: #088FFC;
+  color: #E9E8E9;
 }
 
 .confirm-button:hover {
-  background: #1e40af;
+  background: #067edc;
   transform: translateY(-1px);
 }
+
 
 /* Responsive design */
 @media (max-width: 768px) {
   .restaurant-reservation {
     padding: 1rem;
     margin: 1rem 0;
+  }
+  
+  .restaurant-header {
+    flex-direction: column;
+    text-align: center;
   }
   
   .form-row {

@@ -68,7 +68,9 @@ const RestaurantReservation = () => {
 
   return (
     <div className="restaurant-reservation">
-      <h2>Reserva de Mesa</h2>
+      <div className="restaurant-header">
+        <h2>Reserva de Mesa</h2>
+      </div>
       
       <form onSubmit={handleSubmit} className="reservation-form">
         <div className="form-section">
@@ -233,6 +235,7 @@ const RestaurantReservation = () => {
           </div>
         </div>
       )}
+
     </div>
   );
 };
