@@ -1,0 +1,58 @@
+version: '3.9'
+
+services:
+  api:
+    build: ./server
+    container_name: reservas_api
+    restart: unless-stopped
+    environment:
+      PORT: 4000
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: ${MYSQL_USER:-mahalo}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-mahalo_dev}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-reservas}
+    ports:
+      - "4000:4000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+  mysql:
+    image: mysql:8.0
+    container_name: reservas_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-reservas}
+      MYSQL_USER: ${MYSQL_USER:-mahalo}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-mahalo_dev}
+    ports:
+      - "3306:3306"
+    command: ["--default-authentication-plugin=mysql_native_password"]
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u$${MYSQL_USER} -p$${MYSQL_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - mysqldata:/var/lib/mysql
+      - ./db/init.mysql.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  phpmyadmin:
+    image: phpmyadmin:5.2
+    container_name: reservas_phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      UPLOAD_LIMIT: 64M
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "5050:80"
+
+volumes:
+  mysqldata:
+
+

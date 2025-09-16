@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './RoomReservation.css';
 
-const RoomReservation = () => {
+const RoomReservation = ({ user }) => {
   const [formData, setFormData] = useState({
     checkIn: '',
     checkOut: '',
@@ -29,6 +29,18 @@ const RoomReservation = () => {
       [name]: value
     }));
   };
+
+  // Autofill from user profile
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        name: user.name || prev.name,
+        email: user.email || prev.email,
+        phone: user.phone || prev.phone
+      }));
+    }
+  }, [user]);
 
   const calculateNights = () => {
     if (formData.checkIn && formData.checkOut) {

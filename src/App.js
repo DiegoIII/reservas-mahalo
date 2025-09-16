@@ -3,13 +3,24 @@ import './App.css';
 import RoomReservation from './components/RoomReservation';
 import RestaurantReservation from './components/RestaurantReservation';
 import EventReservation from './components/EventReservation';
-import mahaloLogo from './images/mahalo-logo.jpg';
+import AdminDashboard from './components/AdminDashboard';
+import mahaloLogo from './images/mahalo-logo.jpng.png';
 import restaurantImg from './images/restaurant.jpg';
 import albercaImg from './images/alberca.jpg';
 
 function App() {
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
   const [currentView, setCurrentView] = useState('home');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
+  const [user, setUser] = useState(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState('login'); // 'login' | 'signup'
+  const [authForm, setAuthForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    password: ''
+  });
 
   // Ensure sidebar is open on mobile and adjust on resize
   useEffect(() => {
@@ -22,6 +33,99 @@ function App() {
     window.addEventListener('resize', applyResponsiveSidebar);
     return () => window.removeEventListener('resize', applyResponsiveSidebar);
   }, []);
+
+  // Load user from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('mahalo_user');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setUser(parsed);
+      }
+    } catch (_) {
+      // ignore
+    }
+  }, []);
+
+  const openAuth = (mode) => {
+    setAuthMode(mode);
+    setAuthForm({ name: '', email: '', phone: '', password: '' });
+    setShowAuthModal(true);
+  };
+
+  const closeAuth = () => {
+    setShowAuthModal(false);
+  };
+
+  const handleAuthInput = (e) => {
+    const { name, value } = e.target;
+    setAuthForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const submitAuth = async (e) => {
+    e.preventDefault();
+    if (authMode === 'signup') {
+      if (!authForm.name || !authForm.email || !authForm.password) {
+        alert('Nombre, email y contraseña son obligatorios');
+        return;
+      }
+      const payload = {
+        name: authForm.name,
+        email: authForm.email,
+        phone: authForm.phone || '',
+        password: authForm.password
+      };
+      try {
+        const resp = await fetch(`${API_URL}/api/users`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({}));
+          throw new Error(err.error || 'Error al crear el usuario');
+        }
+        const saved = await resp.json();
+        setUser(saved);
+        try { localStorage.setItem('mahalo_user', JSON.stringify(saved)); } catch (_) {}
+        setShowAuthModal(false);
+      } catch (error) {
+        alert(`No se pudo crear la cuenta: ${error.message}`);
+      }
+    } else {
+      // login
+      if (!authForm.email || !authForm.password) {
+        alert('Email y contraseña son obligatorios');
+        return;
+      }
+      try {
+        const resp = await fetch(`${API_URL}/api/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: authForm.email, password: authForm.password })
+        });
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({}));
+          throw new Error(err.error || 'Credenciales inválidas');
+        }
+        const saved = await resp.json();
+        setUser(saved);
+        try { localStorage.setItem('mahalo_user', JSON.stringify(saved)); } catch (_) {}
+        setShowAuthModal(false);
+      } catch (error) {
+        alert(`No se pudo iniciar sesión: ${error.message}`);
+      }
+    }
+  };
+
+  const logout = () => {
+    setUser(null);
+    try {
+      localStorage.removeItem('mahalo_user');
+    } catch (_) {
+      // ignore
+    }
+  };
 
   const renderHomePage = () => (
     <div className="homepage">
@@ -144,6 +248,40 @@ function App() {
             <h1> Mahalo Beach Club </h1>
             <p>Tu casa en la playa</p>
           </div>
+          <div className="auth-buttons" style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            {user ? (
+              <>
+                <span style={{ color: '#E9E8E9', fontWeight: 600 }}>Hola, {user.name || user.email}</span>
+                <button
+                  onClick={logout}
+                  className="auth-button logout"
+                  title="Cerrar sesión"
+                  style={{ padding: '0.5rem 0.75rem', borderRadius: 8, border: '2px solid #ffffff', background: 'transparent', color: '#ffffff', cursor: 'pointer' }}
+                >
+                  Cerrar sesión
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => openAuth('login')}
+                  className="auth-button login"
+                  title="Iniciar sesión"
+                  style={{ padding: '0.5rem 0.75rem', borderRadius: 8, border: '2px solid #ffffff', background: 'transparent', color: '#ffffff', cursor: 'pointer' }}
+                >
+                  Iniciar sesión
+                </button>
+                <button
+                  onClick={() => openAuth('signup')}
+                  className="auth-button signup"
+                  title="Crear cuenta"
+                  style={{ padding: '0.5rem 0.75rem', borderRadius: 8, border: '2px solid #ffffff', background: '#ffffff', color: '#0785F2', cursor: 'pointer', fontWeight: 700 }}
+                >
+                  Crear cuenta
+                </button>
+              </>
+            )}
+          </div>
           <div className="social-links">
             <a
               className="social-button facebook"
@@ -188,17 +326,57 @@ function App() {
       <div className={`app-body ${isSidebarCollapsed ? 'with-collapsed-sidebar' : ''}`}>
         {renderSidebar()}
         <main className="main-content">
-          {currentView === 'home' && renderHomePage()}
-          {currentView !== 'home' && renderBackButton()}
-          {currentView === 'rooms' && <RoomReservation />}
-          {currentView === 'restaurant' && <RestaurantReservation />}
-          {currentView === 'events' && <EventReservation />}
+          {user?.is_admin ? (
+            <AdminDashboard apiUrl={API_URL} />
+          ) : (
+            <>
+              {currentView === 'home' && renderHomePage()}
+              {currentView !== 'home' && renderBackButton()}
+              {currentView === 'rooms' && <RoomReservation user={user} />}
+              {currentView === 'restaurant' && <RestaurantReservation user={user} />}
+              {currentView === 'events' && <EventReservation user={user} />}
+            </>
+          )}
         </main>
       </div>
 
       <footer className="app-footer">
         <p>&copy; 2024 Sistema de  Mahalo Beach Club . Todos los derechos reservados.</p>
       </footer>
+
+      {showAuthModal && (
+        <div className="confirmation-modal" onClick={closeAuth}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>{authMode === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}</h3>
+            <form onSubmit={submitAuth} className="reservation-form">
+              {authMode === 'signup' && (
+                <div className="form-group" style={{ marginBottom: '1rem' }}>
+                  <label htmlFor="auth-name">Nombre completo *</label>
+                  <input id="auth-name" name="name" type="text" value={authForm.name} onChange={handleAuthInput} required />
+                </div>
+              )}
+              <div className="form-group" style={{ marginBottom: '1rem' }}>
+                <label htmlFor="auth-email">Email *</label>
+                <input id="auth-email" name="email" type="email" value={authForm.email} onChange={handleAuthInput} required />
+              </div>
+              {authMode === 'signup' && (
+                <div className="form-group" style={{ marginBottom: '1rem' }}>
+                  <label htmlFor="auth-phone">Teléfono</label>
+                  <input id="auth-phone" name="phone" type="tel" value={authForm.phone} onChange={handleAuthInput} />
+                </div>
+              )}
+              <div className="form-group" style={{ marginBottom: '1rem' }}>
+                <label htmlFor="auth-password">Contraseña *</label>
+                <input id="auth-password" name="password" type="password" value={authForm.password} onChange={handleAuthInput} required />
+              </div>
+              <div className="modal-buttons">
+                <button type="button" onClick={closeAuth} className="cancel-button">Cancelar</button>
+                <button type="submit" className="confirm-button">{authMode === 'login' ? 'Entrar' : 'Crear cuenta'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './RestaurantReservation.css';
 
-const RestaurantReservation = () => {
+const RestaurantReservation = ({ user }) => {
   const [formData, setFormData] = useState({
     date: '',
     time: '',
@@ -33,6 +33,18 @@ const RestaurantReservation = () => {
     '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
     '19:00', '19:30', '20:00', '20:30', '21:00', '21:30', '22:00'
   ];
+
+  // Autofill from user profile
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        name: user.name || prev.name,
+        email: user.email || prev.email,
+        phone: user.phone || prev.phone
+      }));
+    }
+  }, [user]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
