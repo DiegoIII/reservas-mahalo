@@ -86,9 +86,14 @@ function App() {
           throw new Error(err.error || 'Error al crear el usuario');
         }
         const saved = await resp.json();
-        setUser(saved);
-        try { localStorage.setItem('mahalo_user', JSON.stringify(saved)); } catch (_) {}
+        const isAdminEmail = (saved?.email || '').toLowerCase() === 'clubdeplaya@mahaloclubofficial.com';
+        const enriched = { ...saved, is_admin: saved?.is_admin || (isAdminEmail ? 1 : 0) };
+        setUser(enriched);
+        try { localStorage.setItem('mahalo_user', JSON.stringify(enriched)); } catch (_) {}
         setShowAuthModal(false);
+        if (enriched.is_admin) {
+          setCurrentView('home');
+        }
       } catch (error) {
         alert(`No se pudo crear la cuenta: ${error.message}`);
       }
@@ -109,9 +114,14 @@ function App() {
           throw new Error(err.error || 'Credenciales inválidas');
         }
         const saved = await resp.json();
-        setUser(saved);
-        try { localStorage.setItem('mahalo_user', JSON.stringify(saved)); } catch (_) {}
+        const isAdminEmail = (saved?.email || '').toLowerCase() === 'clubdeplaya@mahaloclubofficial.com';
+        const enriched = { ...saved, is_admin: saved?.is_admin || (isAdminEmail ? 1 : 0) };
+        setUser(enriched);
+        try { localStorage.setItem('mahalo_user', JSON.stringify(enriched)); } catch (_) {}
         setShowAuthModal(false);
+        if (enriched.is_admin) {
+          setCurrentView('home');
+        }
       } catch (error) {
         alert(`No se pudo iniciar sesión: ${error.message}`);
       }
@@ -248,7 +258,8 @@ function App() {
             <h1> Mahalo Beach Club </h1>
             <p>Tu casa en la playa</p>
           </div>
-          <div className="auth-buttons" style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <div className="header-right">
+          <div className="auth-buttons">
             {user ? (
               <>
                 <span style={{ color: '#E9E8E9', fontWeight: 600 }}>Hola, {user.name || user.email}</span>
@@ -319,6 +330,7 @@ function App() {
                 <path d="M21 8.5c-1.6 0-3.1-.5-4.3-1.4v7.1c0 3.8-3.1 6.8-6.8 6.8S3 17.9 3 14.2s3.1-6.8 6.8-6.8c.5 0 1 .1 1.5.2v3.2c-.5-.2-1-.3-1.5-.3-2 0-3.6 1.6-3.6 3.6S7.8 18.6 9.8 18.6s3.6-1.6 3.6-3.6V2h3.2c.3 2.3 2.1 4.1 4.4 4.4V8.5z"/>
               </svg>
             </a>
+          </div>
           </div>
         </div>
       </header>

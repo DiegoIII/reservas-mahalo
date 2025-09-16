@@ -22,8 +22,15 @@ const pool = mysql.createPool({
 
 // Ensure admin user exists and schema is up to date
 async function ensureAdminAndSchema() {
-  // add is_admin column if missing
-  await pool.query("ALTER TABLE app_user ADD COLUMN IF NOT EXISTS is_admin TINYINT(1) NOT NULL DEFAULT 0");
+  // Ensure is_admin column exists (MySQL compatible check)
+  const [cols] = await pool.query(
+    `SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'app_user' AND COLUMN_NAME = 'is_admin'`,
+    [process.env.MYSQL_DATABASE || 'reservas']
+  );
+  const hasIsAdmin = Array.isArray(cols) && cols[0] && Number(cols[0].cnt) > 0;
+  if (!hasIsAdmin) {
+    await pool.query("ALTER TABLE app_user ADD COLUMN is_admin TINYINT(1) NOT NULL DEFAULT 0");
+  }
   const adminEmail = 'clubdeplaya@mahaloclubofficial.com';
   const adminPassword = 'mahaloadminoficial';
   const passwordHash = await bcrypt.hash(adminPassword, 10);
@@ -61,10 +68,22 @@ app.post('/api/users', async (req, res) => {
       [name, email, phone || null, passwordHash]
     );
     const [rows] = await pool.query(
-      'SELECT id, name, email, phone, created_at FROM app_user WHERE email = ?',
+      'SELECT id, name, email, phone, is_admin, created_at FROM app_user WHERE email = ?',
       [email]
     );
     res.status(201).json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// List users (safe fields only)
+app.get('/api/users', async (_req, res) => {
+  try {
+    const [rows] = await pool.query(
+      'SELECT id, name, email, phone, is_admin, created_at FROM app_user ORDER BY created_at DESC'
+    );
+    res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -109,6 +128,21 @@ app.get('/api/admin/reservations', async (_req, res) => {
        FROM event_reservation WHERE date >= CURDATE() ORDER BY date, start_time`
     );
     res.json([ ...restaurant, ...rooms, ...events ]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: only future events
+app.get('/api/admin/events', async (_req, res) => {
+  try {
+    const [events] = await pool.query(
+      `SELECT id, event_type, date, start_time, end_time, guests, venue, name, email, phone, company, special_requests, created_at
+       FROM event_reservation
+       WHERE date >= CURDATE()
+       ORDER BY date, start_time`
+    );
+    res.json(events);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

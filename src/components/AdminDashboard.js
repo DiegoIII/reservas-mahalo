@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
 
 const AdminDashboard = ({ apiUrl }) => {
-  const [reservations, setReservations] = useState([]);
+  const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const resp = await fetch(`${apiUrl}/api/admin/reservations`);
+        const resp = await fetch(`${apiUrl}/api/admin/events`);
         const data = await resp.json();
-        setReservations(Array.isArray(data) ? data : []);
+        setEvents(Array.isArray(data) ? data : []);
       } catch (e) {
         setError(e.message);
       } finally {
@@ -27,12 +27,13 @@ const AdminDashboard = ({ apiUrl }) => {
     <div className="event-reservation">
       <h2>Panel de Administración</h2>
       <div className="form-section">
-        <h3>Reservas futuras</h3>
+        <h3>Eventos futuros</h3>
         <div className="event-summary">
-          {reservations.length === 0 && <p>No hay reservas próximas.</p>}
-          {reservations.map((r) => (
-            <p key={`${r.type}-${r.id}`}>
-              <strong>{r.type}</strong> - {r.date} {r.start_time ? `${r.start_time}` : ''} — {r.name} ({r.email}) — {r.location || ''} — Invitados: {r.guests || ''}
+          {events.length === 0 && <p>No hay eventos próximos.</p>}
+          {events.map((ev) => (
+            <p key={ev.id}>
+              <strong>{ev.event_type || 'Evento'}</strong> - {ev.date} {ev.start_time ? `${ev.start_time}` : ''}
+              {ev.end_time ? ` – ${ev.end_time}` : ''} — {ev.name} ({ev.email}) — {ev.venue || ''} — Invitados: {ev.guests || ''}
             </p>
           ))}
         </div>
