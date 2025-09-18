@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './RoomReservation.css';
 
-const RoomReservation = ({ user }) => {
+const RoomReservation = ({ user, apiUrl }) => {
   const [formData, setFormData] = useState({
     checkIn: '',
     checkOut: '',
@@ -14,12 +14,15 @@ const RoomReservation = ({ user }) => {
   });
 
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [roomAvailability, setRoomAvailability] = useState({});
+  const [loadingAvailability, setLoadingAvailability] = useState(false);
 
   const roomTypes = [
-    { id: 'standard', name: 'Habitación Estándar', price: 80, description: 'Cama doble, baño privado, TV' },
-    { id: 'deluxe', name: 'Habitación Deluxe', price: 120, description: 'Cama king, baño privado, TV, minibar' },
-    { id: 'suite', name: 'Suite', price: 200, description: 'Dormitorio separado, sala de estar, baño jacuzzi' },
-    { id: 'presidential', name: 'Suite Presidencial', price: 350, description: 'Suite de lujo con vista panorámica' }
+    { id: 'room1', name: 'Habitación 1 - Con Vista (Principal)', price: 120, description: '4 personas (puede tener 2 personas más)', capacity: 6, hasView: true, roomNumber: 1 },
+    { id: 'room2', name: 'Habitación 2 - Con Vista', price: 100, description: '4 personas (puede tener 1 persona más)', capacity: 5, hasView: true, roomNumber: 2 },
+    { id: 'room3', name: 'Habitación 3 - Sin Vista', price: 80, description: '4 personas', capacity: 4, hasView: false, roomNumber: 3 },
+    { id: 'room4', name: 'Habitación 4 - Sin Vista', price: 80, description: '4 personas', capacity: 4, hasView: false, roomNumber: 4 },
+    { id: 'room5', name: 'Habitación 5 - Sin Vista', price: 60, description: '2 personas', capacity: 2, hasView: false, roomNumber: 5 }
   ];
 
   const handleInputChange = (e) => {
@@ -28,6 +31,47 @@ const RoomReservation = ({ user }) => {
       ...prev,
       [name]: value
     }));
+  };
+
+  // Calculate max guests depending on selected room and rule
+  const getMaxGuests = () => {
+    const selectedRoom = roomTypes.find(r => r.id === formData.roomType);
+    // Base rule: max 4, but room1 up to 6, room2 up to 5
+    let ruleCap = 4;
+    if (formData.roomType === 'room1') ruleCap = 6;
+    else if (formData.roomType === 'room2') ruleCap = 5;
+
+    // Respect each room's inherent capacity as a hard ceiling
+    if (selectedRoom) {
+      return Math.min(ruleCap, selectedRoom.capacity);
+    }
+    return 4;
+  };
+
+  // Clamp guests when room or rule changes
+  useEffect(() => {
+    const maxGuests = getMaxGuests();
+    if (Number(formData.guests) > maxGuests) {
+      setFormData(prev => ({ ...prev, guests: maxGuests }));
+    }
+  }, [formData.roomType]);
+
+  // Check room availability
+  const checkRoomAvailability = async (checkIn, checkOut) => {
+    if (!checkIn || !checkOut) return;
+    
+    setLoadingAvailability(true);
+    try {
+      const response = await fetch(`${apiUrl}/api/admin/room-availability?check_in=${checkIn}&check_out=${checkOut}`);
+      if (response.ok) {
+        const availability = await response.json();
+        setRoomAvailability(availability);
+      }
+    } catch (error) {
+      console.error('Error checking availability:', error);
+    } finally {
+      setLoadingAvailability(false);
+    }
   };
 
   // Autofill from user profile
@@ -41,6 +85,13 @@ const RoomReservation = ({ user }) => {
       }));
     }
   }, [user]);
+
+  // Check availability when dates change
+  useEffect(() => {
+    if (formData.checkIn && formData.checkOut) {
+      checkRoomAvailability(formData.checkIn, formData.checkOut);
+    }
+  }, [formData.checkIn, formData.checkOut]);
 
   const calculateNights = () => {
     if (formData.checkIn && formData.checkOut) {
@@ -69,19 +120,42 @@ const RoomReservation = ({ user }) => {
     }
   };
 
-  const confirmReservation = () => {
-    alert('¡Reserva confirmada! Te enviaremos un email de confirmación.');
-    setShowConfirmation(false);
-    setFormData({
-      checkIn: '',
-      checkOut: '',
-      guests: 1,
-      roomType: '',
-      name: '',
-      email: '',
-      phone: '',
-      specialRequests: ''
-    });
+  const confirmReservation = async () => {
+    try {
+      const payload = {
+        check_in: formData.checkIn,
+        check_out: formData.checkOut,
+        guests: Number(formData.guests),
+        room_type: formData.roomType,
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone || null,
+        special_requests: formData.specialRequests || null
+      };
+      const resp = await fetch(`${apiUrl}/api/admin/room`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error || 'No se pudo guardar la reserva');
+      }
+      alert('¡Reserva confirmada! Te enviaremos un email de confirmación.');
+      setShowConfirmation(false);
+      setFormData({
+        checkIn: '',
+        checkOut: '',
+        guests: 1,
+        roomType: '',
+        name: '',
+        email: '',
+        phone: '',
+        specialRequests: ''
+      });
+    } catch (e) {
+      alert(e.message);
+    }
   };
 
   return (
@@ -133,29 +207,49 @@ const RoomReservation = ({ user }) => {
                 value={formData.guests}
                 onChange={handleInputChange}
               >
-                {[1,2,3,4,5,6].map(num => (
+                {Array.from({ length: getMaxGuests() }, (_, i) => i + 1).map(num => (
                   <option key={num} value={num}>{num} {num === 1 ? 'huésped' : 'huéspedes'}</option>
                 ))}
               </select>
+              {formData.roomType && (
+                <span className="guests-hint">
+                  {Math.max(0, getMaxGuests() - Number(formData.guests)) > 0
+                    ? `Puedes agregar hasta ${Math.max(0, getMaxGuests() - Number(formData.guests))} personas más`
+                    : 'Capacidad máxima alcanzada'}
+                </span>
+              )}
             </div>
           </div>
           
           <div className="room-selection">
             <h4>Selecciona tu Habitación *</h4>
+            {loadingAvailability && (
+              <p className="loading-text">Verificando disponibilidad...</p>
+            )}
             <div className="room-options">
-              {roomTypes.map(room => (
-                <div 
-                  key={room.id} 
-                  className={`room-option ${formData.roomType === room.id ? 'selected' : ''}`}
-                  onClick={() => setFormData(prev => ({ ...prev, roomType: room.id }))}
-                >
-                  <div className="room-info">
-                    <h5>{room.name}</h5>
-                    <p>{room.description}</p>
-                    <span className="room-price">${room.price}/noche</span>
+              {roomTypes.map(room => {
+                const isAvailable = roomAvailability[room.id] !== false;
+                const isSelected = formData.roomType === room.id;
+                return (
+                  <div 
+                    key={room.id} 
+                    className={`room-option ${isSelected ? 'selected' : ''} ${!isAvailable ? 'unavailable' : ''}`}
+                    onClick={() => {
+                      if (!isAvailable) return;
+                      setFormData(prev => ({ ...prev, roomType: room.id }));
+                    }}
+                  >
+                    <div className="room-info">
+                      <h5>{room.name}</h5>
+                      <p>{room.description}</p>
+                      <span className="room-price">${room.price}/noche</span>
+                      {!isAvailable && (
+                        <span className="unavailable-badge">No disponible</span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

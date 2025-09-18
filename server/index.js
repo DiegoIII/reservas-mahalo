@@ -22,15 +22,14 @@ const pool = mysql.createPool({
 
 // Ensure admin user exists and schema is up to date
 async function ensureAdminAndSchema() {
-  // Ensure is_admin column exists (MySQL compatible check)
-  const [cols] = await pool.query(
-    `SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'app_user' AND COLUMN_NAME = 'is_admin'`,
-    [process.env.MYSQL_DATABASE || 'reservas']
-  );
-  const hasIsAdmin = Array.isArray(cols) && cols[0] && Number(cols[0].cnt) > 0;
-  if (!hasIsAdmin) {
+  try {
+    // add is_admin column if missing
     await pool.query("ALTER TABLE app_user ADD COLUMN is_admin TINYINT(1) NOT NULL DEFAULT 0");
+  } catch (err) {
+    // Column might already exist, ignore error
+    console.log('Column is_admin might already exist:', err.message);
   }
+  
   const adminEmail = 'clubdeplaya@mahaloclubofficial.com';
   const adminPassword = 'mahaloadminoficial';
   const passwordHash = await bcrypt.hash(adminPassword, 10);
@@ -68,7 +67,7 @@ app.post('/api/users', async (req, res) => {
       [name, email, phone || null, passwordHash]
     );
     const [rows] = await pool.query(
-      'SELECT id, name, email, phone, is_admin, created_at FROM app_user WHERE email = ?',
+      'SELECT id, name, email, phone, created_at FROM app_user WHERE email = ?',
       [email]
     );
     res.status(201).json(rows[0]);
@@ -151,6 +150,7 @@ app.get('/api/admin/events', async (_req, res) => {
 app.post('/api/admin/restaurant', async (req, res) => {
   const { date, time, party_size, table_type, location_area, name, email, phone, special_requests } = req.body || {};
   try {
+    console.log('[POST] /api/admin/restaurant', { date, time, party_size, table_type, location_area, name, email });
     await pool.query(
       `INSERT INTO restaurant_reservation (id, date, time, party_size, table_type, location_area, name, email, phone, special_requests)
        VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -158,6 +158,49 @@ app.post('/api/admin/restaurant', async (req, res) => {
     );
     res.status(201).json({ ok: true });
   } catch (err) {
+    console.error('restaurant insert error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Check room availability
+app.get('/api/admin/room-availability', async (req, res) => {
+  const { check_in, check_out } = req.query;
+  if (!check_in || !check_out) {
+    return res.status(400).json({ error: 'check_in and check_out are required' });
+  }
+  
+  try {
+    // Get all room types
+    const roomTypes = [
+      { id: 'room1', roomNumber: 1 },
+      { id: 'room2', roomNumber: 2 },
+      { id: 'room3', roomNumber: 3 },
+      { id: 'room4', roomNumber: 4 },
+      { id: 'room5', roomNumber: 5 }
+    ];
+    
+    const availability = {};
+    
+    for (const room of roomTypes) {
+      // Check for overlapping reservations
+      const [conflicts] = await pool.query(
+        `SELECT COUNT(*) as count FROM room_reservation 
+         WHERE room_type = ? 
+         AND (
+           (check_in <= ? AND check_out > ?) OR 
+           (check_in < ? AND check_out >= ?) OR 
+           (check_in >= ? AND check_out <= ?)
+         )`,
+        [room.id, check_in, check_in, check_out, check_out, check_in, check_out]
+      );
+      
+      availability[room.id] = conflicts[0].count === 0;
+    }
+    
+    res.json(availability);
+  } catch (err) {
+    console.error('availability check error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -165,6 +208,46 @@ app.post('/api/admin/restaurant', async (req, res) => {
 app.post('/api/admin/room', async (req, res) => {
   const { check_in, check_out, guests, room_type, name, email, phone, special_requests } = req.body || {};
   try {
+    console.log('[POST] /api/admin/room', { check_in, check_out, guests, room_type, name, email });
+    
+    // Enforce guest capacity per room and global rules
+    const roomCapacities = {
+      room1: 6, // inherent capacity
+      room2: 5,
+      room3: 4,
+      room4: 4,
+      room5: 2
+    };
+    // Rule caps: default 4, room1 up to 6, room2 up to 5
+    let ruleCap = 4;
+    if (room_type === 'room1') ruleCap = 6;
+    else if (room_type === 'room2') ruleCap = 5;
+
+    const inherentCap = roomCapacities[room_type] ?? 4;
+    const effectiveCap = Math.min(ruleCap, inherentCap);
+    if (!Number.isFinite(Number(guests)) || Number(guests) < 1) {
+      return res.status(400).json({ error: 'Número de huéspedes inválido' });
+    }
+    if (Number(guests) > effectiveCap) {
+      return res.status(400).json({ error: `La habitación seleccionada permite máximo ${effectiveCap} huéspedes` });
+    }
+
+    // Check for conflicts before inserting
+    const [conflicts] = await pool.query(
+      `SELECT COUNT(*) as count FROM room_reservation 
+       WHERE room_type = ? 
+       AND (
+         (check_in <= ? AND check_out > ?) OR 
+         (check_in < ? AND check_out >= ?) OR 
+         (check_in >= ? AND check_out <= ?)
+       )`,
+      [room_type, check_in, check_in, check_out, check_out, check_in, check_out]
+    );
+    
+    if (conflicts[0].count > 0) {
+      return res.status(409).json({ error: 'La habitación no está disponible para las fechas seleccionadas' });
+    }
+    
     await pool.query(
       `INSERT INTO room_reservation (id, check_in, check_out, guests, room_type, name, email, phone, special_requests)
        VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -172,6 +255,7 @@ app.post('/api/admin/room', async (req, res) => {
     );
     res.status(201).json({ ok: true });
   } catch (err) {
+    console.error('room insert error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -179,6 +263,7 @@ app.post('/api/admin/room', async (req, res) => {
 app.post('/api/admin/event', async (req, res) => {
   const { event_type, date, start_time, end_time, guests, venue, name, email, phone, company, special_requests } = req.body || {};
   try {
+    console.log('[POST] /api/admin/event', { event_type, date, start_time, end_time, guests, venue, name, email });
     await pool.query(
       `INSERT INTO event_reservation (id, event_type, date, start_time, end_time, guests, venue, name, email, phone, company, special_requests)
        VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -186,6 +271,7 @@ app.post('/api/admin/event', async (req, res) => {
     );
     res.status(201).json({ ok: true });
   } catch (err) {
+    console.error('event insert error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });

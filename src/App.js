@@ -10,6 +10,7 @@ import albercaImg from './images/alberca.jpg';
 
 function App() {
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+  const ADMIN_EMAIL = 'clubdeplaya@mahaloclubofficial.com';
   const [currentView, setCurrentView] = useState('home');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [user, setUser] = useState(null);
@@ -40,6 +41,9 @@ function App() {
       const saved = localStorage.getItem('mahalo_user');
       if (saved) {
         const parsed = JSON.parse(saved);
+        if (parsed?.email === ADMIN_EMAIL) {
+          parsed.is_admin = 1;
+        }
         setUser(parsed);
       }
     } catch (_) {
@@ -86,14 +90,9 @@ function App() {
           throw new Error(err.error || 'Error al crear el usuario');
         }
         const saved = await resp.json();
-        const isAdminEmail = (saved?.email || '').toLowerCase() === 'clubdeplaya@mahaloclubofficial.com';
-        const enriched = { ...saved, is_admin: saved?.is_admin || (isAdminEmail ? 1 : 0) };
-        setUser(enriched);
-        try { localStorage.setItem('mahalo_user', JSON.stringify(enriched)); } catch (_) {}
+        setUser(saved);
+        try { localStorage.setItem('mahalo_user', JSON.stringify(saved)); } catch (_) {}
         setShowAuthModal(false);
-        if (enriched.is_admin) {
-          setCurrentView('home');
-        }
       } catch (error) {
         alert(`No se pudo crear la cuenta: ${error.message}`);
       }
@@ -114,12 +113,14 @@ function App() {
           throw new Error(err.error || 'Credenciales inválidas');
         }
         const saved = await resp.json();
-        const isAdminEmail = (saved?.email || '').toLowerCase() === 'clubdeplaya@mahaloclubofficial.com';
-        const enriched = { ...saved, is_admin: saved?.is_admin || (isAdminEmail ? 1 : 0) };
-        setUser(enriched);
-        try { localStorage.setItem('mahalo_user', JSON.stringify(enriched)); } catch (_) {}
+        if (saved?.email === ADMIN_EMAIL) {
+          saved.is_admin = 1;
+        }
+        setUser(saved);
+        try { localStorage.setItem('mahalo_user', JSON.stringify(saved)); } catch (_) {}
         setShowAuthModal(false);
-        if (enriched.is_admin) {
+        // ensure admin view is immediately visible
+        if (saved?.is_admin) {
           setCurrentView('home');
         }
       } catch (error) {
@@ -139,6 +140,11 @@ function App() {
 
   const renderHomePage = () => (
     <div className="homepage">
+      <div className="welcome-section">
+        <h2>Bienvenido a Mahalo</h2>
+        <p>Tu casa en la playa</p>
+      </div>
+
       <div className="location-section">
         <h2>Como llegar a tu club de playa </h2>
         <p>Visítanos en nuestra ubicación privilegiada en la costa</p>
@@ -186,11 +192,6 @@ function App() {
           </div>
         </div>
       </section>
-
-      <div className="welcome-section">
-        <h2>Bienvenido a Mahalo</h2>
-        <p>Tu casa en la playa</p>
-      </div>
     </div>
   );
 
@@ -253,7 +254,14 @@ function App() {
     <div className="App">
       <header className="app-header">
         <div className="header-content">
-          <img src={mahaloLogo} alt="Mahalo Logo" className="logo" />
+          <img 
+            src={mahaloLogo} 
+            alt="Mahalo Logo" 
+            className="logo clickable-logo" 
+            onClick={() => setCurrentView('home')}
+            style={{ cursor: 'pointer' }}
+            title="Ir al inicio"
+          />
           <div className="header-text">
             <h1> Mahalo Beach Club </h1>
             <p>Tu casa en la playa</p>
@@ -262,12 +270,12 @@ function App() {
           <div className="auth-buttons">
             {user ? (
               <>
-                <span style={{ color: '#E9E8E9', fontWeight: 600 }}>Hola, {user.name || user.email}</span>
+                <span style={{ color: '#F2CEAE', fontWeight: 600 }}>Hola, {user.name || user.email}</span>
                 <button
                   onClick={logout}
                   className="auth-button logout"
                   title="Cerrar sesión"
-                  style={{ padding: '0.5rem 0.75rem', borderRadius: 8, border: '2px solid #ffffff', background: 'transparent', color: '#ffffff', cursor: 'pointer' }}
+                  style={{ padding: '0.5rem 0.75rem', borderRadius: 8, border: '2px solid #F2CEAE', background: 'transparent', color: '#F2CEAE', cursor: 'pointer' }}
                 >
                   Cerrar sesión
                 </button>
@@ -278,7 +286,7 @@ function App() {
                   onClick={() => openAuth('login')}
                   className="auth-button login"
                   title="Iniciar sesión"
-                  style={{ padding: '0.5rem 0.75rem', borderRadius: 8, border: '2px solid #ffffff', background: 'transparent', color: '#ffffff', cursor: 'pointer' }}
+                  style={{ padding: '0.5rem 0.75rem', borderRadius: 8, border: '2px solid #F2CEAE', background: 'transparent', color: '#F2CEAE', cursor: 'pointer' }}
                 >
                   Iniciar sesión
                 </button>
@@ -286,7 +294,7 @@ function App() {
                   onClick={() => openAuth('signup')}
                   className="auth-button signup"
                   title="Crear cuenta"
-                  style={{ padding: '0.5rem 0.75rem', borderRadius: 8, border: '2px solid #ffffff', background: '#ffffff', color: '#0785F2', cursor: 'pointer', fontWeight: 700 }}
+                  style={{ padding: '0.5rem 0.75rem', borderRadius: 8, border: '2px solid #F2CEAE', background: '#F2CEAE', color: '#03258C', cursor: 'pointer', fontWeight: 700 }}
                 >
                   Crear cuenta
                 </button>
@@ -344,9 +352,9 @@ function App() {
             <>
               {currentView === 'home' && renderHomePage()}
               {currentView !== 'home' && renderBackButton()}
-              {currentView === 'rooms' && <RoomReservation user={user} />}
-              {currentView === 'restaurant' && <RestaurantReservation user={user} />}
-              {currentView === 'events' && <EventReservation user={user} />}
+              {currentView === 'rooms' && <RoomReservation user={user} apiUrl={API_URL} />}
+              {currentView === 'restaurant' && <RestaurantReservation user={user} apiUrl={API_URL} />}
+              {currentView === 'events' && <EventReservation user={user} apiUrl={API_URL} />}
             </>
           )}
         </main>

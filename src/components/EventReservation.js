@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './EventReservation.css';
 
-const EventReservation = ({ user }) => {
+const EventReservation = ({ user, apiUrl }) => {
   const [formData, setFormData] = useState({
     eventType: '',
     date: '',
@@ -70,22 +70,48 @@ const EventReservation = ({ user }) => {
     }
   };
 
-  const confirmReservation = () => {
-    alert('¡Reserva de evento confirmada! Te contactaremos pronto para coordinar los detalles.');
-    setShowConfirmation(false);
-    setFormData({
-      eventType: '',
-      date: '',
-      startTime: '',
-      endTime: '',
-      guests: 50,
-      venue: '',
-      name: '',
-      email: '',
-      phone: '',
-      company: '',
-      specialRequests: ''
-    });
+  const confirmReservation = async () => {
+    try {
+      const payload = {
+        event_type: formData.eventType,
+        date: formData.date,
+        start_time: formData.startTime,
+        end_time: formData.endTime,
+        guests: Number(formData.guests),
+        venue: formData.venue,
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone || null,
+        company: formData.company || null,
+        special_requests: formData.specialRequests || null
+      };
+      const resp = await fetch(`${apiUrl}/api/admin/event`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error || 'No se pudo guardar el evento');
+      }
+      alert('¡Reserva de evento confirmada! Te contactaremos pronto para coordinar los detalles.');
+      setShowConfirmation(false);
+      setFormData({
+        eventType: '',
+        date: '',
+        startTime: '',
+        endTime: '',
+        guests: 50,
+        venue: '',
+        name: '',
+        email: '',
+        phone: '',
+        company: '',
+        specialRequests: ''
+      });
+    } catch (e) {
+      alert(e.message);
+    }
   };
 
   const getAvailableVenues = () => {
@@ -93,7 +119,12 @@ const EventReservation = ({ user }) => {
     if (!selectedEvent) return venues;
     
     return venues.filter(venue => {
-      const capacity = parseInt(venue.capacity.split(' ')[2]);
+      // Extraer la capacidad numérica del string "Hasta X personas"
+      const capacityMatch = venue.capacity.match(/\d+/);
+      const capacity = capacityMatch ? parseInt(capacityMatch[0]) : 0;
+      
+      // Verificar que el venue tenga capacidad suficiente para los invitados
+      // y que los invitados cumplan con el mínimo del tipo de evento
       return capacity >= formData.guests && formData.guests >= selectedEvent.minGuests;
     });
   };

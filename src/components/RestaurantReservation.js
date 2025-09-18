@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './RestaurantReservation.css';
 
-const RestaurantReservation = ({ user }) => {
+const RestaurantReservation = ({ user, apiUrl }) => {
   const [formData, setFormData] = useState({
     date: '',
     time: '',
@@ -63,20 +63,44 @@ const RestaurantReservation = ({ user }) => {
     }
   };
 
-  const confirmReservation = () => {
-    alert('¡Reserva confirmada! Te enviaremos un email de confirmación.');
-    setShowConfirmation(false);
-    setFormData({
-      date: '',
-      time: '',
-      partySize: 2,
-      tableType: '',
-      locationArea: '',
-      name: '',
-      email: '',
-      phone: '',
-      specialRequests: ''
-    });
+  const confirmReservation = async () => {
+    try {
+      const payload = {
+        date: formData.date,
+        time: formData.time,
+        party_size: Number(formData.partySize),
+        table_type: formData.tableType,
+        location_area: formData.locationArea,
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone || null,
+        special_requests: formData.specialRequests || null
+      };
+      const resp = await fetch(`${apiUrl}/api/admin/restaurant`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error || 'No se pudo guardar la reserva');
+      }
+      alert('¡Reserva confirmada! Te enviaremos un email de confirmación.');
+      setShowConfirmation(false);
+      setFormData({
+        date: '',
+        time: '',
+        partySize: 2,
+        tableType: '',
+        locationArea: '',
+        name: '',
+        email: '',
+        phone: '',
+        specialRequests: ''
+      });
+    } catch (e) {
+      alert(e.message);
+    }
   };
 
   const getAvailableTables = () => {
