@@ -92,6 +92,17 @@
   border: 1px solid rgba(242, 126, 147, 0.3);
 }
 
+.hours-note {
+  background: rgba(242, 206, 174, 0.3);
+  color: #8C8303;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  border: 1px solid rgba(242, 126, 147, 0.3);
+  text-align: center;
+}
+
 .event-type-selection h4,
 .venue-selection h4 {
   color: #03258C;

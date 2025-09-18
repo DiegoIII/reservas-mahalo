@@ -115,15 +115,15 @@ app.post('/api/login', async (req, res) => {
 app.get('/api/admin/reservations', async (_req, res) => {
   try {
     const [restaurant] = await pool.query(
-      `SELECT 'restaurant' AS type, id, date, time AS start_time, NULL AS end_time, party_size AS guests, location_area AS location, name, email, created_at
+      `SELECT 'restaurant' AS type, id, date, time AS start_time, NULL AS end_time, party_size AS guests, location_area AS location, name, email, phone, created_at
        FROM restaurant_reservation WHERE date >= CURDATE() ORDER BY date, time`
     );
     const [rooms] = await pool.query(
-      `SELECT 'room' AS type, id, check_in AS date, NULL AS start_time, NULL AS end_time, guests, room_type AS location, name, email, created_at
+      `SELECT 'room' AS type, id, check_in AS date, check_out, NULL AS start_time, NULL AS end_time, guests, room_type AS location, name, email, phone, checked_out, checkout_time, created_at
        FROM room_reservation WHERE check_in >= CURDATE() ORDER BY check_in`
     );
     const [events] = await pool.query(
-      `SELECT 'event' AS type, id, date, start_time, end_time, guests, venue AS location, name, email, created_at
+      `SELECT 'event' AS type, id, date, start_time, end_time, guests, venue AS location, name, email, phone, created_at
        FROM event_reservation WHERE date >= CURDATE() ORDER BY date, start_time`
     );
     res.json([ ...restaurant, ...rooms, ...events ]);
@@ -181,12 +181,14 @@ app.get('/api/admin/room-availability', async (req, res) => {
     ];
     
     const availability = {};
+    const info = {};
     
     for (const room of roomTypes) {
       // Check for overlapping reservations
       const [conflicts] = await pool.query(
         `SELECT COUNT(*) as count FROM room_reservation 
          WHERE room_type = ? 
+         AND checked_out = 0
          AND (
            (check_in <= ? AND check_out > ?) OR 
            (check_in < ? AND check_out >= ?) OR 
@@ -195,10 +197,33 @@ app.get('/api/admin/room-availability', async (req, res) => {
         [room.id, check_in, check_in, check_out, check_out, check_in, check_out]
       );
       
-      availability[room.id] = conflicts[0].count === 0;
+      const isAvailable = conflicts[0].count === 0;
+      availability[room.id] = isAvailable;
+      
+      // If not available, find next available date
+      if (!isAvailable) {
+        const [nextAvailable] = await pool.query(
+          `SELECT MIN(check_out) as next_date FROM room_reservation 
+           WHERE room_type = ? 
+           AND checked_out = 0
+           AND check_out > ?`,
+          [room.id, check_out]
+        );
+        
+        if (nextAvailable[0].next_date) {
+          const nextDate = new Date(nextAvailable[0].next_date);
+          info[room.id] = {
+            nextAvailable: nextDate.toLocaleDateString('es-ES', {
+              day: '2-digit',
+              month: '2-digit',
+              year: '2-digit'
+            })
+          };
+        }
+      }
     }
     
-    res.json(availability);
+    res.json({ availability, info });
   } catch (err) {
     console.error('availability check error:', err.message);
     res.status(500).json({ error: err.message });
@@ -232,10 +257,11 @@ app.post('/api/admin/room', async (req, res) => {
       return res.status(400).json({ error: `La habitación seleccionada permite máximo ${effectiveCap} huéspedes` });
     }
 
-    // Check for conflicts before inserting
+    // Check for conflicts before inserting (only check non-checked-out reservations)
     const [conflicts] = await pool.query(
       `SELECT COUNT(*) as count FROM room_reservation 
        WHERE room_type = ? 
+       AND checked_out = 0
        AND (
          (check_in <= ? AND check_out > ?) OR 
          (check_in < ? AND check_out >= ?) OR 
@@ -272,6 +298,35 @@ app.post('/api/admin/event', async (req, res) => {
     res.status(201).json({ ok: true });
   } catch (err) {
     console.error('event insert error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Checkout room reservation
+app.post('/api/admin/room-checkout', async (req, res) => {
+  const { reservation_id } = req.body || {};
+  if (!reservation_id) {
+    return res.status(400).json({ error: 'reservation_id is required' });
+  }
+  
+  try {
+    console.log('[POST] /api/admin/room-checkout', { reservation_id });
+    
+    // Update the reservation to mark as checked out
+    const [result] = await pool.query(
+      `UPDATE room_reservation 
+       SET checked_out = 1, checkout_time = NOW() 
+       WHERE id = ? AND checked_out = 0`,
+      [reservation_id]
+    );
+    
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Reservation not found or already checked out' });
+    }
+    
+    res.status(200).json({ ok: true, message: 'Checkout successful' });
+  } catch (err) {
+    console.error('room checkout error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });

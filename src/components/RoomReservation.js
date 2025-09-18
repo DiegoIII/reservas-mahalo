@@ -16,6 +16,7 @@ const RoomReservation = ({ user, apiUrl }) => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [roomAvailability, setRoomAvailability] = useState({});
   const [loadingAvailability, setLoadingAvailability] = useState(false);
+  const [availabilityInfo, setAvailabilityInfo] = useState(null);
 
   const roomTypes = [
     { id: 'room1', name: 'Habitación 1 - Con Vista (Principal)', price: 120, description: '4 personas (puede tener 2 personas más)', capacity: 6, hasView: true, roomNumber: 1 },
@@ -56,6 +57,23 @@ const RoomReservation = ({ user, apiUrl }) => {
     }
   }, [formData.roomType]);
 
+  // Check if all rooms are unavailable
+  const areAllRoomsUnavailable = () => {
+    // Only show message if we have availability data and all rooms are explicitly false
+    if (!roomAvailability || Object.keys(roomAvailability).length === 0) {
+      return false;
+    }
+    return Object.values(roomAvailability).every(available => available === false);
+  };
+
+  // Get next available date for a specific room
+  const getNextAvailableDate = (roomId) => {
+    if (availabilityInfo && availabilityInfo[roomId]) {
+      return availabilityInfo[roomId].nextAvailable;
+    }
+    return null;
+  };
+
   // Check room availability
   const checkRoomAvailability = async (checkIn, checkOut) => {
     if (!checkIn || !checkOut) return;
@@ -64,8 +82,16 @@ const RoomReservation = ({ user, apiUrl }) => {
     try {
       const response = await fetch(`${apiUrl}/api/admin/room-availability?check_in=${checkIn}&check_out=${checkOut}`);
       if (response.ok) {
-        const availability = await response.json();
-        setRoomAvailability(availability);
+        const data = await response.json();
+        // Handle both old and new API response formats
+        if (data.availability) {
+          setRoomAvailability(data.availability);
+          setAvailabilityInfo(data.info || null);
+        } else {
+          // Old format - direct availability object
+          setRoomAvailability(data);
+          setAvailabilityInfo(null);
+        }
       }
     } catch (error) {
       console.error('Error checking availability:', error);
@@ -226,10 +252,33 @@ const RoomReservation = ({ user, apiUrl }) => {
             {loadingAvailability && (
               <p className="loading-text">Verificando disponibilidad...</p>
             )}
+            
+            {areAllRoomsUnavailable() && !loadingAvailability && (
+              <div className="all-rooms-unavailable">
+                <div className="unavailable-icon">🏨</div>
+                <h5>Todas las habitaciones están ocupadas</h5>
+                <p>No hay habitaciones disponibles para las fechas seleccionadas.</p>
+                <div className="availability-info">
+                  <h6>Próximas fechas disponibles:</h6>
+                  <ul>
+                    {roomTypes.map(room => {
+                      const nextAvailable = getNextAvailableDate(room.id);
+                      return nextAvailable ? (
+                        <li key={room.id}>
+                          <strong>{room.name}:</strong> Disponible a partir del {nextAvailable}
+                        </li>
+                      ) : null;
+                    })}
+                  </ul>
+                </div>
+              </div>
+            )}
+            
             <div className="room-options">
               {roomTypes.map(room => {
                 const isAvailable = roomAvailability[room.id] !== false;
                 const isSelected = formData.roomType === room.id;
+                const nextAvailable = getNextAvailableDate(room.id);
                 return (
                   <div 
                     key={room.id} 
@@ -243,8 +292,15 @@ const RoomReservation = ({ user, apiUrl }) => {
                       <h5>{room.name}</h5>
                       <p>{room.description}</p>
                       <span className="room-price">${room.price}/noche</span>
-                      {!isAvailable && (
-                        <span className="unavailable-badge">No disponible</span>
+                      {!isAvailable ? (
+                        <div className="unavailable-info">
+                          <span className="unavailable-badge">No disponible</span>
+                          {nextAvailable && (
+                            <span className="next-available">Disponible: {nextAvailable}</span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="available-badge">Disponible</span>
                       )}
                     </div>
                   </div>

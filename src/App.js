@@ -151,7 +151,8 @@ function App() {
         <div className="location-info">
           <div className="location-details">
             <h3>📍 Mahalo Beach Club</h3>
-            <p>Ubicado en la costa de Guerrero, México</p>
+            <p>Playa Santa Lucía</p>
+            <p>Ubicado en la playa de Acapulco, Guerrero, México</p>
             <p>Disfruta de nuestras instalaciones con vista al mar</p>
           </div>
         </div>

@@ -43,10 +43,22 @@ const EventReservation = ({ user, apiUrl }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        [name]: value
+      };
+      
+      // Auto-set end time to 5 hours after start time
+      if (name === 'startTime' && value) {
+        const startTime = new Date(`2000-01-01T${value}`);
+        const endTime = new Date(startTime.getTime() + 5 * 60 * 60 * 1000); // Add 5 hours
+        const endTimeString = endTime.toTimeString().slice(0, 5);
+        newData.endTime = endTimeString;
+      }
+      
+      return newData;
+    });
   };
 
   // Autofill from user profile
@@ -231,6 +243,9 @@ const EventReservation = ({ user, apiUrl }) => {
           {calculateDuration() > 0 && (
             <p className="duration-info">Duración: {calculateDuration()} horas</p>
           )}
+          <p className="hours-note">
+            <strong>Nota:</strong> Los eventos incluyen 5 horas base. Horas adicionales se cobran por separado.
+          </p>
         </div>
 
         <div className="form-section">

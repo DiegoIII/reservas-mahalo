@@ -183,6 +183,89 @@
   font-weight: 500;
 }
 
+.all-rooms-unavailable {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 2px solid #f59e0b;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2);
+}
+
+.unavailable-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.all-rooms-unavailable h5 {
+  color: #92400e;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.all-rooms-unavailable p {
+  color: #92400e;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+}
+
+.availability-info {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: left;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.availability-info h6 {
+  color: #92400e;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.availability-info ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.availability-info li {
+  color: #92400e;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.unavailable-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.next-available {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.available-badge {
+  background: #dcfce7;
+  color: #166534;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+  display: inline-block;
+}
+
 .room-info h5 {
   color: #03258C;
   margin-bottom: 0.5rem;

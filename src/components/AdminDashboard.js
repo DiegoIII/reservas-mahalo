@@ -4,6 +4,7 @@ const AdminDashboard = ({ apiUrl }) => {
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [checkingOut, setCheckingOut] = useState(new Set());
 
   useEffect(() => {
     const fetchData = async () => {
@@ -19,6 +20,48 @@ const AdminDashboard = ({ apiUrl }) => {
     };
     fetchData();
   }, [apiUrl]);
+
+  // Format date to dd/mm/yy
+  const formatDate = (dateString) => {
+    if (!dateString) return '--';
+    const date = new Date(dateString);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear().toString().slice(-2);
+    return `${day}/${month}/${year}`;
+  };
+
+  // Handle room checkout
+  const handleCheckout = async (reservationId) => {
+    setCheckingOut(prev => new Set([...prev, reservationId]));
+    try {
+      const resp = await fetch(`${apiUrl}/api/admin/room-checkout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reservation_id: reservationId })
+      });
+      
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error || 'Error al hacer checkout');
+      }
+      
+      // Refresh data
+      const resp2 = await fetch(`${apiUrl}/api/admin/reservations`);
+      const data = await resp2.json();
+      setReservations(Array.isArray(data) ? data : []);
+      
+      alert('Checkout realizado exitosamente');
+    } catch (e) {
+      alert(e.message);
+    } finally {
+      setCheckingOut(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(reservationId);
+        return newSet;
+      });
+    }
+  };
 
   const { restaurantList, roomList, eventList, eventsByDate } = useMemo(() => {
     const sorted = [...reservations].sort((a, b) => {
@@ -88,6 +131,7 @@ const AdminDashboard = ({ apiUrl }) => {
                     <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>👥 Invitados</th>
                     <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>👤 Contacto</th>
                     <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>📧 Email</th>
+                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>📞 Teléfono</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -96,7 +140,7 @@ const AdminDashboard = ({ apiUrl }) => {
                       borderTop: index > 0 ? '1px solid #e5e7eb' : 'none',
                       background: index % 2 === 0 ? 'white' : '#f8fafc'
                     }}>
-                      <td style={{ padding: '1rem', fontWeight: '600', color: '#03258C' }}>{String(r.date).slice(0, 10)}</td>
+                      <td style={{ padding: '1rem', fontWeight: '600', color: '#03258C' }}>{formatDate(r.date)}</td>
                       <td style={{ padding: '1rem' }}>{r.start_time || '--'}</td>
                       <td style={{ padding: '1rem' }}>{r.location || '--'}</td>
                       <td style={{ padding: '1rem', textAlign: 'center' }}>
@@ -106,6 +150,7 @@ const AdminDashboard = ({ apiUrl }) => {
                       </td>
                       <td style={{ padding: '1rem', fontWeight: '500' }}>{r.name || '--'}</td>
                       <td style={{ padding: '1rem', color: '#64748b' }}>{r.email || '--'}</td>
+                      <td style={{ padding: '1rem', color: '#64748b' }}>{r.phone || '--'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -129,10 +174,14 @@ const AdminDashboard = ({ apiUrl }) => {
                 <thead>
                   <tr style={{ background: 'linear-gradient(135deg, #0785F2 0%, #0369a1 100%)', color: 'white', textAlign: 'left' }}>
                     <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>📅 Check-in</th>
+                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>📅 Check-out</th>
                     <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>🏠 Habitación</th>
                     <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>👥 Huéspedes</th>
                     <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>👤 Contacto</th>
                     <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>📧 Email</th>
+                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>📞 Teléfono</th>
+                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>✅ Estado</th>
+                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>🔧 Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -141,7 +190,8 @@ const AdminDashboard = ({ apiUrl }) => {
                       borderTop: index > 0 ? '1px solid #e5e7eb' : 'none',
                       background: index % 2 === 0 ? 'white' : '#f8fafc'
                     }}>
-                      <td style={{ padding: '1rem', fontWeight: '600', color: '#03258C' }}>{String(r.date).slice(0, 10)}</td>
+                      <td style={{ padding: '1rem', fontWeight: '600', color: '#03258C' }}>{formatDate(r.date)}</td>
+                      <td style={{ padding: '1rem', fontWeight: '600', color: '#03258C' }}>{formatDate(r.check_out)}</td>
                       <td style={{ padding: '1rem', fontWeight: '500' }}>{r.location || '--'}</td>
                       <td style={{ padding: '1rem', textAlign: 'center' }}>
                         <span style={{ background: '#e0f2fe', color: '#0369a1', borderRadius: '20px', padding: '0.25rem 0.75rem', fontSize: 12, fontWeight: 600 }}>
@@ -150,6 +200,40 @@ const AdminDashboard = ({ apiUrl }) => {
                       </td>
                       <td style={{ padding: '1rem', fontWeight: '500' }}>{r.name || '--'}</td>
                       <td style={{ padding: '1rem', color: '#64748b' }}>{r.email || '--'}</td>
+                      <td style={{ padding: '1rem', color: '#64748b' }}>{r.phone || '--'}</td>
+                      <td style={{ padding: '1rem', textAlign: 'center' }}>
+                        <span style={{ 
+                          background: r.checked_out ? '#dcfce7' : '#fef3c7', 
+                          color: r.checked_out ? '#166534' : '#92400e', 
+                          borderRadius: '20px', 
+                          padding: '0.25rem 0.75rem', 
+                          fontSize: 12, 
+                          fontWeight: 600 
+                        }}>
+                          {r.checked_out ? '✅ Checkout' : '🏨 Activo'}
+                        </span>
+                      </td>
+                      <td style={{ padding: '1rem', textAlign: 'center' }}>
+                        {!r.checked_out && (
+                          <button
+                            onClick={() => handleCheckout(r.id)}
+                            disabled={checkingOut.has(r.id)}
+                            style={{
+                              background: checkingOut.has(r.id) ? '#9ca3af' : 'linear-gradient(135deg, #0785F2 0%, #0369a1 100%)',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '8px',
+                              padding: '0.5rem 1rem',
+                              fontSize: '12px',
+                              fontWeight: '600',
+                              cursor: checkingOut.has(r.id) ? 'not-allowed' : 'pointer',
+                              transition: 'all 0.3s ease'
+                            }}
+                          >
+                            {checkingOut.has(r.id) ? '⏳ Procesando...' : '🚪 Checkout'}
+                          </button>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -186,7 +270,7 @@ const AdminDashboard = ({ apiUrl }) => {
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                     <div style={{ fontSize: '1.5rem' }}>📅</div>
-                    <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>{String(date).slice(0, 10)}</div>
+                    <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>{formatDate(date)}</div>
                   </div>
                   <div style={{ 
                     background: 'rgba(255,255,255,0.2)', 
@@ -208,6 +292,7 @@ const AdminDashboard = ({ apiUrl }) => {
                         <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>👥 Invitados</th>
                         <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>👤 Contacto</th>
                         <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>📧 Email</th>
+                        <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>📞 Teléfono</th>
                         <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>📝 Notas</th>
                       </tr>
                     </thead>
@@ -248,6 +333,7 @@ const AdminDashboard = ({ apiUrl }) => {
                           </td>
                           <td style={{ padding: '1rem', fontWeight: '500' }}>{ev.name || '--'}</td>
                           <td style={{ padding: '1rem', color: '#64748b' }}>{ev.email || '--'}</td>
+                          <td style={{ padding: '1rem', color: '#64748b' }}>{ev.phone || '--'}</td>
                           <td style={{ 
                             padding: '1rem', 
                             maxWidth: 280, 
