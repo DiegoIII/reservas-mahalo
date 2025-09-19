@@ -35,7 +35,7 @@ function App() {
     return () => window.removeEventListener('resize', applyResponsiveSidebar);
   }, []);
 
-  // Load user from localStorage
+  // Load user and navigation state from localStorage
   useEffect(() => {
     try {
       const saved = localStorage.getItem('mahalo_user');
@@ -45,6 +45,21 @@ function App() {
           parsed.is_admin = 1;
         }
         setUser(parsed);
+        
+        // Load saved navigation state (only for non-admin users)
+        const savedView = localStorage.getItem('mahalo_current_view');
+        if (savedView && ['home', 'rooms', 'restaurant', 'events'].includes(savedView)) {
+          // Only restore view if user is not admin
+          if (!parsed.is_admin) {
+            setCurrentView(savedView);
+          }
+        }
+      } else {
+        // No user saved, load navigation state anyway
+        const savedView = localStorage.getItem('mahalo_current_view');
+        if (savedView && ['home', 'rooms', 'restaurant', 'events'].includes(savedView)) {
+          setCurrentView(savedView);
+        }
       }
     } catch (_) {
       // ignore
@@ -121,7 +136,7 @@ function App() {
         setShowAuthModal(false);
         // ensure admin view is immediately visible
         if (saved?.is_admin) {
-          setCurrentView('home');
+          handleViewChange('home');
         }
       } catch (error) {
         alert(`No se pudo iniciar sesión: ${error.message}`);
@@ -133,6 +148,17 @@ function App() {
     setUser(null);
     try {
       localStorage.removeItem('mahalo_user');
+      localStorage.removeItem('mahalo_current_view');
+    } catch (_) {
+      // ignore
+    }
+  };
+
+  // Function to handle view changes and persist to localStorage
+  const handleViewChange = (newView) => {
+    setCurrentView(newView);
+    try {
+      localStorage.setItem('mahalo_current_view', newView);
     } catch (_) {
       // ignore
     }
@@ -201,7 +227,7 @@ function App() {
       <div className="sidebar-content">
         <h3>Reservas</h3>
         <div className="sidebar-options">
-          <div className="sidebar-option" onClick={() => setCurrentView('rooms')}>
+          <div className="sidebar-option" onClick={() => handleViewChange('rooms')}>
             <div className="sidebar-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M4 12V7a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v5M4 12h16M4 12v5M20 12v5M20 12V9a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -213,7 +239,7 @@ function App() {
             </div>
           </div>
 
-          <div className="sidebar-option" onClick={() => setCurrentView('restaurant')}>
+          <div className="sidebar-option" onClick={() => handleViewChange('restaurant')}>
             <div className="sidebar-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 6a6 6 0 0 0-6 6h12a6 6 0 0 0-6-6z" fill="currentColor"/>
@@ -226,7 +252,7 @@ function App() {
             </div>
           </div>
 
-          <div className="sidebar-option" onClick={() => setCurrentView('events')}>
+          <div className="sidebar-option" onClick={() => handleViewChange('events')}>
             <div className="sidebar-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect x="3" y="4" width="18" height="16" rx="2" ry="2" stroke="currentColor" stroke-width="2"/>
@@ -245,7 +271,7 @@ function App() {
 
   const renderBackButton = () => (
     <div className="back-navigation">
-      <button className="back-button" onClick={() => setCurrentView('home')}>
+      <button className="back-button" onClick={() => handleViewChange('home')}>
         ← Volver al Inicio
       </button>
     </div>
@@ -259,7 +285,7 @@ function App() {
             src={mahaloLogo} 
             alt="Mahalo Logo" 
             className="logo clickable-logo" 
-            onClick={() => setCurrentView('home')}
+            onClick={() => handleViewChange('home')}
             style={{ cursor: 'pointer' }}
             title="Ir al inicio"
           />

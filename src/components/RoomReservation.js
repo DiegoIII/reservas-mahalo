@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import './RoomReservation.css';
 
 const RoomReservation = ({ user, apiUrl }) => {
@@ -55,7 +55,7 @@ const RoomReservation = ({ user, apiUrl }) => {
     if (Number(formData.guests) > maxGuests) {
       setFormData(prev => ({ ...prev, guests: maxGuests }));
     }
-  }, [formData.roomType]);
+  }, [formData.roomType, formData.guests, getMaxGuests]);
 
   // Check if all rooms are unavailable
   const areAllRoomsUnavailable = () => {
@@ -75,7 +75,7 @@ const RoomReservation = ({ user, apiUrl }) => {
   };
 
   // Check room availability
-  const checkRoomAvailability = async (checkIn, checkOut) => {
+  const checkRoomAvailability = useCallback(async (checkIn, checkOut) => {
     if (!checkIn || !checkOut) return;
     
     setLoadingAvailability(true);
@@ -98,7 +98,7 @@ const RoomReservation = ({ user, apiUrl }) => {
     } finally {
       setLoadingAvailability(false);
     }
-  };
+  }, [apiUrl]);
 
   // Autofill from user profile
   useEffect(() => {
@@ -117,7 +117,7 @@ const RoomReservation = ({ user, apiUrl }) => {
     if (formData.checkIn && formData.checkOut) {
       checkRoomAvailability(formData.checkIn, formData.checkOut);
     }
-  }, [formData.checkIn, formData.checkOut]);
+  }, [formData.checkIn, formData.checkOut, checkRoomAvailability]);
 
   const calculateNights = () => {
     if (formData.checkIn && formData.checkOut) {
@@ -276,15 +276,21 @@ const RoomReservation = ({ user, apiUrl }) => {
             
             <div className="room-options">
               {roomTypes.map(room => {
-                const isAvailable = roomAvailability[room.id] !== false;
+                // Check if availability has been checked for this room
+                const availabilityChecked = roomAvailability.hasOwnProperty(room.id);
+                const isAvailable = availabilityChecked ? roomAvailability[room.id] : null;
                 const isSelected = formData.roomType === room.id;
                 const nextAvailable = getNextAvailableDate(room.id);
+                
+                // Determine if room can be selected
+                const canSelect = availabilityChecked ? isAvailable : false;
+                
                 return (
                   <div 
                     key={room.id} 
-                    className={`room-option ${isSelected ? 'selected' : ''} ${!isAvailable ? 'unavailable' : ''}`}
+                    className={`room-option ${isSelected ? 'selected' : ''} ${!canSelect ? 'unavailable' : ''}`}
                     onClick={() => {
-                      if (!isAvailable) return;
+                      if (!canSelect) return;
                       setFormData(prev => ({ ...prev, roomType: room.id }));
                     }}
                   >
@@ -292,7 +298,9 @@ const RoomReservation = ({ user, apiUrl }) => {
                       <h5>{room.name}</h5>
                       <p>{room.description}</p>
                       <span className="room-price">${room.price}/noche</span>
-                      {!isAvailable ? (
+                      {!availabilityChecked ? (
+                        <span className="pending-badge">Selecciona fechas para verificar</span>
+                      ) : !isAvailable ? (
                         <div className="unavailable-info">
                           <span className="unavailable-badge">No disponible</span>
                           {nextAvailable && (

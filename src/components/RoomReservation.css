@@ -266,6 +266,17 @@
   display: inline-block;
 }
 
+.pending-badge {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+  display: inline-block;
+}
+
 .room-info h5 {
   color: #03258C;
   margin-bottom: 0.5rem;

@@ -96,27 +96,52 @@ const AdminDashboard = ({ apiUrl }) => {
       {/* Summary Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
         <div style={{ background: 'linear-gradient(135deg, #F25C05 0%, #F27E93 100%)', color: 'white', padding: '1.5rem', borderRadius: '12px', textAlign: 'center', boxShadow: '0 4px 15px rgba(242, 92, 5, 0.3)' }}>
-          <div style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>🍽️</div>
+          <div style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
+              <path d="M12 6a6 6 0 0 0-6 6h12a6 6 0 0 0-6-6z"/>
+              <rect x="4" y="14" width="16" height="3" rx="1" fill="currentColor"/>
+            </svg>
+          </div>
           <div style={{ fontSize: '1.2rem', fontWeight: '600' }}>{restaurantList.length}</div>
           <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>Daypass</div>
         </div>
         <div style={{ background: 'linear-gradient(135deg, #0785F2 0%, #0369a1 100%)', color: 'white', padding: '1.5rem', borderRadius: '12px', textAlign: 'center', boxShadow: '0 4px 15px rgba(7, 133, 242, 0.3)' }}>
-          <div style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>🏨</div>
+          <div style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
+              <path d="M4 12V7a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v5M4 12h16M4 12v5M20 12v5M20 12V9a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+            </svg>
+          </div>
           <div style={{ fontSize: '1.2rem', fontWeight: '600' }}>{roomList.length}</div>
           <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>Cuartos</div>
         </div>
         <div style={{ background: 'linear-gradient(135deg, #8C8303 0%, #6B5B00 100%)', color: 'white', padding: '1.5rem', borderRadius: '12px', textAlign: 'center', boxShadow: '0 4px 15px rgba(140, 131, 3, 0.3)' }}>
-          <div style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>🎉</div>
+          <div style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
+              <rect x="3" y="4" width="18" height="16" rx="2" ry="2" stroke="currentColor" strokeWidth="2" fill="none"/>
+              <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          </div>
           <div style={{ fontSize: '1.2rem', fontWeight: '600' }}>{eventList.length}</div>
           <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>Eventos</div>
         </div>
       </div>
 
       <div className="form-section" style={{ marginBottom: '1.5rem' }}>
-        <h3>🍽️ Daypass (Restaurante)</h3>
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M12 6a6 6 0 0 0-6 6h12a6 6 0 0 0-6-6z"/>
+            <rect x="4" y="14" width="16" height="3" rx="1" fill="currentColor"/>
+          </svg>
+          Daypass (Restaurante)
+        </h3>
         {restaurantList.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b', background: 'rgba(255,255,255,0.5)', borderRadius: '12px', border: '2px dashed #e5e7eb' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🍽️</div>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor">
+                <path d="M12 6a6 6 0 0 0-6 6h12a6 6 0 0 0-6-6z"/>
+                <rect x="4" y="14" width="16" height="3" rx="1" fill="currentColor"/>
+              </svg>
+            </div>
             <p style={{ fontSize: '1.1rem', margin: 0 }}>No hay reservas de daypass</p>
           </div>
         ) : (
@@ -125,13 +150,69 @@ const AdminDashboard = ({ apiUrl }) => {
               <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
                 <thead>
                   <tr style={{ background: 'linear-gradient(135deg, #F25C05 0%, #F27E93 100%)', color: 'white', textAlign: 'left' }}>
-                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>📅 Fecha</th>
-                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>🕐 Hora</th>
-                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>📍 Área</th>
-                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>👥 Invitados</th>
-                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>👤 Contacto</th>
-                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>📧 Email</th>
-                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>📞 Teléfono</th>
+                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                          <rect x="3" y="4" width="18" height="16" rx="2" ry="2" stroke="currentColor" strokeWidth="2" fill="none"/>
+                          <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                        </svg>
+                        Fecha
+                      </div>
+                    </th>
+                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none"/>
+                          <path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                        </svg>
+                        Hora
+                      </div>
+                    </th>
+                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="currentColor" strokeWidth="2" fill="none"/>
+                          <circle cx="12" cy="10" r="3" stroke="currentColor" strokeWidth="2" fill="none"/>
+                        </svg>
+                        Área
+                      </div>
+                    </th>
+                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" fill="none"/>
+                          <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2" fill="none"/>
+                          <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="2" fill="none"/>
+                        </svg>
+                        Invitados
+                      </div>
+                    </th>
+                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" fill="none"/>
+                          <circle cx="12" cy="7" r="4" stroke="currentColor" strokeWidth="2" fill="none"/>
+                        </svg>
+                        Contacto
+                      </div>
+                    </th>
+                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" strokeWidth="2" fill="none"/>
+                          <polyline points="22,6 12,13 2,6" stroke="currentColor" strokeWidth="2" fill="none"/>
+                        </svg>
+                        Email
+                      </div>
+                    </th>
+                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" stroke="currentColor" strokeWidth="2" fill="none"/>
+                        </svg>
+                        Teléfono
+                      </div>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -161,10 +242,19 @@ const AdminDashboard = ({ apiUrl }) => {
       </div>
 
       <div className="form-section" style={{ marginBottom: '1.5rem' }}>
-        <h3>🏨 Cuartos</h3>
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M4 12V7a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v5M4 12h16M4 12v5M20 12v5M20 12V9a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+          </svg>
+          Cuartos
+        </h3>
         {roomList.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b', background: 'rgba(255,255,255,0.5)', borderRadius: '12px', border: '2px dashed #e5e7eb' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🏨</div>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor">
+                <path d="M4 12V7a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v5M4 12h16M4 12v5M20 12v5M20 12V9a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+              </svg>
+            </div>
             <p style={{ fontSize: '1.1rem', margin: 0 }}>No hay reservas de cuartos</p>
           </div>
         ) : (
@@ -173,15 +263,87 @@ const AdminDashboard = ({ apiUrl }) => {
               <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
                 <thead>
                   <tr style={{ background: 'linear-gradient(135deg, #0785F2 0%, #0369a1 100%)', color: 'white', textAlign: 'left' }}>
-                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>📅 Check-in</th>
-                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>📅 Check-out</th>
-                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>🏠 Habitación</th>
-                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>👥 Huéspedes</th>
-                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>👤 Contacto</th>
-                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>📧 Email</th>
-                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>📞 Teléfono</th>
-                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>✅ Estado</th>
-                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>🔧 Acciones</th>
+                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                          <rect x="3" y="4" width="18" height="16" rx="2" ry="2" stroke="currentColor" strokeWidth="2" fill="none"/>
+                          <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                        </svg>
+                        Check-in
+                      </div>
+                    </th>
+                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                          <rect x="3" y="4" width="18" height="16" rx="2" ry="2" stroke="currentColor" strokeWidth="2" fill="none"/>
+                          <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                        </svg>
+                        Check-out
+                      </div>
+                    </th>
+                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" strokeWidth="2" fill="none"/>
+                          <polyline points="9,22 9,12 15,12 15,22" stroke="currentColor" strokeWidth="2" fill="none"/>
+                        </svg>
+                        Habitación
+                      </div>
+                    </th>
+                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" fill="none"/>
+                          <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2" fill="none"/>
+                          <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="2" fill="none"/>
+                        </svg>
+                        Huéspedes
+                      </div>
+                    </th>
+                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" fill="none"/>
+                          <circle cx="12" cy="7" r="4" stroke="currentColor" strokeWidth="2" fill="none"/>
+                        </svg>
+                        Contacto
+                      </div>
+                    </th>
+                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" strokeWidth="2" fill="none"/>
+                          <polyline points="22,6 12,13 2,6" stroke="currentColor" strokeWidth="2" fill="none"/>
+                        </svg>
+                        Email
+                      </div>
+                    </th>
+                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" stroke="currentColor" strokeWidth="2" fill="none"/>
+                        </svg>
+                        Teléfono
+                      </div>
+                    </th>
+                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                          <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" fill="none"/>
+                          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none"/>
+                        </svg>
+                        Estado
+                      </div>
+                    </th>
+                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                          <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" fill="none"/>
+                          <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1" stroke="currentColor" strokeWidth="2" fill="none"/>
+                        </svg>
+                        Acciones
+                      </div>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -210,7 +372,22 @@ const AdminDashboard = ({ apiUrl }) => {
                           fontSize: 12, 
                           fontWeight: 600 
                         }}>
-                          {r.checked_out ? '✅ Checkout' : '🏨 Activo'}
+                          {r.checked_out ? (
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                              <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+                                <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" fill="none"/>
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none"/>
+                              </svg>
+                              Checkout
+                            </span>
+                          ) : (
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                              <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+                                <path d="M4 12V7a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v5M4 12h16M4 12v5M20 12v5M20 12V9a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                              </svg>
+                              Activo
+                            </span>
+                          )}
                         </span>
                       </td>
                       <td style={{ padding: '1rem', textAlign: 'center' }}>
@@ -230,7 +407,24 @@ const AdminDashboard = ({ apiUrl }) => {
                               transition: 'all 0.3s ease'
                             }}
                           >
-                            {checkingOut.has(r.id) ? '⏳ Procesando...' : '🚪 Checkout'}
+                            {checkingOut.has(r.id) ? (
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+                                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none"/>
+                                  <path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                                </svg>
+                                Procesando...
+                              </span>
+                            ) : (
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+                                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="currentColor" strokeWidth="2" fill="none"/>
+                                  <polyline points="16,17 21,12 16,7" stroke="currentColor" strokeWidth="2" fill="none"/>
+                                  <line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" strokeWidth="2" fill="none"/>
+                                </svg>
+                                Checkout
+                              </span>
+                            )}
                           </button>
                         )}
                       </td>
@@ -244,10 +438,21 @@ const AdminDashboard = ({ apiUrl }) => {
       </div>
 
       <div className="form-section">
-        <h3>🎉 Eventos Próximos</h3>
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <rect x="3" y="4" width="18" height="16" rx="2" ry="2" stroke="currentColor" strokeWidth="2" fill="none"/>
+            <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+          Eventos Próximos
+        </h3>
         {eventList.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b', background: 'rgba(255,255,255,0.5)', borderRadius: '12px', border: '2px dashed #e5e7eb' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎉</div>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor">
+                <rect x="3" y="4" width="18" height="16" rx="2" ry="2" stroke="currentColor" strokeWidth="2" fill="none"/>
+                <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </div>
             <p style={{ fontSize: '1.1rem', margin: 0 }}>No hay eventos próximos</p>
           </div>
         ) : (
@@ -269,7 +474,12 @@ const AdminDashboard = ({ apiUrl }) => {
                   justifyContent: 'space-between'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <div style={{ fontSize: '1.5rem' }}>📅</div>
+                    <div style={{ fontSize: '1.5rem', display: 'flex', alignItems: 'center' }}>
+                      <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                        <rect x="3" y="4" width="18" height="16" rx="2" ry="2" stroke="currentColor" strokeWidth="2" fill="none"/>
+                        <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                      </svg>
+                    </div>
                     <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>{formatDate(date)}</div>
                   </div>
                   <div style={{ 
@@ -286,14 +496,81 @@ const AdminDashboard = ({ apiUrl }) => {
                   <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
                     <thead>
                       <tr style={{ background: '#f8fafc', color: '#334155', textAlign: 'left' }}>
-                        <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>🕐 Hora</th>
-                        <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>🏷️ Tipo</th>
-                        <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>📍 Lugar</th>
-                        <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>👥 Invitados</th>
-                        <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>👤 Contacto</th>
-                        <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>📧 Email</th>
-                        <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>📞 Teléfono</th>
-                        <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>📝 Notas</th>
+                        <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none"/>
+                              <path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                            </svg>
+                            Hora
+                          </div>
+                        </th>
+                        <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" stroke="currentColor" strokeWidth="2" fill="none"/>
+                              <line x1="7" y1="7" x2="7.01" y2="7" stroke="currentColor" strokeWidth="2" fill="none"/>
+                            </svg>
+                            Tipo
+                          </div>
+                        </th>
+                        <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="currentColor" strokeWidth="2" fill="none"/>
+                              <circle cx="12" cy="10" r="3" stroke="currentColor" strokeWidth="2" fill="none"/>
+                            </svg>
+                            Lugar
+                          </div>
+                        </th>
+                        <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" fill="none"/>
+                              <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2" fill="none"/>
+                              <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="2" fill="none"/>
+                            </svg>
+                            Invitados
+                          </div>
+                        </th>
+                        <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" fill="none"/>
+                              <circle cx="12" cy="7" r="4" stroke="currentColor" strokeWidth="2" fill="none"/>
+                            </svg>
+                            Contacto
+                          </div>
+                        </th>
+                        <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" strokeWidth="2" fill="none"/>
+                              <polyline points="22,6 12,13 2,6" stroke="currentColor" strokeWidth="2" fill="none"/>
+                            </svg>
+                            Email
+                          </div>
+                        </th>
+                        <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" stroke="currentColor" strokeWidth="2" fill="none"/>
+                            </svg>
+                            Teléfono
+                          </div>
+                        </th>
+                        <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" strokeWidth="2" fill="none"/>
+                              <polyline points="14,2 14,8 20,8" stroke="currentColor" strokeWidth="2" fill="none"/>
+                              <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" strokeWidth="2" fill="none"/>
+                              <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" strokeWidth="2" fill="none"/>
+                              <polyline points="10,9 9,9 8,9" stroke="currentColor" strokeWidth="2" fill="none"/>
+                            </svg>
+                            Notas
+                          </div>
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
