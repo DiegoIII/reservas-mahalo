@@ -4,6 +4,8 @@ import RoomReservation from './components/RoomReservation';
 import RestaurantReservation from './components/RestaurantReservation';
 import EventReservation from './components/EventReservation';
 import AdminDashboard from './components/AdminDashboard';
+import CustomAlert from './components/CustomAlert';
+import useAlert from './hooks/useAlert';
 import mahaloLogo from './images/mahalo-logo.jpng.png';
 import restaurantImg from './images/restaurant.jpg';
 import albercaImg from './images/alberca.jpg';
@@ -15,6 +17,7 @@ function App() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [user, setUser] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [authMode, setAuthMode] = useState('login'); // 'login' | 'signup'
   const [authForm, setAuthForm] = useState({
     name: '',
@@ -22,6 +25,7 @@ function App() {
     phone: '',
     password: ''
   });
+  const { alertState, hideAlert, showError, showSuccess } = useAlert();
 
   // Ensure sidebar is open on mobile and adjust on resize
   useEffect(() => {
@@ -34,6 +38,21 @@ function App() {
     window.addEventListener('resize', applyResponsiveSidebar);
     return () => window.removeEventListener('resize', applyResponsiveSidebar);
   }, []);
+
+  // Add warning when user tries to close/refresh the page
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      // Only show warning if user is logged in
+      if (user) {
+        e.preventDefault();
+        e.returnValue = '¿Estás seguro de que quieres cerrar la sesión? Los cambios no guardados se perderán.';
+        return e.returnValue;
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [user]);
 
   // Load user and navigation state from localStorage
   useEffect(() => {
@@ -85,7 +104,7 @@ function App() {
     e.preventDefault();
     if (authMode === 'signup') {
       if (!authForm.name || !authForm.email || !authForm.password) {
-        alert('Nombre, email y contraseña son obligatorios');
+        showError('Nombre, email y contraseña son obligatorios', 'Campos requeridos');
         return;
       }
       const payload = {
@@ -109,12 +128,12 @@ function App() {
         try { localStorage.setItem('mahalo_user', JSON.stringify(saved)); } catch (_) {}
         setShowAuthModal(false);
       } catch (error) {
-        alert(`No se pudo crear la cuenta: ${error.message}`);
+        showError(`No se pudo crear la cuenta: ${error.message}`, 'Error al crear cuenta');
       }
     } else {
       // login
       if (!authForm.email || !authForm.password) {
-        alert('Email y contraseña son obligatorios');
+        showError('Email y contraseña son obligatorios', 'Campos requeridos');
         return;
       }
       try {
@@ -139,12 +158,16 @@ function App() {
           handleViewChange('home');
         }
       } catch (error) {
-        alert(`No se pudo iniciar sesión: ${error.message}`);
+        showError(`No se pudo iniciar sesión: ${error.message}`, 'Error al iniciar sesión');
       }
     }
   };
 
-  const logout = () => {
+  const handleLogoutClick = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = () => {
     setUser(null);
     try {
       localStorage.removeItem('mahalo_user');
@@ -152,6 +175,11 @@ function App() {
     } catch (_) {
       // ignore
     }
+    setShowLogoutConfirm(false);
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutConfirm(false);
   };
 
   // Function to handle view changes and persist to localStorage
@@ -277,6 +305,18 @@ function App() {
     </div>
   );
 
+  // Function to get greeting based on time of day
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) {
+      return 'Buenos días';
+    } else if (hour >= 12 && hour < 18) {
+      return 'Buenas tardes';
+    } else {
+      return 'Buenas noches';
+    }
+  };
+
   return (
     <div className="App">
       <header className="app-header">
@@ -297,9 +337,9 @@ function App() {
           <div className="auth-buttons">
             {user ? (
               <>
-                <span style={{ color: '#F2CEAE', fontWeight: 600 }}>Hola, {user.name || user.email}</span>
+                <span style={{ color: '#F2CEAE', fontWeight: 600 }}>{getGreeting()}, {user.name || user.email}</span>
                 <button
-                  onClick={logout}
+                  onClick={handleLogoutClick}
                   className="auth-button logout"
                   title="Cerrar sesión"
                   style={{ padding: '0.5rem 0.75rem', borderRadius: 8, border: '2px solid #F2CEAE', background: 'transparent', color: '#F2CEAE', cursor: 'pointer' }}
@@ -424,6 +464,42 @@ function App() {
           </div>
         </div>
       )}
+
+      {showLogoutConfirm && (
+        <div className="confirmation-modal" onClick={cancelLogout}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div style={{ textAlign: 'center', padding: '1rem' }}>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor" style={{ color: '#F25C05' }}>
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="currentColor" strokeWidth="2" fill="none"/>
+                  <line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" strokeWidth="2"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17" stroke="currentColor" strokeWidth="2"/>
+                </svg>
+              </div>
+              <h3 style={{ marginBottom: '1rem', color: '#03258C' }}>¿Cerrar sesión?</h3>
+              <p style={{ marginBottom: '2rem', color: '#64748b', fontSize: '1rem' }}>
+                ¿Estás seguro de que quieres cerrar tu sesión? Tendrás que iniciar sesión nuevamente para acceder a tus reservas.
+              </p>
+              <div className="modal-buttons">
+                <button onClick={cancelLogout} className="cancel-button">Cancelar</button>
+                <button onClick={confirmLogout} className="confirm-button" style={{ background: '#F25C05' }}>
+                  Sí, cerrar sesión
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <CustomAlert
+        isOpen={alertState.isOpen}
+        onClose={hideAlert}
+        title={alertState.title}
+        message={alertState.message}
+        type={alertState.type}
+        autoClose={alertState.autoClose}
+        autoCloseDelay={alertState.autoCloseDelay}
+      />
     </div>
   );
 }

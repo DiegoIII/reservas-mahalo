@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import './RoomReservation.css';
+import CustomAlert from './CustomAlert';
+import useAlert from '../hooks/useAlert';
 
 const RoomReservation = ({ user, apiUrl }) => {
   const [formData, setFormData] = useState({
@@ -17,6 +19,7 @@ const RoomReservation = ({ user, apiUrl }) => {
   const [roomAvailability, setRoomAvailability] = useState({});
   const [loadingAvailability, setLoadingAvailability] = useState(false);
   const [availabilityInfo, setAvailabilityInfo] = useState(null);
+  const { alertState, hideAlert, showError, showSuccess } = useAlert();
 
   const roomTypes = [
     { id: 'room1', name: 'Habitación 1 - Con Vista (Principal)', price: 120, description: '4 personas (puede tener 2 personas más)', capacity: 6, hasView: true, roomNumber: 1 },
@@ -141,8 +144,18 @@ const RoomReservation = ({ user, apiUrl }) => {
     e.preventDefault();
     if (formData.checkIn && formData.checkOut && formData.roomType && formData.name && formData.email) {
       setShowConfirmation(true);
+      // Scroll to confirmation modal after a brief delay to ensure it's rendered
+      setTimeout(() => {
+        const confirmationModal = document.getElementById('room-confirmation-modal');
+        if (confirmationModal) {
+          confirmationModal.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+          });
+        }
+      }, 100);
     } else {
-      alert('Por favor completa todos los campos obligatorios');
+      showError('Por favor completa todos los campos obligatorios', 'Campos requeridos');
     }
   };
 
@@ -167,7 +180,7 @@ const RoomReservation = ({ user, apiUrl }) => {
         const err = await resp.json().catch(() => ({}));
         throw new Error(err.error || 'No se pudo guardar la reserva');
       }
-      alert('¡Reserva confirmada! Te enviaremos un email de confirmación.');
+      showSuccess('¡Reserva confirmada! Te enviaremos un email de confirmación.', 'Reserva exitosa');
       setShowConfirmation(false);
       setFormData({
         checkIn: '',
@@ -180,7 +193,7 @@ const RoomReservation = ({ user, apiUrl }) => {
         specialRequests: ''
       });
     } catch (e) {
-      alert(e.message);
+      showError(e.message, 'Error al confirmar reserva');
     }
   };
 
@@ -385,7 +398,7 @@ const RoomReservation = ({ user, apiUrl }) => {
       </form>
 
       {showConfirmation && (
-        <div className="confirmation-modal">
+        <div id="room-confirmation-modal" className="confirmation-modal">
           <div className="modal-content">
             <h3>Confirmar Reserva</h3>
             <div className="confirmation-details">
@@ -407,6 +420,16 @@ const RoomReservation = ({ user, apiUrl }) => {
           </div>
         </div>
       )}
+
+      <CustomAlert
+        isOpen={alertState.isOpen}
+        onClose={hideAlert}
+        title={alertState.title}
+        message={alertState.message}
+        type={alertState.type}
+        autoClose={alertState.autoClose}
+        autoCloseDelay={alertState.autoCloseDelay}
+      />
     </div>
   );
 };

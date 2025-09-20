@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './EventReservation.css';
+import CustomAlert from './CustomAlert';
+import useAlert from '../hooks/useAlert';
 
 const EventReservation = ({ user, apiUrl }) => {
   const [formData, setFormData] = useState({
@@ -17,6 +19,7 @@ const EventReservation = ({ user, apiUrl }) => {
   });
 
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const { alertState, hideAlert, showError, showSuccess } = useAlert();
 
   const eventTypes = [
     { id: 'conference', name: 'Conferencia', minGuests: 20, maxGuests: 200, description: 'Salas equipadas para presentaciones y conferencias' },
@@ -77,8 +80,18 @@ const EventReservation = ({ user, apiUrl }) => {
     e.preventDefault();
     if (formData.eventType && formData.date && formData.startTime && formData.endTime && formData.venue && formData.name && formData.email) {
       setShowConfirmation(true);
+      // Scroll to confirmation modal after a brief delay to ensure it's rendered
+      setTimeout(() => {
+        const confirmationModal = document.getElementById('event-confirmation-modal');
+        if (confirmationModal) {
+          confirmationModal.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+          });
+        }
+      }, 100);
     } else {
-      alert('Por favor completa todos los campos obligatorios');
+      showError('Por favor completa todos los campos obligatorios', 'Campos requeridos');
     }
   };
 
@@ -106,7 +119,7 @@ const EventReservation = ({ user, apiUrl }) => {
         const err = await resp.json().catch(() => ({}));
         throw new Error(err.error || 'No se pudo guardar el evento');
       }
-      alert('¡Reserva de evento confirmada! Te contactaremos pronto para coordinar los detalles.');
+      showSuccess('¡Reserva de evento confirmada! Te contactaremos pronto para coordinar los detalles.', 'Reserva exitosa');
       setShowConfirmation(false);
       setFormData({
         eventType: '',
@@ -122,7 +135,7 @@ const EventReservation = ({ user, apiUrl }) => {
         specialRequests: ''
       });
     } catch (e) {
-      alert(e.message);
+      showError(e.message, 'Error al confirmar reserva');
     }
   };
 
@@ -351,7 +364,7 @@ const EventReservation = ({ user, apiUrl }) => {
       </form>
 
       {showConfirmation && (
-        <div className="confirmation-modal">
+        <div id="event-confirmation-modal" className="confirmation-modal">
           <div className="modal-content">
             <h3>Confirmar Reserva de Evento</h3>
             <div className="confirmation-details">
@@ -379,6 +392,16 @@ const EventReservation = ({ user, apiUrl }) => {
           </div>
         </div>
       )}
+
+      <CustomAlert
+        isOpen={alertState.isOpen}
+        onClose={hideAlert}
+        title={alertState.title}
+        message={alertState.message}
+        type={alertState.type}
+        autoClose={alertState.autoClose}
+        autoCloseDelay={alertState.autoCloseDelay}
+      />
     </div>
   );
 };

@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './RestaurantReservation.css';
+import CustomAlert from './CustomAlert';
+import useAlert from '../hooks/useAlert';
 
 const RestaurantReservation = ({ user, apiUrl }) => {
   const [formData, setFormData] = useState({
@@ -15,6 +17,7 @@ const RestaurantReservation = ({ user, apiUrl }) => {
   });
 
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const { alertState, hideAlert, showError, showSuccess } = useAlert();
 
   const reservationAreas = [
     { id: 'salon-eventos', name: 'Salon de eventos', description: 'Espacio amplio para celebraciones y ceremonias' },
@@ -46,6 +49,22 @@ const RestaurantReservation = ({ user, apiUrl }) => {
     }
   }, [user]);
 
+  // Handle party size changes - validate table selection
+  useEffect(() => {
+    if (formData.tableType && formData.partySize) {
+      const availableTables = getAvailableTables();
+      const isCurrentTableAvailable = availableTables.some(table => table.id === formData.tableType);
+      
+      if (!isCurrentTableAvailable) {
+        // Clear table selection if current table is no longer available
+        setFormData(prev => ({
+          ...prev,
+          tableType: ''
+        }));
+      }
+    }
+  }, [formData.partySize]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -58,8 +77,18 @@ const RestaurantReservation = ({ user, apiUrl }) => {
     e.preventDefault();
     if (formData.date && formData.time && formData.tableType && formData.locationArea && formData.name && formData.email) {
       setShowConfirmation(true);
+      // Scroll to confirmation modal after a brief delay to ensure it's rendered
+      setTimeout(() => {
+        const confirmationModal = document.getElementById('restaurant-confirmation-modal');
+        if (confirmationModal) {
+          confirmationModal.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+          });
+        }
+      }, 100);
     } else {
-      alert('Por favor completa todos los campos obligatorios');
+      showError('Por favor completa todos los campos obligatorios', 'Campos requeridos');
     }
   };
 
@@ -85,7 +114,7 @@ const RestaurantReservation = ({ user, apiUrl }) => {
         const err = await resp.json().catch(() => ({}));
         throw new Error(err.error || 'No se pudo guardar la reserva');
       }
-      alert('¡Reserva confirmada! Te enviaremos un email de confirmación.');
+      showSuccess('¡Reserva confirmada! Te enviaremos un email de confirmación.', 'Reserva exitosa');
       setShowConfirmation(false);
       setFormData({
         date: '',
@@ -99,14 +128,23 @@ const RestaurantReservation = ({ user, apiUrl }) => {
         specialRequests: ''
       });
     } catch (e) {
-      alert(e.message);
+      showError(e.message, 'Error al confirmar reserva');
     }
   };
 
   const getAvailableTables = () => {
     return tableTypes.filter(table => {
-      const capacity = parseInt(table.capacity.split('-')[1]);
-      return capacity >= formData.partySize;
+      try {
+        const capacityRange = table.capacity.split('-');
+        if (capacityRange.length >= 2) {
+          const maxCapacity = parseInt(capacityRange[1]);
+          return maxCapacity >= formData.partySize;
+        }
+        return true; // Si no hay rango válido, mostrar la mesa
+      } catch (error) {
+        console.warn('Error parsing table capacity:', table.capacity);
+        return true; // En caso de error, mostrar la mesa
+      }
     });
   };
 
@@ -192,21 +230,37 @@ const RestaurantReservation = ({ user, apiUrl }) => {
           <h3>Tipo de Mesa</h3>
           <div className="table-selection">
             <h4>Selecciona tu Mesa</h4>
-            <div className="table-options">
-              {getAvailableTables().map(table => (
-                <div 
-                  key={table.id} 
-                  className={`table-option ${formData.tableType === table.id ? 'selected' : ''}`}
-                  onClick={() => setFormData(prev => ({ ...prev, tableType: table.id }))}
-                >
-                  <div className="table-info">
-                    <h5>{table.name}</h5>
-                    <p>{table.description}</p>
-                    <span className="table-capacity">{table.capacity}</span>
+            {getAvailableTables().length === 0 ? (
+              <div style={{ 
+                textAlign: 'center', 
+                padding: '2rem', 
+                color: '#64748b', 
+                background: 'rgba(255,255,255,0.5)', 
+                borderRadius: '12px', 
+                border: '2px dashed #e5e7eb' 
+              }}>
+                <p style={{ fontSize: '1.1rem', margin: 0 }}>
+                  No hay mesas disponibles para {formData.partySize} {formData.partySize === 1 ? 'persona' : 'personas'}. 
+                  Por favor, selecciona un número menor de personas.
+                </p>
+              </div>
+            ) : (
+              <div className="table-options">
+                {getAvailableTables().map(table => (
+                  <div 
+                    key={table.id} 
+                    className={`table-option ${formData.tableType === table.id ? 'selected' : ''}`}
+                    onClick={() => setFormData(prev => ({ ...prev, tableType: table.id }))}
+                  >
+                    <div className="table-info">
+                      <h5>{table.name}</h5>
+                      <p>{table.description}</p>
+                      <span className="table-capacity">{table.capacity}</span>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -276,7 +330,7 @@ const RestaurantReservation = ({ user, apiUrl }) => {
       </form>
 
       {showConfirmation && (
-        <div className="confirmation-modal">
+        <div id="restaurant-confirmation-modal" className="confirmation-modal">
           <div className="modal-content">
             <h3>Confirmar Reserva daypass</h3>
             <div className="confirmation-details">
@@ -303,6 +357,15 @@ const RestaurantReservation = ({ user, apiUrl }) => {
         </div>
       )}
 
+      <CustomAlert
+        isOpen={alertState.isOpen}
+        onClose={hideAlert}
+        title={alertState.title}
+        message={alertState.message}
+        type={alertState.type}
+        autoClose={alertState.autoClose}
+        autoCloseDelay={alertState.autoCloseDelay}
+      />
     </div>
   );
 };

@@ -1,9 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import CustomAlert from './CustomAlert';
+import useAlert from '../hooks/useAlert';
 
 const AdminDashboard = ({ apiUrl }) => {
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { alertState, hideAlert, showError, showSuccess } = useAlert();
   const [checkingOut, setCheckingOut] = useState(new Set());
 
   useEffect(() => {
@@ -51,9 +54,9 @@ const AdminDashboard = ({ apiUrl }) => {
       const data = await resp2.json();
       setReservations(Array.isArray(data) ? data : []);
       
-      alert('Checkout realizado exitosamente');
+      showSuccess('Checkout realizado exitosamente', 'Checkout exitoso');
     } catch (e) {
-      alert(e.message);
+      showError(e.message, 'Error al realizar checkout');
     } finally {
       setCheckingOut(prev => {
         const newSet = new Set(prev);
@@ -641,6 +644,16 @@ const AdminDashboard = ({ apiUrl }) => {
           </div>
         )}
       </div>
+
+      <CustomAlert
+        isOpen={alertState.isOpen}
+        onClose={hideAlert}
+        title={alertState.title}
+        message={alertState.message}
+        type={alertState.type}
+        autoClose={alertState.autoClose}
+        autoCloseDelay={alertState.autoCloseDelay}
+      />
     </div>
   );
 };
