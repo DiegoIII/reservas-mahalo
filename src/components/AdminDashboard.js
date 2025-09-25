@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import poolImg from '../images/alberca.jpg';
+import restaurantImg from '../images/restaurant.jpg';
 import CustomAlert from './CustomAlert';
 import useAlert from '../hooks/useAlert';
 
@@ -8,6 +10,8 @@ const AdminDashboard = ({ apiUrl }) => {
   const [error, setError] = useState('');
   const { alertState, hideAlert, showError, showSuccess } = useAlert();
   const [checkingOut, setCheckingOut] = useState(new Set());
+  const [selectedRoom, setSelectedRoom] = useState(null); // reservation object
+  const [isRoomModalOpen, setIsRoomModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -32,6 +36,61 @@ const AdminDashboard = ({ apiUrl }) => {
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const year = date.getFullYear().toString().slice(-2);
     return `${day}/${month}/${year}`;
+  };
+
+  // Format room name: "room1" -> "cuarto1"
+  const formatRoomName = (location) => {
+    if (!location) return '--';
+    const match = String(location).match(/^room(\d+)$/i);
+    if (match) {
+      return `cuarto${match[1]}`;
+    }
+    return location;
+  };
+
+  // Provide details and images for a given room code
+  const getRoomDetails = (location) => {
+    const code = String(location || '').toLowerCase();
+    const common = {
+      amenities: ['Cama King', 'A/C', 'Wi‑Fi', 'Smart TV', 'Baño privado'],
+      images: [poolImg, restaurantImg, poolImg],
+    };
+    if (/^room1$/i.test(code)) {
+      return {
+        title: 'Cuarto 1',
+        description: 'Acogedor y luminoso, ideal para parejas. Vista parcial a la alberca.',
+        ...common,
+      };
+    }
+    if (/^room2$/i.test(code)) {
+      return {
+        title: 'Cuarto 2',
+        description: 'Amplio, con área de trabajo y excelente iluminación natural.',
+        ...common,
+      };
+    }
+    if (/^room3$/i.test(code)) {
+      return {
+        title: 'Cuarto 3',
+        description: 'Tranquilo, perfecto para estancias largas con espacio adicional.',
+        ...common,
+      };
+    }
+    return {
+      title: formatRoomName(location),
+      description: 'Detalles de habitación no disponibles. Mostrando información general.',
+      ...common,
+    };
+  };
+
+  const openRoomModal = (reservation) => {
+    setSelectedRoom(reservation);
+    setIsRoomModalOpen(true);
+  };
+
+  const closeRoomModal = () => {
+    setIsRoomModalOpen(false);
+    setSelectedRoom(null);
   };
 
   // Handle room checkout
@@ -357,8 +416,18 @@ const AdminDashboard = ({ apiUrl }) => {
                     }}>
                       <td style={{ padding: '1rem', fontWeight: '600', color: '#03258C' }}>{formatDate(r.date)}</td>
                       <td style={{ padding: '1rem', fontWeight: '600', color: '#03258C' }}>{formatDate(r.check_out)}</td>
-                      <td style={{ padding: '1rem', fontWeight: '500' }}>{r.location || '--'}</td>
-                      <td style={{ padding: '1rem', textAlign: 'center' }}>
+                      <td 
+                        style={{ padding: '1rem', fontWeight: '500', color: '#0369a1', cursor: 'pointer', textDecoration: 'underline' }}
+                        onClick={() => openRoomModal(r)}
+                        title="Ver detalles de la habitación"
+                      >
+                        {formatRoomName(r.location)}
+                      </td>
+                      <td 
+                        style={{ padding: '1rem', textAlign: 'center', cursor: 'pointer' }}
+                        onClick={() => openRoomModal(r)}
+                        title="Ver detalles de la habitación"
+                      >
                         <span style={{ background: '#e0f2fe', color: '#0369a1', borderRadius: '20px', padding: '0.25rem 0.75rem', fontSize: 12, fontWeight: 600 }}>
                           {r.guests ?? '--'}
                         </span>
@@ -654,6 +723,75 @@ const AdminDashboard = ({ apiUrl }) => {
         autoClose={alertState.autoClose}
         autoCloseDelay={alertState.autoCloseDelay}
       />
+      {isRoomModalOpen && selectedRoom && (
+        <div 
+          role="dialog" 
+          aria-modal="true" 
+          onClick={closeRoomModal}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
+            display: 'flex', justifyContent: 'center', alignItems: 'center',
+            zIndex: 1000,
+          }}
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: 'white', borderRadius: 12, width: 'min(920px, 95vw)',
+              maxHeight: '90vh', overflow: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
+            }}
+          >
+            {(() => {
+              const details = getRoomDetails(selectedRoom.location);
+              return (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 1.25rem', borderBottom: '1px solid #e5e7eb' }}>
+                    <div>
+                      <h3 style={{ margin: 0 }}>{details.title}</h3>
+                      <div style={{ color: '#64748b', fontSize: 14 }}>{formatRoomName(selectedRoom.location)} · {selectedRoom.guests ?? 1} huésped(es)</div>
+                    </div>
+                    <button onClick={closeRoomModal} style={{ background: 'transparent', border: 'none', fontSize: 18, cursor: 'pointer' }}>✕</button>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '0.75rem', padding: '1rem 1.25rem' }}>
+                    <div>
+                      <img src={details.images[0]} alt={details.title} style={{ width: '100%', height: 320, objectFit: 'cover', borderRadius: 8 }} />
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateRows: '1fr 1fr', gap: '0.75rem' }}>
+                      <img src={details.images[1]} alt={`${details.title} 2`} style={{ width: '100%', height: 155, objectFit: 'cover', borderRadius: 8 }} />
+                      <img src={details.images[2]} alt={`${details.title} 3`} style={{ width: '100%', height: 155, objectFit: 'cover', borderRadius: 8 }} />
+                    </div>
+                  </div>
+
+                  <div style={{ padding: '0 1.25rem 1.25rem' }}>
+                    <p style={{ marginTop: 0 }}>{details.description}</p>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
+                      <div style={{ background: '#f8fafc', borderRadius: 8, padding: '0.75rem 1rem' }}>
+                        <div style={{ fontWeight: 600, marginBottom: 6 }}>Servicios</div>
+                        <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
+                          {details.amenities.map((a) => (
+                            <li key={a} style={{ margin: '0.25rem 0' }}>{a}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div style={{ background: '#f8fafc', borderRadius: 8, padding: '0.75rem 1rem' }}>
+                        <div style={{ fontWeight: 600, marginBottom: 6 }}>Reserva</div>
+                        <div style={{ color: '#111827' }}>Check‑in: <span style={{ fontWeight: 600 }}>{formatDate(selectedRoom.date)}</span></div>
+                        <div style={{ color: '#111827' }}>Check‑out: <span style={{ fontWeight: 600 }}>{formatDate(selectedRoom.check_out)}</span></div>
+                        <div style={{ color: '#111827' }}>Huéspedes: <span style={{ fontWeight: 600 }}>{selectedRoom.guests ?? '--'}</span></div>
+                        <div style={{ color: '#111827' }}>Contacto: <span style={{ fontWeight: 600 }}>{selectedRoom.name || '--'}</span></div>
+                        <div style={{ color: '#111827' }}>Teléfono: <span style={{ fontWeight: 600 }}>{selectedRoom.phone || '--'}</span></div>
+                        <div style={{ color: '#111827' }}>Email: <span style={{ fontWeight: 600 }}>{selectedRoom.email || '--'}</span></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

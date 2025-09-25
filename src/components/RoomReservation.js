@@ -22,8 +22,8 @@ const RoomReservation = ({ user, apiUrl }) => {
   const { alertState, hideAlert, showError, showSuccess } = useAlert();
 
   const roomTypes = [
-    { id: 'room1', name: 'Habitación 1 - Con Vista (Principal)', price: 120, description: '4 personas (puede tener 2 personas más)', capacity: 6, hasView: true, roomNumber: 1 },
-    { id: 'room2', name: 'Habitación 2 - Con Vista', price: 100, description: '4 personas (puede tener 1 persona más)', capacity: 5, hasView: true, roomNumber: 2 },
+    { id: 'room1', name: 'Habitación 1 - Con Vista (Principal)', price: 120, description: '4 personas (puede crecer 2 personas más)', capacity: 6, hasView: true, roomNumber: 1 },
+    { id: 'room2', name: 'Habitación 2 - Con Vista', price: 100, description: '4 personas (puede crecer 1 persona más)', capacity: 5, hasView: true, roomNumber: 2 },
     { id: 'room3', name: 'Habitación 3 - Sin Vista', price: 80, description: '4 personas', capacity: 4, hasView: false, roomNumber: 3 },
     { id: 'room4', name: 'Habitación 4 - Sin Vista', price: 80, description: '4 personas', capacity: 4, hasView: false, roomNumber: 4 },
     { id: 'room5', name: 'Habitación 5 - Sin Vista', price: 60, description: '2 personas', capacity: 2, hasView: false, roomNumber: 5 }
