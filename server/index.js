@@ -9,6 +9,14 @@ const app = express();
 app.use(cors({ origin: '*'}));
 app.use(express.json());
 
+// Admin email whitelist (comma-separated emails in ADMIN_EMAILS)
+const adminEmailWhitelist = new Set(
+  (process.env.ADMIN_EMAILS || '')
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean)
+);
+
 const pool = mysql.createPool({
   host: process.env.MYSQL_HOST || 'mysql',
   port: Number(process.env.MYSQL_PORT || 3306),
@@ -30,15 +38,21 @@ async function ensureAdminAndSchema() {
     console.log('Column is_admin might already exist:', err.message);
   }
   
-  const adminEmail = 'clubdeplaya@mahaloclubofficial.com';
-  const adminPassword = 'mahaloadminoficial';
-  const passwordHash = await bcrypt.hash(adminPassword, 10);
-  await pool.query(
-    `INSERT INTO app_user (id, name, email, phone, password_hash, is_admin)
-     VALUES (UUID(), 'Admin', ?, NULL, ?, 1)
-     ON DUPLICATE KEY UPDATE name = VALUES(name), password_hash = VALUES(password_hash), is_admin = 1`,
-    [adminEmail, passwordHash]
-  );
+  // Provision admin from environment variables if provided
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  if (adminEmail && adminPassword) {
+    const passwordHash = await bcrypt.hash(adminPassword, 10);
+    // Only create admin if it doesn't exist; do not overwrite password on each boot
+    await pool.query(
+      `INSERT INTO app_user (id, name, email, phone, password_hash, is_admin)
+       VALUES (UUID(), 'Admin', ?, NULL, ?, 1)
+       ON DUPLICATE KEY UPDATE name = VALUES(name), is_admin = 1`,
+      [adminEmail, passwordHash]
+    );
+  } else {
+    console.log('Admin auto-provision skipped: ADMIN_EMAIL/ADMIN_PASSWORD not set');
+  }
 }
 
 ensureAdminAndSchema().catch((e) => console.error('Admin/schema init error:', e.message));
@@ -105,6 +119,9 @@ app.post('/api/login', async (req, res) => {
       return res.status(401).json({ error: 'Credenciales inválidas' });
     }
     const { password_hash, ...safe } = row;
+    // Derive admin from DB flag or whitelist
+    const emailLower = String(email).toLowerCase();
+    safe.is_admin = safe.is_admin || (adminEmailWhitelist.has(emailLower) ? 1 : 0);
     res.json(safe);
   } catch (err) {
     res.status(500).json({ error: err.message });
