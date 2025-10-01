@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import './RoomReservation.css';
 import CustomAlert from './CustomAlert';
+import RoomModal from './RoomModal';
 import useAlert from '../hooks/useAlert';
 
 const RoomReservation = ({ user, apiUrl }) => {
@@ -16,6 +17,8 @@ const RoomReservation = ({ user, apiUrl }) => {
   });
 
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showRoomModal, setShowRoomModal] = useState(false);
+  const [selectedRoom, setSelectedRoom] = useState(null);
   const [roomAvailability, setRoomAvailability] = useState({});
   const [loadingAvailability, setLoadingAvailability] = useState(false);
   const [availabilityInfo, setAvailabilityInfo] = useState(null);
@@ -156,6 +159,29 @@ const RoomReservation = ({ user, apiUrl }) => {
       }, 100);
     } else {
       showError('Por favor completa todos los campos obligatorios', 'Campos requeridos');
+    }
+  };
+
+  const handleRoomModalClose = () => {
+    setShowRoomModal(false);
+    setSelectedRoom(null);
+  };
+
+  const handleRoomModalConfirm = () => {
+    if (selectedRoom) {
+      setFormData(prev => ({ ...prev, roomType: selectedRoom.id }));
+      setShowRoomModal(false);
+      setSelectedRoom(null);
+      // Scroll to the form after selecting room
+      setTimeout(() => {
+        const form = document.querySelector('.reservation-form');
+        if (form) {
+          form.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+          });
+        }
+      }, 100);
     }
   };
 
@@ -304,7 +330,8 @@ const RoomReservation = ({ user, apiUrl }) => {
                     className={`room-option ${isSelected ? 'selected' : ''} ${!canSelect ? 'unavailable' : ''}`}
                     onClick={() => {
                       if (!canSelect) return;
-                      setFormData(prev => ({ ...prev, roomType: room.id }));
+                      setSelectedRoom(room);
+                      setShowRoomModal(true);
                     }}
                   >
                     <div className="room-info">
@@ -420,6 +447,16 @@ const RoomReservation = ({ user, apiUrl }) => {
           </div>
         </div>
       )}
+
+      <RoomModal
+        isOpen={showRoomModal}
+        onClose={handleRoomModalClose}
+        room={selectedRoom}
+        onConfirmReservation={handleRoomModalConfirm}
+        formData={formData}
+        calculateTotal={calculateTotal}
+        calculateNights={calculateNights}
+      />
 
       <CustomAlert
         isOpen={alertState.isOpen}
