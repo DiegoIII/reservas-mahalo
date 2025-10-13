@@ -9,11 +9,29 @@
   border: 2px solid rgba(242, 126, 147, 0.3);
 }
 
-.room-reservation h2 {
+/* Header styles */
+.room-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 2rem 0;
+  background: linear-gradient(135deg, rgba(242, 92, 5, 0.1) 0%, rgba(242, 126, 147, 0.1) 100%);
+  border-radius: 15px;
+  border: 2px solid rgba(242, 92, 5, 0.2);
+}
+
+.room-header h2 {
   color: #03258C;
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: 700;
-  margin-top: 0;
+  margin: 0 0 0.5rem 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.room-subtitle {
+  color: #8C8303;
+  font-size: 1.1rem;
+  margin: 0;
+  font-weight: 500;
 }
 
 /* Form */
@@ -28,6 +46,30 @@
   background: rgba(255, 255, 255, 0.8);
   border-radius: 15px;
   border: 1px solid rgba(242, 126, 147, 0.3);
+}
+
+/* Section headers */
+.section-header {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.section-header h3 {
+  color: #03258C;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.section-description {
+  color: #8C8303;
+  font-size: 0.95rem;
+  margin: 0;
+  font-style: italic;
 }
 
 .form-section h3 {
@@ -56,6 +98,15 @@
   font-weight: 600;
   margin-bottom: 0.5rem;
   font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-group label i {
+  color: #F25C05;
+  width: 16px;
+  text-align: center;
 }
 
 .form-group input,
@@ -259,6 +310,139 @@
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(242, 92, 5, 0.4);
   background: linear-gradient(135deg, #F27E93 0%, #F25C05 100%);
+}
+
+/* Enhanced UI styles */
+.nights-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(242, 92, 5, 0.1);
+  color: #F25C05;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  margin: 1rem 0;
+  border: 1px solid rgba(242, 92, 5, 0.3);
+}
+
+.nights-badge i {
+  font-size: 1.1rem;
+}
+
+.guests-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #8C8303;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: rgba(242, 206, 174, 0.3);
+  border-radius: 8px;
+  border: 1px solid rgba(242, 126, 147, 0.3);
+}
+
+.guests-hint i {
+  color: #F25C05;
+  font-size: 0.9rem;
+}
+
+.loading-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background: rgba(242, 206, 174, 0.3);
+  border: 1px solid rgba(242, 126, 147, 0.3);
+  border-radius: 10px;
+  padding: 1rem;
+  margin: 1rem 0;
+  color: #8C8303;
+  font-weight: 600;
+}
+
+.loading-card i {
+  color: #F25C05;
+  font-size: 1.2rem;
+}
+
+.unavailable-icon i {
+  font-size: 3rem;
+  color: #e74c3c;
+}
+
+.availability-info h6 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #03258C;
+  margin: 1rem 0 0.5rem 0;
+}
+
+.availability-info h6 i {
+  color: #F25C05;
+}
+
+.breakdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  border: 1px solid rgba(242, 126, 147, 0.3);
+}
+
+.breakdown-item i {
+  color: #F25C05;
+  width: 20px;
+  text-align: center;
+}
+
+.breakdown-item.total-price {
+  background: rgba(242, 92, 5, 0.1);
+  border-color: #F25C05;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.breakdown-item.total-price i {
+  color: #F25C05;
+  font-size: 1.2rem;
+}
+
+.submit-section {
+  text-align: center;
+  margin-top: 2rem;
+  padding: 2rem 0;
+}
+
+.submit-button {
+  background: linear-gradient(135deg, #F25C05 0%, #F27E93 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 4px 15px rgba(242, 92, 5, 0.3);
+}
+
+.submit-button:hover {
+  background: linear-gradient(135deg, #F27E93 0%, #F25C05 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(242, 92, 5, 0.4);
+}
+
+.submit-button i {
+  font-size: 1.2rem;
 }
 
 /* Responsive */

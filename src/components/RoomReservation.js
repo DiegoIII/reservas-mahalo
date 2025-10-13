@@ -239,14 +239,23 @@ const RoomReservation = ({ user, apiUrl }) => {
 
   return (
     <div className="room-reservation">
-      <h2>Reserva de Habitación</h2>
+      <div className="room-header">
+        <h2>Reserva de Habitación</h2>
+        <p className="room-subtitle">Encuentra tu habitación perfecta para una estancia inolvidable</p>
+      </div>
       
       <form onSubmit={handleSubmit} className="reservation-form">
         <div className="form-section">
-          <h3>Fechas de Estancia</h3>
+          <div className="section-header">
+            <h3>Fechas de Estancia</h3>
+            <p className="section-description">Selecciona las fechas de tu estancia</p>
+          </div>
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="checkIn">Fecha de Entrada *</label>
+              <label htmlFor="checkIn">
+                <i className="fas fa-calendar-plus"></i>
+                Fecha de Entrada *
+              </label>
               <input
                 type="date"
                 id="checkIn"
@@ -258,7 +267,10 @@ const RoomReservation = ({ user, apiUrl }) => {
               />
             </div>
             <div className="form-group">
-              <label htmlFor="checkOut">Fecha de Salida *</label>
+              <label htmlFor="checkOut">
+                <i className="fas fa-calendar-minus"></i>
+                Fecha de Salida *
+              </label>
               <input
                 type="date"
                 id="checkOut"
@@ -271,15 +283,24 @@ const RoomReservation = ({ user, apiUrl }) => {
             </div>
           </div>
           {calculateNights() > 0 && (
-            <p className="nights-info">Noches: {calculateNights()}</p>
+            <div className="nights-badge">
+              <i className="fas fa-moon"></i>
+              <span>Noches: {calculateNights()}</span>
+            </div>
           )}
         </div>
 
         <div className="form-section">
-          <h3>Habitación y Huéspedes</h3>
+          <div className="section-header">
+            <h3>Habitación y Huéspedes</h3>
+            <p className="section-description">Elige tu habitación ideal y número de huéspedes</p>
+          </div>
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="guests">Número de Huéspedes</label>
+              <label htmlFor="guests">
+                <i className="fas fa-users"></i>
+                Número de Huéspedes
+              </label>
               <select
                 id="guests"
                 name="guests"
@@ -291,11 +312,14 @@ const RoomReservation = ({ user, apiUrl }) => {
                 ))}
               </select>
               {formData.roomType && (
-                <span className="guests-hint">
-                  {Math.max(0, getMaxGuests() - Number(formData.guests)) > 0
-                    ? `Puedes agregar hasta ${Math.max(0, getMaxGuests() - Number(formData.guests))} personas más`
-                    : 'Capacidad máxima alcanzada'}
-                </span>
+                <div className="guests-hint">
+                  <i className="fas fa-info-circle"></i>
+                  <span>
+                    {Math.max(0, getMaxGuests() - Number(formData.guests)) > 0
+                      ? `Puedes agregar hasta ${Math.max(0, getMaxGuests() - Number(formData.guests))} personas más`
+                      : 'Capacidad máxima alcanzada'}
+                  </span>
+                </div>
               )}
             </div>
           </div>
@@ -303,16 +327,24 @@ const RoomReservation = ({ user, apiUrl }) => {
           <div className="room-selection">
             <h4>Selecciona tu Habitación *</h4>
             {loadingAvailability && (
-              <p className="loading-text">Verificando disponibilidad...</p>
+              <div className="loading-card">
+                <i className="fas fa-spinner fa-spin"></i>
+                <span>Verificando disponibilidad...</span>
+              </div>
             )}
             
             {areAllRoomsUnavailable() && !loadingAvailability && (
               <div className="all-rooms-unavailable">
-                <div className="unavailable-icon">🏨</div>
+                <div className="unavailable-icon">
+                  <i className="fas fa-bed"></i>
+                </div>
                 <h5>Todas las habitaciones están ocupadas</h5>
                 <p>No hay habitaciones disponibles para las fechas seleccionadas.</p>
                 <div className="availability-info">
-                  <h6>Próximas fechas disponibles:</h6>
+                  <h6>
+                    <i className="fas fa-calendar-check"></i>
+                    Próximas fechas disponibles:
+                  </h6>
                   <ul>
                     {roomTypes.map(room => {
                       const nextAvailable = getNextAvailableDate(room.id);
@@ -391,43 +423,61 @@ const RoomReservation = ({ user, apiUrl }) => {
         </div>
 
         <div className="form-section">
-          <h3>Información de Contacto</h3>
+          <div className="section-header">
+            <h3>Información de Contacto</h3>
+            <p className="section-description">Datos necesarios para tu reserva</p>
+          </div>
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="name">Nombre Completo *</label>
+              <label htmlFor="name">
+                <i className="fas fa-user"></i>
+                Nombre Completo *
+              </label>
               <input
                 type="text"
                 id="name"
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
+                placeholder="Tu nombre completo"
                 required
               />
             </div>
             <div className="form-group">
-              <label htmlFor="email">Email *</label>
+              <label htmlFor="email">
+                <i className="fas fa-envelope"></i>
+                Email *
+              </label>
               <input
                 type="email"
                 id="email"
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
+                placeholder="tu@email.com"
                 required
               />
             </div>
           </div>
           <div className="form-group">
-            <label htmlFor="phone">Teléfono</label>
+            <label htmlFor="phone">
+              <i className="fas fa-phone"></i>
+              Teléfono
+            </label>
             <input
               type="tel"
               id="phone"
               name="phone"
               value={formData.phone}
               onChange={handleInputChange}
+              placeholder="(555) 123-4567"
             />
           </div>
           <div className="form-group">
-            <label htmlFor="specialRequests">Solicitudes Especiales</label>
+            <label htmlFor="specialRequests">
+              <i className="fas fa-comment-dots"></i>
+              Solicitudes Especiales
+            </label>
             <textarea
               id="specialRequests"
               name="specialRequests"
@@ -441,19 +491,37 @@ const RoomReservation = ({ user, apiUrl }) => {
 
         {calculateTotal() > 0 && (
           <div className="total-section">
-            <h3>Resumen de Reserva</h3>
+            <div className="section-header">
+              <h3>Resumen de Reserva</h3>
+              <p className="section-description">Revisa los detalles de tu reserva</p>
+            </div>
             <div className="total-breakdown">
-              <p>Habitación: {roomTypes.find(r => r.id === formData.roomType)?.name}</p>
-              <p>Noches: {calculateNights()}</p>
-              <p>Huéspedes: {formData.guests}</p>
-              <p className="total-price">Total: ${calculateTotal()}</p>
+              <div className="breakdown-item">
+                <i className="fas fa-bed"></i>
+                <span>Habitación: {roomTypes.find(r => r.id === formData.roomType)?.name}</span>
+              </div>
+              <div className="breakdown-item">
+                <i className="fas fa-moon"></i>
+                <span>Noches: {calculateNights()}</span>
+              </div>
+              <div className="breakdown-item">
+                <i className="fas fa-users"></i>
+                <span>Huéspedes: {formData.guests}</span>
+              </div>
+              <div className="breakdown-item total-price">
+                <i className="fas fa-dollar-sign"></i>
+                <span>Total: ${calculateTotal()}</span>
+              </div>
             </div>
           </div>
         )}
 
-        <button type="submit" className="submit-button">
-          Confirmar Reserva
-        </button>
+        <div className="submit-section">
+          <button type="submit" className="submit-button">
+            <i className="fas fa-check-circle"></i>
+            Confirmar Reserva
+          </button>
+        </div>
       </form>
 
       {showConfirmation && (

@@ -8,20 +8,29 @@
   border: 2px solid rgba(242, 126, 147, 0.3);
 }
 
+/* Header styles */
 .restaurant-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  text-align: center;
   margin-bottom: 2rem;
-  flex-wrap: wrap;
-  gap: 1rem;
+  padding: 2rem 0;
+  background: linear-gradient(135deg, rgba(242, 92, 5, 0.1) 0%, rgba(242, 126, 147, 0.1) 100%);
+  border-radius: 15px;
+  border: 2px solid rgba(242, 92, 5, 0.2);
 }
 
-.restaurant-reservation h2 {
+.restaurant-header h2 {
   color: #03258C;
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.restaurant-subtitle {
+  color: #8C8303;
+  font-size: 1.1rem;
   margin: 0;
+  font-weight: 500;
 }
 
 
@@ -38,7 +47,31 @@
   border: 1px solid rgba(242, 126, 147, 0.3);
 }
 
-.restaurant-reservation .form-section h3 {
+/* Section headers */
+.section-header {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.section-header h3 {
+  color: #03258C;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.section-description {
+  color: #8C8303;
+  font-size: 0.95rem;
+  margin: 0;
+  font-style: italic;
+}
+
+.form-section h3 {
   color: #03258C;
   margin-bottom: 1rem;
   font-size: 1.3rem;
@@ -64,6 +97,15 @@
   font-weight: 600;
   margin-bottom: 0.5rem;
   font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-group label i {
+  color: #F25C05;
+  width: 16px;
+  text-align: center;
 }
 
 .restaurant-reservation .form-group input,
@@ -320,4 +362,105 @@
   .confirm-button {
     width: 100%;
   }
+}
+
+/* Enhanced UI styles */
+.area-icon,
+.table-icon {
+  font-size: 2rem;
+  color: #F25C05;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  background: rgba(242, 92, 5, 0.1);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.table-option {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.no-tables-available {
+  text-align: center;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 12px;
+  border: 2px dashed #e74c3c;
+  margin: 1rem 0;
+}
+
+.no-tables-icon {
+  font-size: 3rem;
+  color: #e74c3c;
+  margin-bottom: 1rem;
+}
+
+.no-tables-icon i {
+  font-size: 3rem;
+}
+
+.no-tables-available h5 {
+  color: #e74c3c;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+}
+
+.no-tables-available p {
+  color: #64748b;
+  margin: 0;
+  font-size: 1rem;
+}
+
+.summary-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  border: 1px solid rgba(242, 126, 147, 0.3);
+}
+
+.summary-item i {
+  color: #F25C05;
+  width: 20px;
+  text-align: center;
+}
+
+.submit-section {
+  text-align: center;
+  margin-top: 2rem;
+  padding: 2rem 0;
+}
+
+.submit-button {
+  background: linear-gradient(135deg, #F25C05 0%, #F27E93 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 4px 15px rgba(242, 92, 5, 0.3);
+}
+
+.submit-button:hover {
+  background: linear-gradient(135deg, #F27E93 0%, #F25C05 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(242, 92, 5, 0.4);
+}
+
+.submit-button i {
+  font-size: 1.2rem;
 }

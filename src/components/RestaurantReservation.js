@@ -152,14 +152,21 @@ const RestaurantReservation = ({ user, apiUrl }) => {
     <div className="restaurant-reservation">
       <div className="restaurant-header">
         <h2>Reserva daypass</h2>
+        <p className="restaurant-subtitle">Disfruta de una experiencia gastronómica única</p>
       </div>
       
       <form onSubmit={handleSubmit} className="reservation-form">
         <div className="form-section">
-          <h3>Fecha y Hora</h3>
+          <div className="section-header">
+            <h3>Fecha y Hora</h3>
+            <p className="section-description">Selecciona cuándo quieres disfrutar tu experiencia</p>
+          </div>
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="date">Fecha</label>
+              <label htmlFor="date">
+                <i className="fas fa-calendar-alt"></i>
+                Fecha *
+              </label>
               <input
                 type="date"
                 id="date"
@@ -171,7 +178,10 @@ const RestaurantReservation = ({ user, apiUrl }) => {
               />
             </div>
             <div className="form-group">
-              <label htmlFor="time">Hora</label>
+              <label htmlFor="time">
+                <i className="fas fa-clock"></i>
+                Hora *
+              </label>
               <select
                 id="time"
                 name="time"
@@ -189,9 +199,15 @@ const RestaurantReservation = ({ user, apiUrl }) => {
         </div>
 
         <div className="form-section">
-          <h3>Número de Invitados</h3>
+          <div className="section-header">
+            <h3>Número de Invitados</h3>
+            <p className="section-description">¿Cuántas personas asistirán?</p>
+          </div>
           <div className="form-group">
-            <label htmlFor="partySize">Personas</label>
+            <label htmlFor="partySize">
+              <i className="fas fa-users"></i>
+              Personas
+            </label>
             <select
               id="partySize"
               name="partySize"
@@ -206,9 +222,11 @@ const RestaurantReservation = ({ user, apiUrl }) => {
         </div>
 
         <div className="form-section">
-          <h3>Área de Reserva</h3>
+          <div className="section-header">
+            <h3>Área de Reserva</h3>
+            <p className="section-description">Elige el ambiente perfecto para tu experiencia</p>
+          </div>
           <div className="table-selection">
-            <h4>Elige el área</h4>
             <div className="table-options">
               {reservationAreas.map(area => (
                 <div
@@ -216,6 +234,11 @@ const RestaurantReservation = ({ user, apiUrl }) => {
                   className={`table-option ${formData.locationArea === area.id ? 'selected' : ''}`}
                   onClick={() => setFormData(prev => ({ ...prev, locationArea: area.id }))}
                 >
+                  <div className="area-icon">
+                    {area.id === 'salon-eventos' && <i className="fas fa-landmark"></i>}
+                    {area.id === 'area-restauran' && <i className="fas fa-utensils"></i>}
+                    {area.id === 'area-alberca' && <i className="fas fa-swimming-pool"></i>}
+                  </div>
                   <div className="table-info">
                     <h5>{area.name}</h5>
                     <p>{area.description}</p>
@@ -227,19 +250,18 @@ const RestaurantReservation = ({ user, apiUrl }) => {
         </div>
 
         <div className="form-section">
-          <h3>Tipo de Mesa</h3>
+          <div className="section-header">
+            <h3>Tipo de Mesa</h3>
+            <p className="section-description">Elige la mesa que mejor se adapte a tu grupo</p>
+          </div>
           <div className="table-selection">
-            <h4>Selecciona tu Mesa</h4>
             {getAvailableTables().length === 0 ? (
-              <div style={{ 
-                textAlign: 'center', 
-                padding: '2rem', 
-                color: '#64748b', 
-                background: 'rgba(255,255,255,0.5)', 
-                borderRadius: '12px', 
-                border: '2px dashed #e5e7eb' 
-              }}>
-                <p style={{ fontSize: '1.1rem', margin: 0 }}>
+              <div className="no-tables-available">
+                <div className="no-tables-icon">
+                  <i className="fas fa-exclamation-triangle"></i>
+                </div>
+                <h5>No hay mesas disponibles</h5>
+                <p>
                   No hay mesas disponibles para {formData.partySize} {formData.partySize === 1 ? 'persona' : 'personas'}. 
                   Por favor, selecciona un número menor de personas.
                 </p>
@@ -252,6 +274,12 @@ const RestaurantReservation = ({ user, apiUrl }) => {
                     className={`table-option ${formData.tableType === table.id ? 'selected' : ''}`}
                     onClick={() => setFormData(prev => ({ ...prev, tableType: table.id }))}
                   >
+                    <div className="table-icon">
+                      {table.id === 'standard' && <i className="fas fa-chair"></i>}
+                      {table.id === 'window' && <i className="fas fa-eye"></i>}
+                      {table.id === 'booth' && <i className="fas fa-users"></i>}
+                      {table.id === 'terrace' && <i className="fas fa-leaf"></i>}
+                    </div>
                     <div className="table-info">
                       <h5>{table.name}</h5>
                       <p>{table.description}</p>
@@ -265,43 +293,61 @@ const RestaurantReservation = ({ user, apiUrl }) => {
         </div>
 
         <div className="form-section">
-          <h3>Información de Contacto</h3>
+          <div className="section-header">
+            <h3>Información de Contacto</h3>
+            <p className="section-description">Datos necesarios para tu reserva</p>
+          </div>
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="name">Nombre Completo </label>
+              <label htmlFor="name">
+                <i className="fas fa-user"></i>
+                Nombre Completo *
+              </label>
               <input
                 type="text"
                 id="name"
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
+                placeholder="Tu nombre completo"
                 required
               />
             </div>
             <div className="form-group">
-              <label htmlFor="email">Email </label>
+              <label htmlFor="email">
+                <i className="fas fa-envelope"></i>
+                Email *
+              </label>
               <input
                 type="email"
                 id="email"
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
+                placeholder="tu@email.com"
                 required
               />
             </div>
           </div>
           <div className="form-group">
-            <label htmlFor="phone">Teléfono</label>
+            <label htmlFor="phone">
+              <i className="fas fa-phone"></i>
+              Teléfono
+            </label>
             <input
               type="tel"
               id="phone"
               name="phone"
               value={formData.phone}
               onChange={handleInputChange}
+              placeholder="(555) 123-4567"
             />
           </div>
           <div className="form-group">
-            <label htmlFor="specialRequests">Solicitudes Especiales</label>
+            <label htmlFor="specialRequests">
+              <i className="fas fa-comment-dots"></i>
+              Solicitudes Especiales
+            </label>
             <textarea
               id="specialRequests"
               name="specialRequests"
@@ -314,19 +360,40 @@ const RestaurantReservation = ({ user, apiUrl }) => {
         </div>
 
         <div className="form-section">
-          <h3>Resumen de Reserva</h3>
+          <div className="section-header">
+            <h3>Resumen de Reserva</h3>
+            <p className="section-description">Revisa los detalles de tu reserva</p>
+          </div>
           <div className="reservation-summary">
-            <p><strong>Fecha:</strong> {formData.date || 'No seleccionada'}</p>
-            <p><strong>Hora:</strong> {formData.time || 'No seleccionada'}</p>
-            <p><strong>Invitados:</strong> {formData.partySize}</p>
-            <p><strong>Área:</strong> {reservationAreas.find(a => a.id === formData.locationArea)?.name || 'No seleccionada'}</p>
-            <p><strong>Mesa:</strong> {tableTypes.find(t => t.id === formData.tableType)?.name || 'No seleccionada'}</p>
+            <div className="summary-item">
+              <i className="fas fa-calendar-alt"></i>
+              <span><strong>Fecha:</strong> {formData.date || 'No seleccionada'}</span>
+            </div>
+            <div className="summary-item">
+              <i className="fas fa-clock"></i>
+              <span><strong>Hora:</strong> {formData.time || 'No seleccionada'}</span>
+            </div>
+            <div className="summary-item">
+              <i className="fas fa-users"></i>
+              <span><strong>Invitados:</strong> {formData.partySize}</span>
+            </div>
+            <div className="summary-item">
+              <i className="fas fa-map-marker-alt"></i>
+              <span><strong>Área:</strong> {reservationAreas.find(a => a.id === formData.locationArea)?.name || 'No seleccionada'}</span>
+            </div>
+            <div className="summary-item">
+              <i className="fas fa-chair"></i>
+              <span><strong>Mesa:</strong> {tableTypes.find(t => t.id === formData.tableType)?.name || 'No seleccionada'}</span>
+            </div>
           </div>
         </div>
 
-        <button type="submit" className="submit-button">
-          Confirmar Reserva
-        </button>
+        <div className="submit-section">
+          <button type="submit" className="submit-button">
+            <i className="fas fa-utensils"></i>
+            Confirmar Reserva
+          </button>
+        </div>
       </form>
 
       {showConfirmation && (

@@ -8,11 +8,29 @@
   border: 2px solid rgba(242, 126, 147, 0.3);
 }
 
-.event-reservation h2 {
+/* Header styles */
+.event-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 2rem 0;
+  background: linear-gradient(135deg, rgba(242, 92, 5, 0.1) 0%, rgba(242, 126, 147, 0.1) 100%);
+  border-radius: 15px;
+  border: 2px solid rgba(242, 92, 5, 0.2);
+}
+
+.event-header h2 {
   color: #03258C;
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: 700;
-  margin-top: 0;
+  margin: 0 0 0.5rem 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.event-subtitle {
+  color: #8C8303;
+  font-size: 1.1rem;
+  margin: 0;
+  font-weight: 500;
 }
 
 .reservation-form {
@@ -26,6 +44,30 @@
   background: rgba(255, 255, 255, 0.8);
   border-radius: 15px;
   border: 1px solid rgba(242, 126, 147, 0.3);
+}
+
+/* Section headers */
+.section-header {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.section-header h3 {
+  color: #03258C;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.section-description {
+  color: #8C8303;
+  font-size: 0.95rem;
+  margin: 0;
+  font-style: italic;
 }
 
 .form-section h3 {
@@ -54,6 +96,15 @@
   font-weight: 600;
   margin-bottom: 0.5rem;
   font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-group label i {
+  color: #F25C05;
+  width: 16px;
+  text-align: center;
 }
 
 .form-group input,
@@ -88,6 +139,7 @@
   gap: 1rem;
 }
 
+/* Event and venue options */
 .event-option,
 .venue-option {
   background: white;
@@ -97,6 +149,23 @@
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.event-icon,
+.venue-icon {
+  font-size: 2rem;
+  color: #F25C05;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  background: rgba(242, 92, 5, 0.1);
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .event-option:hover,
@@ -133,9 +202,172 @@
   font-weight: 700;
 }
 
+/* Duration and info styles */
+.duration-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(242, 92, 5, 0.1);
+  color: #F25C05;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  margin: 1rem 0;
+  border: 1px solid rgba(242, 92, 5, 0.3);
+}
+
+.duration-badge i {
+  font-size: 1.1rem;
+}
+
+.info-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  background: rgba(242, 206, 174, 0.3);
+  border: 1px solid rgba(242, 126, 147, 0.3);
+  border-radius: 10px;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.info-card i {
+  color: #F25C05;
+  font-size: 1.2rem;
+  margin-top: 0.1rem;
+  flex-shrink: 0;
+}
+
+.info-content {
+  color: #8C8303;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
 .duration-info,
 .hours-note {
   color: #8C8303;
+}
+
+.pricing-breakdown {
+  display: grid;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(242, 126, 147, 0.3);
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+.pricing-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #03258C;
+  font-weight: 600;
+  background: rgba(242, 206, 174, 0.2);
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+}
+
+.pricing-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-top: 2px dashed #F25C05;
+  margin-top: 0.5rem;
+  color: #F25C05;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.pricing-note {
+  color: #8C8303;
+  font-size: 0.9rem;
+}
+
+/* Rental options */
+.rental-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.rental-option {
+  background: white;
+  border: 2px solid #8C8303;
+  border-radius: 12px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.rental-option:hover {
+  border-color: #F25C05;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(242, 92, 5, 0.3);
+}
+
+.rental-option.selected {
+  border-color: #F25C05;
+  background: rgba(242, 126, 147, 0.1);
+  box-shadow: 0 5px 15px rgba(242, 92, 5, 0.3);
+}
+
+.rental-icon {
+  font-size: 2.5rem;
+  color: #F25C05;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  background: rgba(242, 92, 5, 0.1);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.rental-info {
+  flex: 1;
+}
+
+.rental-info h4 {
+  color: #03258C;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.rental-info p {
+  color: #8C8303;
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+}
+
+.rental-price {
+  color: #F25C05;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.rental-radio {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 20px;
+  height: 20px;
+  accent-color: #F25C05;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .confirmation-modal {
@@ -185,6 +417,39 @@
   justify-content: center;
 }
 
+/* Submit button */
+.submit-section {
+  text-align: center;
+  margin-top: 2rem;
+  padding: 2rem 0;
+}
+
+.submit-button {
+  background: linear-gradient(135deg, #F25C05 0%, #F27E93 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 4px 15px rgba(242, 92, 5, 0.3);
+}
+
+.submit-button:hover {
+  background: linear-gradient(135deg, #F27E93 0%, #F25C05 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(242, 92, 5, 0.4);
+}
+
+.submit-button i {
+  font-size: 1.2rem;
+}
+
 .cancel-button,
 .confirm-button {
   padding: 0.75rem 1.5rem;
@@ -205,5 +470,52 @@
   .reservation-form { padding: 0; }
   .form-row { grid-template-columns: 1fr; }
   .event-options, .venue-options { grid-template-columns: 1fr; }
+}
+
+/* Summary improvements */
+.event-summary {
+  display: grid;
+  gap: 1rem;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.summary-item {
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(242, 126, 147, 0.25);
+  border-radius: 10px;
+  padding: 0.75rem;
+}
+
+.summary-item .label {
+  display: block;
+  color: #8C8303;
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+}
+
+.summary-item .value {
+  color: #03258C;
+  font-weight: 700;
+}
+
+.summary-item .badge {
+  background: rgba(242, 92, 5, 0.1);
+  color: #F25C05;
+  border: 1px solid rgba(242, 92, 5, 0.3);
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+}
+
+.summary-subtitle {
+  color: #03258C;
+  margin: 0.25rem 0 0.25rem 0;
+  font-size: 1.05rem;
+  border-left: 3px solid #F25C05;
+  padding-left: 0.5rem;
 }
 
