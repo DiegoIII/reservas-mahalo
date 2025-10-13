@@ -10,10 +10,9 @@
 
 .event-reservation h2 {
   color: #03258C;
-  margin-bottom: 2rem;
-  text-align: center;
   font-size: 2rem;
   font-weight: 700;
+  margin-top: 0;
 }
 
 .reservation-form {
@@ -76,38 +75,10 @@
   box-shadow: 0 0 0 3px rgba(242, 92, 5, 0.2);
 }
 
-.form-group textarea {
-  resize: vertical;
-  min-height: 100px;
-}
-
-.duration-info {
-  background: rgba(242, 126, 147, 0.2);
-  color: #03258C;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  font-weight: 600;
-  text-align: center;
-  margin-top: 1rem;
-  border: 1px solid rgba(242, 126, 147, 0.3);
-}
-
-.hours-note {
-  background: rgba(242, 206, 174, 0.3);
-  color: #8C8303;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  margin-top: 0.5rem;
-  border: 1px solid rgba(242, 126, 147, 0.3);
-  text-align: center;
-}
-
 .event-type-selection h4,
 .venue-selection h4 {
   color: #03258C;
-  margin-bottom: 1rem;
-  font-size: 1.1rem;
+  margin: 0 0 1rem 0;
 }
 
 .event-options,
@@ -122,7 +93,7 @@
   background: white;
   border: 2px solid #8C8303;
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: 1.25rem;
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
@@ -143,94 +114,28 @@
   box-shadow: 0 5px 15px rgba(242, 92, 5, 0.3);
 }
 
-.event-option.selected::before,
-.venue-option.selected::before {
-  content: '✓';
-  position: absolute;
-  top: 10px;
-  right: 15px;
-  background: #F25C05;
-  color: white;
-  width: 25px;
-  height: 25px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-}
-
 .event-info h5,
 .venue-info h5 {
   color: #03258C;
-  margin-bottom: 0.5rem;
+  margin: 0 0 0.25rem 0;
   font-size: 1.1rem;
-  font-weight: 600;
 }
 
 .event-info p,
 .venue-info p {
   color: #8C8303;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
-  line-height: 1.4;
+  margin: 0 0 0.5rem 0;
 }
 
 .event-capacity,
 .venue-capacity {
   color: #03258C;
   font-weight: 700;
-  font-size: 1rem;
-  background: rgba(242, 126, 147, 0.2);
-  padding: 0.25rem 0.75rem;
-  border-radius: 15px;
-  display: inline-block;
-  border: 1px solid rgba(242, 126, 147, 0.3);
 }
 
-.event-summary {
-  background: rgba(242, 206, 174, 0.3);
-  border: 2px solid rgba(242, 126, 147, 0.3);
-  border-radius: 12px;
-  padding: 1.5rem;
-}
-
-.event-summary h3 {
-  color: #03258C;
-  margin-bottom: 1rem;
-  text-align: center;
-  border-bottom: 2px solid #F25C05;
-  padding-bottom: 0.5rem;
-}
-
-.event-summary p {
-  margin-bottom: 0.5rem;
+.duration-info,
+.hours-note {
   color: #8C8303;
-  padding: 0.5rem;
-  background: white;
-  border-radius: 6px;
-  border-left: 4px solid #F25C05;
-}
-
-.submit-button {
-  background: linear-gradient(135deg, #F25C05 0%, #F27E93 100%);
-  color: white;
-  border: none;
-  padding: 1rem 2rem;
-  border-radius: 25px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  width: 100%;
-  margin-top: 1rem;
-  box-shadow: 0 4px 15px rgba(242, 92, 5, 0.3);
-}
-
-.submit-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(242, 92, 5, 0.4);
-  background: linear-gradient(135deg, #F27E93 0%, #F25C05 100%);
 }
 
 .confirmation-modal {
@@ -272,10 +177,7 @@
   border: 1px solid rgba(242, 126, 147, 0.3);
 }
 
-.confirmation-details p {
-  margin-bottom: 0.5rem;
-  color: #8C8303;
-}
+.confirmation-details p { margin: 0 0 0.5rem 0; color: #8C8303; }
 
 .modal-buttons {
   display: flex;
@@ -293,240 +195,15 @@
   transition: all 0.3s ease;
 }
 
-.cancel-button {
-  background: #e74c3c;
-  color: white;
-}
+.cancel-button { background: #e74c3c; color: white; }
+.cancel-button:hover { background: #c0392b; transform: translateY(-1px); }
+.confirm-button { background: linear-gradient(135deg, #F25C05 0%, #F27E93 100%); color: white; }
+.confirm-button:hover { background: linear-gradient(135deg, #F27E93 0%, #F25C05 100%); transform: translateY(-1px); }
 
-.cancel-button:hover {
-  background: #c0392b;
-  transform: translateY(-1px);
-}
-
-.confirm-button {
-  background: linear-gradient(135deg, #F25C05 0%, #F27E93 100%);
-  color: white;
-}
-
-.confirm-button:hover {
-  background: linear-gradient(135deg, #F27E93 0%, #F25C05 100%);
-  transform: translateY(-1px);
-}
-
-/* Admin Dashboard specific styles */
-.admin-dashboard {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.admin-dashboard h2 {
-  text-align: center;
-  margin-bottom: 2rem;
-  color: #03258C;
-  font-size: 2.5rem;
-  font-weight: 700;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.admin-dashboard h3 {
-  color: #03258C;
-  margin-bottom: 1.5rem;
-  font-size: 1.4rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-/* Summary cards responsive */
-.admin-dashboard .summary-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-/* Table improvements */
-.admin-dashboard table {
-  font-size: 0.9rem;
-}
-
-.admin-dashboard th {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.admin-dashboard .empty-state {
-  text-align: center;
-  padding: 3rem 2rem;
-  color: #64748b;
-  background: rgba(255,255,255,0.5);
-  border-radius: 12px;
-  border: 2px dashed #e5e7eb;
-}
-
-.admin-dashboard .empty-state .icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  opacity: 0.6;
-}
-
-.admin-dashboard .empty-state p {
-  font-size: 1.1rem;
-  margin: 0;
-  font-weight: 500;
-}
-
-/* Event date headers */
-.admin-dashboard .event-date-header {
-  background: linear-gradient(135deg, #8C8303 0%, #6B5B00 100%);
-  color: white;
-  padding: 1rem 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-radius: 12px 12px 0 0;
-}
-
-.admin-dashboard .event-date-header .date-info {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.admin-dashboard .event-date-header .event-count {
-  background: rgba(255,255,255,0.2);
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-/* Responsive design */
+/* Responsive */
 @media (max-width: 768px) {
-  .event-reservation {
-    padding: 1rem;
-    margin: 1rem 0;
-  }
-  
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-  
-  .event-options,
-  .venue-options {
-    grid-template-columns: 1fr;
-  }
-  
-  .modal-buttons {
-    flex-direction: column;
-  }
-  
-  .cancel-button,
-  .confirm-button {
-    width: 100%;
-  }
-
-  /* Admin Dashboard mobile styles */
-  .admin-dashboard h2 {
-    font-size: 2rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .admin-dashboard h3 {
-    font-size: 1.2rem;
-    margin-bottom: 1rem;
-  }
-
-  .admin-dashboard .summary-cards {
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .admin-dashboard .summary-cards > div {
-    padding: 1rem;
-  }
-
-  .admin-dashboard .summary-cards .icon {
-    font-size: 1.5rem;
-  }
-
-  .admin-dashboard .summary-cards .number {
-    font-size: 1.1rem;
-  }
-
-  .admin-dashboard .summary-cards .label {
-    font-size: 0.8rem;
-  }
-
-  .admin-dashboard table {
-    font-size: 0.8rem;
-  }
-
-  .admin-dashboard th,
-  .admin-dashboard td {
-    padding: 0.5rem 0.75rem;
-  }
-
-  .admin-dashboard .event-date-header {
-    padding: 0.75rem 1rem;
-    flex-direction: column;
-    gap: 0.5rem;
-    text-align: center;
-  }
-
-  .admin-dashboard .event-date-header .date-info {
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .admin-dashboard .empty-state {
-    padding: 2rem 1rem;
-  }
-
-  .admin-dashboard .empty-state .icon {
-    font-size: 2.5rem;
-  }
-
-  .admin-dashboard .empty-state p {
-    font-size: 1rem;
-  }
+  .reservation-form { padding: 0; }
+  .form-row { grid-template-columns: 1fr; }
+  .event-options, .venue-options { grid-template-columns: 1fr; }
 }
 
-@media (max-width: 480px) {
-  .admin-dashboard {
-    padding: 0.5rem;
-  }
-
-  .admin-dashboard h2 {
-    font-size: 1.8rem;
-  }
-
-  .admin-dashboard h3 {
-    font-size: 1.1rem;
-  }
-
-  .admin-dashboard table {
-    font-size: 0.75rem;
-  }
-
-  .admin-dashboard th,
-  .admin-dashboard td {
-    padding: 0.4rem 0.5rem;
-  }
-
-  .admin-dashboard .event-date-header {
-    padding: 0.5rem;
-  }
-
-  .admin-dashboard .event-date-header .date-info {
-    font-size: 0.9rem;
-  }
-
-  .admin-dashboard .event-date-header .event-count {
-    font-size: 12px;
-    padding: 0.25rem 0.75rem;
-  }
-}

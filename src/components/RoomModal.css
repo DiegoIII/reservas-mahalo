@@ -45,7 +45,7 @@
   border-radius: 50%;
   width: 40px;
   height: 40px;
-  font-size: 24px;
+  font-size: 18px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -60,24 +60,30 @@
 }
 
 .room-modal-header {
-  background: linear-gradient(135deg, #03258C 0%, #F25C05 100%);
-  color: white;
+  background: linear-gradient(135deg, #03258C 0%, #F27E93 100%) !important;
+  color: #F2CEAE !important;
   padding: 2rem;
   border-radius: 20px 20px 0 0;
   text-align: center;
   position: relative;
+  box-shadow: 0 2px 20px rgba(3, 37, 140, 0.3);
+  border-bottom: 1px solid rgba(242, 126, 147, 0.3);
 }
 
 .room-modal-header h2 {
   margin: 0 0 0.5rem 0;
   font-size: 2rem;
   font-weight: 700;
+  color: #F2CEAE !important;
+  text-shadow: 2px 2px 4px rgba(3, 37, 140, 0.5);
 }
 
 .room-price-large {
   font-size: 1.5rem;
   font-weight: 600;
   opacity: 0.9;
+  color: #F2CEAE !important;
+  text-shadow: 1px 1px 2px rgba(3, 37, 140, 0.5);
 }
 
 .room-modal-body {
@@ -117,7 +123,7 @@
   border-radius: 50%;
   width: 50px;
   height: 50px;
-  font-size: 24px;
+  font-size: 18px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -200,8 +206,12 @@
 }
 
 .feature-icon {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   min-width: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #03258C;
 }
 
 .feature span:last-child {
@@ -352,7 +362,7 @@
   .gallery-nav {
     width: 40px;
     height: 40px;
-    font-size: 20px;
+    font-size: 16px;
   }
 
   .gallery-nav.prev {
@@ -392,7 +402,7 @@
   }
 
   .feature-icon {
-    font-size: 1.2rem;
+    font-size: 1rem;
     min-width: 25px;
   }
 }

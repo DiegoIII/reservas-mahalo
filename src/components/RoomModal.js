@@ -1,8 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './RoomModal.css';
+import { 
+  FaUsers, 
+  FaBed, 
+  FaWater, 
+  FaHome, 
+  FaDollarSign, 
+  FaTimes, 
+  FaChevronLeft, 
+  FaChevronRight 
+} from 'react-icons/fa';
 
 const RoomModal = ({ isOpen, onClose, room, onConfirmReservation, formData, calculateTotal, calculateNights }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Reset image index to 0 when modal opens or room changes
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentImageIndex(0);
+    }
+  }, [isOpen, room]);
 
   if (!isOpen || !room) return null;
 
@@ -41,7 +58,7 @@ const RoomModal = ({ isOpen, onClose, room, onConfirmReservation, formData, calc
     <div className="room-modal-overlay" onClick={onClose}>
       <div className="room-modal-content" onClick={(e) => e.stopPropagation()}>
         <button className="room-modal-close" onClick={onClose}>
-          ×
+          <FaTimes />
         </button>
         
         <div className="room-modal-header">
@@ -61,10 +78,10 @@ const RoomModal = ({ isOpen, onClose, room, onConfirmReservation, formData, calc
                   {roomImages.length > 1 && (
                     <>
                       <button className="gallery-nav prev" onClick={prevImage}>
-                        ‹
+                        <FaChevronLeft />
                       </button>
                       <button className="gallery-nav next" onClick={nextImage}>
-                        ›
+                        <FaChevronRight />
                       </button>
                     </>
                   )}
@@ -89,19 +106,19 @@ const RoomModal = ({ isOpen, onClose, room, onConfirmReservation, formData, calc
               <h3>Detalles de la Habitación</h3>
               <div className="room-features">
                 <div className="feature">
-                  <span className="feature-icon">👥</span>
+                  <span className="feature-icon"><FaUsers /></span>
                   <span>Capacidad: {room.capacity} personas</span>
                 </div>
                 <div className="feature">
-                  <span className="feature-icon">🛏️</span>
+                  <span className="feature-icon"><FaBed /></span>
                   <span>{room.description}</span>
                 </div>
                 <div className="feature">
-                  <span className="feature-icon">{room.hasView ? '🌊' : '🏠'}</span>
+                  <span className="feature-icon">{room.hasView ? <FaWater /> : <FaHome />}</span>
                   <span>{room.hasView ? 'Con vista al mar' : 'Habitación interior'}</span>
                 </div>
                 <div className="feature">
-                  <span className="feature-icon">💰</span>
+                  <span className="feature-icon"><FaDollarSign /></span>
                   <span>Precio: ${room.price} por noche</span>
                 </div>
               </div>

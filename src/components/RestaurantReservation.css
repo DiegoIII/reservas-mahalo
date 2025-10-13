@@ -25,12 +25,12 @@
 }
 
 
-.reservation-form {
+.restaurant-reservation .reservation-form {
   max-width: 800px;
   margin: 0 auto;
 }
 
-.form-section {
+.restaurant-reservation .form-section {
   margin-bottom: 2rem;
   padding: 1.5rem;
   background: rgba(255, 255, 255, 0.8);
@@ -38,7 +38,7 @@
   border: 1px solid rgba(242, 126, 147, 0.3);
 }
 
-.form-section h3 {
+.restaurant-reservation .form-section h3 {
   color: #03258C;
   margin-bottom: 1rem;
   font-size: 1.3rem;
@@ -47,28 +47,28 @@
   padding-bottom: 0.5rem;
 }
 
-.form-row {
+.restaurant-reservation .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
   margin-bottom: 1rem;
 }
 
-.form-group {
+.restaurant-reservation .form-group {
   display: flex;
   flex-direction: column;
 }
 
-.form-group label {
+.restaurant-reservation .form-group label {
   color: #03258C;
   font-weight: 600;
   margin-bottom: 0.5rem;
   font-size: 0.95rem;
 }
 
-.form-group input,
-.form-group select,
-.form-group textarea {
+.restaurant-reservation .form-group input,
+.restaurant-reservation .form-group select,
+.restaurant-reservation .form-group textarea {
   padding: 0.75rem;
   border: 2px solid #e0e6ed;
   border-radius: 8px;
@@ -77,32 +77,32 @@
   background: white;
 }
 
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
+.restaurant-reservation .form-group input:focus,
+.restaurant-reservation .form-group select:focus,
+.restaurant-reservation .form-group textarea:focus {
   outline: none;
   border-color: #F25C05;
   box-shadow: 0 0 0 3px rgba(242, 92, 5, 0.2);
 }
 
-.form-group textarea {
+.restaurant-reservation .form-group textarea {
   resize: vertical;
   min-height: 80px;
 }
 
-.table-selection h4 {
+.restaurant-reservation .table-selection h4 {
   color: #03258C;
   margin-bottom: 1rem;
   font-size: 1.1rem;
 }
 
-.table-options {
+.restaurant-reservation .table-options {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 1rem;
 }
 
-.table-option {
+.restaurant-reservation .table-option {
   background: white;
   border: 2px solid #8C8303;
   border-radius: 12px;
@@ -112,20 +112,20 @@
   position: relative;
 }
 
-.table-option:hover {
+.restaurant-reservation .table-option:hover {
   border-color: #F25C05;
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(242, 92, 5, 0.3);
   background: rgba(242, 126, 147, 0.05);
 }
 
-.table-option.selected {
+.restaurant-reservation .table-option.selected {
   border-color: #F25C05;
   background: rgba(242, 126, 147, 0.1);
   box-shadow: 0 5px 15px rgba(242, 92, 5, 0.3);
 }
 
-.table-option.selected::before {
+.restaurant-reservation .table-option.selected::before {
   content: '✓';
   position: absolute;
   top: 10px;
@@ -141,21 +141,21 @@
   font-weight: bold;
 }
 
-.table-info h5 {
+.restaurant-reservation .table-info h5 {
   color: #03258C;
   margin-bottom: 0.5rem;
   font-size: 1.1rem;
   font-weight: 600;
 }
 
-.table-info p {
+.restaurant-reservation .table-info p {
   color: #8C8303;
   margin-bottom: 1rem;
   font-size: 0.9rem;
   line-height: 1.4;
 }
 
-.table-capacity {
+.restaurant-reservation .table-capacity {
   color: #03258C;
   font-weight: 700;
   font-size: 1rem;
@@ -166,14 +166,14 @@
   border: 1px solid rgba(242, 126, 147, 0.3);
 }
 
-.reservation-summary {
+.restaurant-reservation .reservation-summary {
   background: rgba(242, 206, 174, 0.3);
   border: 2px solid rgba(242, 126, 147, 0.3);
   border-radius: 12px;
   padding: 1.5rem;
 }
 
-.reservation-summary h3 {
+.restaurant-reservation .reservation-summary h3 {
   color: #03258C;
   margin-bottom: 1rem;
   text-align: center;
@@ -181,7 +181,7 @@
   padding-bottom: 0.5rem;
 }
 
-.reservation-summary p {
+.restaurant-reservation .reservation-summary p {
   margin-bottom: 0.5rem;
   color: #8C8303;
   padding: 0.5rem;
@@ -190,7 +190,7 @@
   border-left: 4px solid #F25C05;
 }
 
-.submit-button {
+.restaurant-reservation .submit-button {
   background: linear-gradient(135deg, #F25C05 0%, #F27E93 100%);
   color: white;
   border: none;
@@ -205,7 +205,7 @@
   box-shadow: 0 4px 15px rgba(242, 92, 5, 0.3);
 }
 
-.submit-button:hover {
+.restaurant-reservation .submit-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(242, 92, 5, 0.4);
   background: linear-gradient(135deg, #F27E93 0%, #F25C05 100%);

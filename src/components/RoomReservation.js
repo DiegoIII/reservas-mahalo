@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { FaCamera } from 'react-icons/fa';
 import './RoomReservation.css';
 import CustomAlert from './CustomAlert';
 import RoomModal from './RoomModal';
@@ -23,6 +24,7 @@ const RoomReservation = ({ user, apiUrl }) => {
   const [loadingAvailability, setLoadingAvailability] = useState(false);
   const [availabilityInfo, setAvailabilityInfo] = useState(null);
   const { alertState, hideAlert, showError, showSuccess } = useAlert();
+  const roomCardRefs = useRef({});
 
   const roomTypes = [
     { id: 'room1', name: 'Habitación 1 - Con Vista (Principal)', price: 120, description: '4 personas (puede crecer 2 personas más)', capacity: 6, hasView: true, roomNumber: 1 },
@@ -78,6 +80,18 @@ const RoomReservation = ({ user, apiUrl }) => {
       return availabilityInfo[roomId].nextAvailable;
     }
     return null;
+  };
+
+  // Function to scroll to and center the selected room card
+  const scrollToRoomCard = (roomId) => {
+    const roomCard = roomCardRefs.current[roomId];
+    if (roomCard) {
+      roomCard.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'center'
+      });
+    }
   };
 
   // Check room availability
@@ -327,17 +341,35 @@ const RoomReservation = ({ user, apiUrl }) => {
                 return (
                   <div 
                     key={room.id} 
+                    ref={(el) => (roomCardRefs.current[room.id] = el)}
                     className={`room-option ${isSelected ? 'selected' : ''} ${!canSelect ? 'unavailable' : ''}`}
                     onClick={() => {
                       if (!canSelect) return;
                       setSelectedRoom(room);
                       setShowRoomModal(true);
+                      // Scroll to center the selected room card
+                      setTimeout(() => {
+                        scrollToRoomCard(room.id);
+                      }, 100);
                     }}
                   >
                     <div className="room-info">
                       <h5>{room.name}</h5>
                       <p>{room.description}</p>
                       <span className="room-price">${room.price}/noche</span>
+                      <button
+                        type="button"
+                        className="photos-button"
+                        aria-label={`Ver fotos de ${room.name}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedRoom(room);
+                          setShowRoomModal(true);
+                        }}
+                      >
+                        <FaCamera className="photos-button-icon" />
+                        <span className="photos-button-label">Fotos</span>
+                      </button>
                       {!availabilityChecked ? (
                         <span className="pending-badge">Selecciona fechas para verificar</span>
                       ) : !isAvailable ? (
