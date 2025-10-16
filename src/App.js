@@ -5,6 +5,8 @@ import RestaurantReservation from './components/RestaurantReservation';
 import EventReservation from './components/EventReservation';
 import AdminDashboard from './components/AdminDashboard';
 import CustomAlert from './components/CustomAlert';
+import HeroVideo from './components/HeroVideo';
+import Navbar from './components/Navbar';
 import useAlert from './hooks/useAlert';
 import mahaloLogo from './images/mahalo-logo.jpng.png';
 import restaurantImg from './images/restaurant.jpg';
@@ -14,7 +16,6 @@ function App() {
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
   const ADMIN_EMAIL = 'clubdeplaya@mahaloclubofficial.com';
   const [currentView, setCurrentView] = useState('home');
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [user, setUser] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -26,18 +27,6 @@ function App() {
     password: ''
   });
   const { alertState, hideAlert, showError, showSuccess } = useAlert();
-
-  // Ensure sidebar is open on mobile and adjust on resize
-  useEffect(() => {
-    const applyResponsiveSidebar = () => {
-      if (window.innerWidth <= 768) {
-        setIsSidebarCollapsed(false);
-      }
-    };
-    applyResponsiveSidebar();
-    window.addEventListener('resize', applyResponsiveSidebar);
-    return () => window.removeEventListener('resize', applyResponsiveSidebar);
-  }, []);
 
   // Add warning when user tries to close/refresh the page
   useEffect(() => {
@@ -194,6 +183,7 @@ function App() {
 
   const renderHomePage = () => (
     <div className="homepage">
+      <HeroVideo />
       <div className="welcome-section">
         <h2>Bienvenido a Mahalo</h2>
         <p>Tu casa en la playa</p>
@@ -250,52 +240,6 @@ function App() {
     </div>
   );
 
-  const renderSidebar = () => (
-    <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
-      <div className="sidebar-content">
-        <h3>Reservas</h3>
-        <div className="sidebar-options">
-          <div className="sidebar-option" onClick={() => handleViewChange('rooms')}>
-            <div className="sidebar-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 12V7a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v5M4 12h16M4 12v5M20 12v5M20 12V9a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <div className="sidebar-text">
-              <h4>Habitaciones</h4>
-              <p>Reserva tu habitación</p>
-            </div>
-          </div>
-
-          <div className="sidebar-option" onClick={() => handleViewChange('restaurant')}>
-            <div className="sidebar-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 6a6 6 0 0 0-6 6h12a6 6 0 0 0-6-6z" fill="currentColor"/>
-                <rect x="4" y="14" width="16" height="3" rx="1" fill="currentColor"/>
-              </svg>
-            </div>
-            <div className="sidebar-text">
-              <h4>Restaurante</h4>
-              <p>Reserva daypass</p>
-            </div>
-          </div>
-
-          <div className="sidebar-option" onClick={() => handleViewChange('events')}>
-            <div className="sidebar-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="3" y="4" width="18" height="16" rx="2" ry="2" stroke="currentColor" stroke-width="2"/>
-                <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <div className="sidebar-text">
-              <h4>Eventos</h4>
-              <p>Cotisa tu evento </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
 
   const renderBackButton = () => (
     <div className="back-navigation">
@@ -410,8 +354,8 @@ function App() {
         </div>
       </header>
 
-      <div className={`app-body ${isSidebarCollapsed ? 'with-collapsed-sidebar' : ''}`}>
-        {renderSidebar()}
+      <div className="app-body">
+        {!user?.is_admin && <Navbar onViewChange={handleViewChange} />}
         <main className="main-content">
           {user?.is_admin ? (
             <AdminDashboard apiUrl={API_URL} />
