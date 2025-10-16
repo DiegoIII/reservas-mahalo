@@ -117,6 +117,7 @@
   font-size: 1rem;
   transition: all 0.3s ease;
   background: white;
+  width: 100%;
 }
 
 .restaurant-reservation .form-group input:focus,
@@ -336,32 +337,16 @@
 
 /* Responsive design */
 @media (max-width: 768px) {
-  .restaurant-reservation {
-    padding: 1rem;
-    margin: 1rem 0;
-  }
-  
-  .restaurant-header {
-    flex-direction: column;
-    text-align: center;
-  }
-  
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-  
-  .table-options {
-    grid-template-columns: 1fr;
-  }
-  
-  .modal-buttons {
-    flex-direction: column;
-  }
-  
-  .cancel-button,
-  .confirm-button {
-    width: 100%;
-  }
+  .restaurant-reservation { padding: 1rem; margin: 1rem 0; }
+  .restaurant-header h2 { font-size: 1.75rem; }
+  .restaurant-subtitle { font-size: 0.95rem; }
+  .restaurant-reservation .form-section { padding: 1rem; }
+  .restaurant-reservation .form-row { grid-template-columns: 1fr; gap: 0.75rem; }
+  .table-options { grid-template-columns: 1fr; }
+  .table-option { padding: 1rem; }
+  .area-icon, .table-icon { width: 44px; height: 44px; font-size: 1.5rem; }
+  .modal-buttons { flex-direction: column; }
+  .cancel-button, .confirm-button { width: 100%; }
 }
 
 /* Enhanced UI styles */

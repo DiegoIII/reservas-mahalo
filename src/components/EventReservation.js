@@ -16,7 +16,7 @@ const EventReservation = ({ user, apiUrl }) => {
     phone: '',
     company: '',
     specialRequests: '',
-    rentalType: 'salon' // 'salon' | 'decorado'
+    rentalType: '' // 'salon' | 'decorado'
   });
 
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -79,7 +79,7 @@ const EventReservation = ({ user, apiUrl }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (formData.eventType && formData.date && formData.startTime && formData.endTime && formData.venue && formData.name && formData.email) {
+    if (formData.eventType && formData.date && formData.startTime && formData.endTime && formData.venue && formData.name && formData.email && formData.rentalType) {
       setShowConfirmation(true);
       // Scroll to confirmation modal after a brief delay to ensure it's rendered
       setTimeout(() => {
@@ -133,7 +133,8 @@ const EventReservation = ({ user, apiUrl }) => {
         email: '',
         phone: '',
         company: '',
-        specialRequests: ''
+        specialRequests: '',
+        rentalType: ''
       });
     } catch (e) {
       showError(e.message, 'Error al confirmar reserva');
@@ -362,7 +363,10 @@ const EventReservation = ({ user, apiUrl }) => {
             <p className="section-description">Elige el tipo de espacio que mejor se adapte a tu evento</p>
           </div>
           <div className="rental-options">
-            <div className="rental-option">
+            <div 
+              className={`rental-option ${formData.rentalType === 'salon' ? 'selected' : ''}`}
+              onClick={() => setFormData(prev => ({ ...prev, rentalType: 'salon' }))}
+            >
               <div className="rental-icon">
                 <i className="fas fa-building"></i>
               </div>
@@ -381,7 +385,10 @@ const EventReservation = ({ user, apiUrl }) => {
                 className="rental-radio"
               />
             </div>
-            <div className="rental-option">
+            <div 
+              className={`rental-option ${formData.rentalType === 'decorado' ? 'selected' : ''}`}
+              onClick={() => setFormData(prev => ({ ...prev, rentalType: 'decorado' }))}
+            >
               <div className="rental-icon">
                 <i className="fas fa-palette"></i>
               </div>
