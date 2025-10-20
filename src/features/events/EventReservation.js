@@ -6,7 +6,7 @@ import useAlert from '../hooks/useAlert';
 const EventReservation = ({ user, apiUrl }) => {
   const initialFormData = {
     eventType: '', date: '', startTime: '', endTime: '', guests: 50, venue: '',
-    name: '', email: '', phone: '', company: '', specialRequests: '', rentalType: ''
+    name: '', email: '', phone: '', company: '', specialRequests: '', rentalType: '', engagementType: ''
   };
 
   const [formData, setFormData] = useState(initialFormData);
@@ -20,7 +20,9 @@ const EventReservation = ({ user, apiUrl }) => {
     { id: 'birthday', name: 'Cumpleaños', minGuests: 20, maxGuests: 100, description: 'Celebraciones familiares y de amigos', icon: 'birthday-cake' },
     { id: 'anniversary', name: 'Aniversario', minGuests: 30, maxGuests: 120, description: 'Celebraciones de aniversario y fechas especiales', icon: 'ring' },
     { id: 'graduation', name: 'Graduación', minGuests: 25, maxGuests: 150, description: 'Celebraciones de logros académicos', icon: 'graduation-cap' },
-    { id: 'baptism', name: 'Bautizo', minGuests: 20, maxGuests: 120, description: 'Ceremonias y convivios familiares', icon: 'baby' }
+    { id: 'baptism', name: 'Bautizo', minGuests: 20, maxGuests: 120, description: 'Ceremonias y convivios familiares', icon: 'baby' },
+    { id: 'babyshower', name: 'Baby Shower', minGuests: 15, maxGuests: 80, description: 'Celebración para esperar la llegada del bebé', icon: 'gift' },
+    { id: 'engagement', name: 'Celebración de Compromiso', minGuests: 30, maxGuests: 150, description: 'Celebración del compromiso matrimonial', icon: 'gem' }
   ];
 
   const venues = [
@@ -38,9 +40,16 @@ const EventReservation = ({ user, apiUrl }) => {
     return hours >= 8 && hours <= 23;
   });
 
+  const engagementTypes = [
+    { id: 'formal', name: 'Compromiso Formal', description: 'Celebración elegante con ceremonia tradicional', icon: 'crown' },
+    { id: 'intimate', name: 'Compromiso Íntimo', description: 'Celebración privada con familia y amigos cercanos', icon: 'heart' },
+    { id: 'surprise', name: 'Compromiso Sorpresa', description: 'Celebración sorpresa para la pareja', icon: 'gift' },
+    { id: 'destination', name: 'Compromiso Destino', description: 'Celebración especial en un lugar único', icon: 'map-marker-alt' }
+  ];
+
   const rentalOptions = [
-    { id: 'salon', name: 'Salón de eventos (solo espacio sin decorar)', description: 'Espacio básico para que puedas decorar según tus necesidades', price: 'Desde $15,000', icon: 'building' },
-    { id: 'decorado', name: 'Salón de eventos (decorado)', description: 'Espacio completamente decorado y listo para tu evento', price: 'Desde $25,000 + 25%', icon: 'palette' }
+    { id: 'salon', name: 'Salón de eventos (sin decorar)', description: 'Espacio básico para que puedas decorar según tus necesidades', price: 'Desde $15,000', icon: 'building' },
+    { id: 'decorado', name: 'Salón de eventos (decorado)', description: 'Espacio completamente decorado y listo para tu evento', price: 'Desde $20,000', icon: 'palette' }
   ];
 
   const handleInputChange = (e) => {
@@ -72,6 +81,10 @@ const EventReservation = ({ user, apiUrl }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     const requiredFields = ['eventType', 'date', 'startTime', 'endTime', 'venue', 'name', 'email', 'rentalType'];
+    // Add engagementType to required fields if event type is engagement
+    if (formData.eventType === 'engagement') {
+      requiredFields.push('engagementType');
+    }
     const isValid = requiredFields.every(field => formData[field]);
     
     if (isValid) {
@@ -139,32 +152,38 @@ const EventReservation = ({ user, apiUrl }) => {
     const duration = calculateDuration();
     const baseHours = 5;
     const extraHours = Math.max(0, duration - baseHours);
+    const guests = Number(formData.guests);
 
-    const pricingConfig = {
-      salon: { base: 15000, additionalPer50: 5000, extraHour: 3000, markup: 1 },
-      decorado: { base: 25000, additionalPer50: 0, extraHour: 5000, markup: 1.25 }
+    // New pricing structure based on guest count
+    const getBasePrice = (rentalType, guestCount) => {
+      if (rentalType === 'decorado') {
+        // Salón decorado pricing
+        if (guestCount >= 1 && guestCount <= 50) return 20000;
+        if (guestCount >= 51 && guestCount <= 100) return 28000;
+        if (guestCount >= 101 && guestCount <= 150) return 35000;
+        if (guestCount >= 151 && guestCount <= 200) return 40000;
+        // For more than 200 guests, use the highest tier
+        return 40000;
+      } else {
+        // Salón sin decorar pricing
+        if (guestCount >= 1 && guestCount <= 50) return 15000;
+        if (guestCount >= 51 && guestCount <= 100) return 18000;
+        if (guestCount >= 101 && guestCount <= 300) return 25000;
+        // For more than 300 guests, use the highest tier
+        return 25000;
+      }
     };
 
-    const config = pricingConfig[formData.rentalType];
-    if (!config) return { duration, baseHours, extraHours, subtotal: 0 };
-
-    let baseRental = config.base;
-    let additionalGuestsCharge = 0;
-
-    if (formData.rentalType === 'salon' && Number(formData.guests) > 50) {
-      const additionalGroups = Math.ceil((Number(formData.guests) - 50) / 50);
-      additionalGuestsCharge = additionalGroups * config.additionalPer50;
-    }
-
-    const rentalCost = Math.round((baseRental + additionalGuestsCharge) * config.markup);
-    const extraHoursCharge = extraHours * config.extraHour;
+    const baseRental = getBasePrice(formData.rentalType, guests);
+    const extraHoursCharge = extraHours * (formData.rentalType === 'decorado' ? 5000 : 3000);
     const shortHoursApplied = duration > 0 && duration < baseHours;
-    const shortHoursCharge = shortHoursApplied ? Math.round(rentalCost * 0.15) : 0;
-    const subtotal = shortHoursApplied ? shortHoursCharge : rentalCost + extraHoursCharge;
+    const shortHoursCharge = shortHoursApplied ? Math.round(baseRental * 0.15) : 0;
+    const subtotal = shortHoursApplied ? shortHoursCharge : baseRental + extraHoursCharge;
 
     return {
-      duration, baseHours, extraHours, baseRental, additionalGuestsCharge,
-      extraHourRate: config.extraHour, extraHoursCharge, rentalCost,
+      duration, baseHours, extraHours, baseRental, 
+      extraHourRate: formData.rentalType === 'decorado' ? 5000 : 3000, 
+      extraHoursCharge, rentalCost: baseRental,
       shortHoursApplied, shortHoursCharge, subtotal
     };
   };
@@ -208,6 +227,7 @@ const EventReservation = ({ user, apiUrl }) => {
   const getEventIcon = (event) => event.icon;
   const getVenueIcon = (venue) => venue.icon;
   const getRentalIcon = (rental) => rental.icon;
+  const getEngagementIcon = (engagement) => engagement.icon;
 
   const duration = calculateDuration();
   const pricing = calculatePricing();
@@ -226,6 +246,16 @@ const EventReservation = ({ user, apiUrl }) => {
           <div className="event-type-selection">
             {renderOptionGrid(eventTypes, 'eventType', setFormData, getEventIcon)}
           </div>
+        )}
+
+        {formData.eventType === 'engagement' && (
+          renderFormSection(
+            'Tipo de Compromiso',
+            'Selecciona el estilo de celebración de compromiso que prefieras',
+            <div className="engagement-type-selection">
+              {renderOptionGrid(engagementTypes, 'engagementType', setFormData, getEngagementIcon, 'engagement-options')}
+            </div>
+          )
         )}
 
         {renderFormSection(
@@ -343,6 +373,7 @@ const EventReservation = ({ user, apiUrl }) => {
             <div className="summary-grid">
               {[
                 { label: 'Tipo de Evento', value: eventTypes.find(e => e.id === formData.eventType)?.name || 'No seleccionado' },
+                ...(formData.eventType === 'engagement' && formData.engagementType ? [{ label: 'Tipo de Compromiso', value: engagementTypes.find(e => e.id === formData.engagementType)?.name || 'No seleccionado' }] : []),
                 { label: 'Fecha', value: formData.date || 'No seleccionada' },
                 { label: 'Horario', value: formData.startTime && formData.endTime ? `${formData.startTime} - ${formData.endTime}` : 'No seleccionado' },
                 { label: 'Invitados', value: formData.guests },
@@ -361,31 +392,42 @@ const EventReservation = ({ user, apiUrl }) => {
                 <h4 className="summary-subtitle">Desglose de precios</h4>
                 {(() => {
                   const baseRental = Number(pricing.baseRental || 0);
-                  const additionalGuestsCharge = Number(pricing.additionalGuestsCharge || 0);
                   const rentalCost = Number(pricing.rentalCost || 0);
                   const shortHoursCharge = Number(pricing.shortHoursCharge || 0);
                   const extraHourRate = Number(pricing.extraHourRate || 0);
                   const extraHoursCharge = Number(pricing.extraHoursCharge || 0);
                   const subtotal = Number(pricing.subtotal || 0);
+                  const guests = Number(formData.guests);
+                  
+                  // Get pricing tier description
+                  const getPricingTierDescription = (rentalType, guestCount) => {
+                    if (rentalType === 'decorado') {
+                      if (guestCount >= 1 && guestCount <= 50) return '1-50 personas';
+                      if (guestCount >= 51 && guestCount <= 100) return '51-100 personas';
+                      if (guestCount >= 101 && guestCount <= 150) return '101-150 personas';
+                      if (guestCount >= 151 && guestCount <= 200) return '151-200 personas';
+                      return '200+ personas (máximo)';
+                    } else {
+                      if (guestCount >= 1 && guestCount <= 50) return '1-50 personas';
+                      if (guestCount >= 51 && guestCount <= 100) return '51-100 personas';
+                      if (guestCount >= 101 && guestCount <= 300) return '101-300 personas';
+                      return '300+ personas (máximo)';
+                    }
+                  };
+
                   return (
                     <div className="pricing-breakdown">
                       <div className="pricing-row">
                         <span>Tipo de renta</span>
-                        <span>{formData.rentalType === 'salon' ? 'Salón de eventos (solo espacio sin decorar)' : 'Salón de eventos (decorado)'}</span>
+                        <span>{formData.rentalType === 'salon' ? 'Salón de eventos (sin decorar)' : 'Salón de eventos (decorado)'}</span>
                       </div>
                       <div className="pricing-row">
-                        <span>Renta base</span>
+                        <span>Rango de invitados</span>
+                        <span>{getPricingTierDescription(formData.rentalType, guests)}</span>
+                      </div>
+                      <div className="pricing-row">
+                        <span>Precio base</span>
                         <span>${baseRental.toLocaleString('es-MX')}</span>
-                      </div>
-                      {formData.rentalType === 'salon' && Number(formData.guests) > 50 && (
-                        <div className="pricing-row">
-                          <span>Adicional por invitados (cada 50)</span>
-                          <span>${additionalGuestsCharge.toLocaleString('es-MX')}</span>
-                        </div>
-                      )}
-                      <div className="pricing-row">
-                        <span>Subtotal renta</span>
-                        <span>${rentalCost.toLocaleString('es-MX')}</span>
                       </div>
                       {pricing.shortHoursApplied ? (
                         <div className="pricing-row">
@@ -397,9 +439,6 @@ const EventReservation = ({ user, apiUrl }) => {
                           <span>Horas extra ({pricing.extraHours} × ${extraHourRate.toLocaleString('es-MX')})</span>
                           <span>${extraHoursCharge.toLocaleString('es-MX')}</span>
                         </div>
-                      )}
-                      {formData.rentalType === 'decorado' && (
-                        <div className="pricing-note">Incluye +25% aplicado al costo total de renta por salón decorado.</div>
                       )}
                       {pricing.duration > 0 && pricing.duration < pricing.baseHours && (
                         <div className="pricing-note">Política: si se eligen menos horas, se cobra 15% del coste de la renta.</div>
@@ -431,6 +470,7 @@ const EventReservation = ({ user, apiUrl }) => {
             <div className="confirmation-details">
               {[
                 { label: 'Tipo de Evento', value: eventTypes.find(e => e.id === formData.eventType)?.name },
+                ...(formData.eventType === 'engagement' && formData.engagementType ? [{ label: 'Tipo de Compromiso', value: engagementTypes.find(e => e.id === formData.engagementType)?.name }] : []),
                 { label: 'Fecha', value: formData.date },
                 { label: 'Horario', value: `${formData.startTime} - ${formData.endTime}` },
                 { label: 'Invitados', value: formData.guests },

@@ -13,6 +13,24 @@
     gap: 1rem;
   }
 }
+/* CSS Variables for consistent color system */
+:root {
+  --color-primary: #fda65d;
+  --color-secondary: #6b5bff;
+  --color-bg: #fff7f2;
+  --color-mahalo-orange: #F25C05;
+  --color-mahalo-blue: #03258C;
+  --color-mahalo-cream: #F2CEAE;
+  --color-mahalo-pink: #F27E93;
+  --color-mahalo-gold: #8C8303;
+  --color-text-primary: #03258C;
+  --color-text-secondary: #8C8303;
+  --color-text-light: #F2CEAE;
+  --shadow-soft: 0 2px 6px rgba(0,0,0,0.1);
+  --shadow-medium: 0 6px 12px rgba(0,0,0,0.15);
+  --shadow-strong: 0 10px 30px rgba(3, 37, 140, 0.2);
+}
+
 /* Reset and base styles */
 * {
   margin: 0;
@@ -23,10 +41,16 @@
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   line-height: 1.6;
-  color: #03258C;
-  background: linear-gradient(135deg, #F2CEAE 0%, #ffffff 50%, #F2CEAE 100%);
+  color: var(--color-text-primary);
+  background: linear-gradient(135deg, var(--color-mahalo-cream) 0%, #ffffff 50%, var(--color-mahalo-cream) 100%);
   min-height: 100vh;
   overflow-x: hidden;
+  animation: fadeIn 0.8s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .App {
@@ -41,8 +65,19 @@ body {
   backdrop-filter: blur(10px);
   padding: 1.25rem 1rem;
   text-align: center;
-  box-shadow: 0 2px 20px rgba(3, 37, 140, 0.3);
-  border-bottom: 1px solid rgba(242, 126, 147, 0.3);
+  box-shadow: 0 2px 20px rgba(3, 37, 140, 0.3), 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-bottom: 2px solid rgba(242, 126, 147, 0.4);
+  position: relative;
+}
+
+.app-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(242, 126, 147, 0.6) 50%, transparent 100%);
 }
 
 .header-content {
@@ -76,7 +111,7 @@ body {
   gap: 0.5rem;
 }
 
-.social-button {
+.social-icon {
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -87,19 +122,21 @@ body {
   color: #03258C;
   background: #F2CEAE;
   border: 2px solid rgba(242, 206, 174, 0.6);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 2px 8px rgba(3, 37, 140, 0.2);
   font-weight: 800;
 }
 
-.social-button:hover {
-  transform: translateY(-2px);
+.social-icon:hover {
+  transform: scale(1.1);
+  background-color: rgba(255,255,255,0.2);
+  border-radius: 50%;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
 }
 
-.social-button.facebook { color: #1877F2; }
-.social-button.instagram { color: #C13584; }
-.social-button.tiktok { color: #000000; }
+.social-icon.facebook { color: #1877F2; }
+.social-icon.instagram { color: #C13584; }
+.social-icon.tiktok { color: #000000; }
 
 .logo {
   height: 64px;
@@ -165,11 +202,38 @@ body {
 /* Homepage */
 .homepage {
   text-align: center;
-  padding: 2rem 0;
+  padding: 0;
+  position: relative;
 }
 
 .welcome-section {
-  margin-bottom: 3rem;
+  margin: -100px 0 3rem 0;
+  padding: 2rem 1rem;
+  background: linear-gradient(
+    to bottom,
+    rgba(242, 206, 174, 0.95) 0%,
+    rgba(242, 206, 174, 0.98) 20%,
+    rgba(242, 206, 174, 1) 100%
+  );
+  backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 5;
+  animation: slideInUp 1s ease-out 1.5s both;
+}
+
+.welcome-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(242, 126, 147, 0.3) 50%,
+    transparent 100%
+  );
 }
 
 .welcome-section h2 {
@@ -178,12 +242,36 @@ body {
   margin-bottom: 1rem;
   font-weight: 700;
   text-shadow: 2px 2px 4px rgba(242, 206, 174, 0.5);
+  animation: fadeInScale 1s ease-out 1.8s both;
 }
 
 .welcome-section p {
   font-size: 1.2rem;
   color: #8C8303;
   font-weight: 400;
+  animation: fadeInScale 1s ease-out 2.1s both;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 
@@ -192,6 +280,7 @@ body {
   margin-top: 1rem;
   text-align: center;
   padding: 2rem 0;
+  animation: fadeInUp 1s ease-out 2.4s both;
 }
 
 .location-section h2 {
@@ -199,6 +288,7 @@ body {
   color: #03258C;
   margin-bottom: 1rem;
   font-weight: 700;
+  animation: fadeInUp 1s ease-out 2.7s both;
 }
 
 .location-section > p {
@@ -206,6 +296,7 @@ body {
   color: #8C8303;
   margin-bottom: 2rem;
   font-weight: 400;
+  animation: fadeInUp 1s ease-out 3s both;
 }
 
 .map-container {
@@ -217,6 +308,13 @@ body {
   margin-bottom: 2rem;
   overflow: hidden;
   border: 2px solid rgba(242, 126, 147, 0.3);
+  animation: fadeInUp 1s ease-out 3.3s both;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.map-container:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(3, 37, 140, 0.3);
 }
 
 .map-container iframe {
@@ -235,6 +333,13 @@ body {
   max-width: 600px;
   margin: 0 auto 2rem auto;
   border: 2px solid rgba(242, 126, 147, 0.3);
+  animation: fadeInUp 1s ease-out 3.6s both;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.location-info:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 35px rgba(3, 37, 140, 0.25);
 }
 
 /* Zigzag section */
@@ -245,6 +350,7 @@ body {
   flex-direction: column;
   gap: 2rem;
   padding: 0 1rem;
+  animation: fadeInUp 1s ease-out 3.9s both;
 }
 
 .about-title {
@@ -253,6 +359,7 @@ body {
   margin-bottom: 2rem;
   font-weight: 700;
   text-align: center;
+  animation: fadeInUp 1s ease-out 4.2s both;
 }
 
 .zigzag-item {
@@ -260,6 +367,20 @@ body {
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
   align-items: center;
+  animation: fadeInUp 1s ease-out 4.5s both;
+  transition: transform 0.3s ease;
+}
+
+.zigzag-item:nth-child(2) {
+  animation-delay: 4.8s;
+}
+
+.zigzag-item:nth-child(3) {
+  animation-delay: 5.1s;
+}
+
+.zigzag-item:hover {
+  transform: translateY(-5px);
 }
 
 .zigzag-item.reverse {
@@ -385,21 +506,26 @@ body {
   }
   
   .app-header h1 {
-    font-size: 2rem;
+    font-size: clamp(1.8rem, 6vw, 2rem);
+  }
+  
+  .welcome-section {
+    margin: -80px 0 2rem 0;
+    padding: 1.5rem 1rem;
   }
   
   .welcome-section h2 {
-    font-size: 2rem;
-    color: #03258C;
+    font-size: clamp(1.8rem, 8vw, 2rem);
+    color: var(--color-text-primary);
   }
   
   .location-section h2 {
-    font-size: 1.8rem;
-    color: #03258C;
+    font-size: clamp(1.6rem, 6vw, 1.8rem);
+    color: var(--color-text-primary);
   }
   
   .about-title {
-    font-size: 1.8rem;
+    font-size: clamp(1.6rem, 6vw, 1.8rem);
   }
   
   .map-container {
@@ -413,7 +539,6 @@ body {
   .location-info {
     padding: 1.5rem;
   }
-  
   
   .main-content {
     padding: 1rem;
@@ -435,31 +560,36 @@ body {
   }
   
   .app-header h1 {
-    font-size: 1.8rem;
+    font-size: clamp(1.6rem, 5vw, 1.8rem);
+  }
+  
+  .welcome-section {
+    margin: -60px 0 1.5rem 0;
+    padding: 1.25rem 0.75rem;
   }
   
   .welcome-section h2 {
-    font-size: 1.8rem;
-    color: #03258C;
+    font-size: clamp(1.6rem, 7vw, 1.8rem);
+    color: var(--color-text-primary);
   }
   
   .welcome-section p {
-    font-size: 1rem;
-    color: #8C8303;
+    font-size: clamp(0.9rem, 3vw, 1rem);
+    color: var(--color-text-secondary);
   }
   
   .location-section h2 {
-    font-size: 1.6rem;
-    color: #03258C;
+    font-size: clamp(1.4rem, 5vw, 1.6rem);
+    color: var(--color-text-primary);
   }
   
   .about-title {
-    font-size: 1.6rem;
+    font-size: clamp(1.4rem, 5vw, 1.6rem);
   }
   
   .location-section > p {
-    font-size: 1rem;
-    color: #8C8303;
+    font-size: clamp(0.9rem, 3vw, 1rem);
+    color: var(--color-text-secondary);
   }
   
   .map-container {
@@ -475,7 +605,7 @@ body {
   }
   
   .location-details h3 {
-    font-size: 1.3rem;
+    font-size: clamp(1.2rem, 4vw, 1.3rem);
   }
   
   .option-card {
@@ -483,7 +613,7 @@ body {
   }
   
   .option-card h3 {
-    font-size: 1.3rem;
+    font-size: clamp(1.2rem, 4vw, 1.3rem);
   }
   
   .main-content {
@@ -492,7 +622,7 @@ body {
   
   .back-button {
     padding: 0.75rem 1.25rem;
-    font-size: 0.95rem;
+    font-size: clamp(0.9rem, 2.5vw, 0.95rem);
     width: 100%;
     justify-content: center;
   }

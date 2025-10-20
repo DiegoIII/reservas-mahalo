@@ -30,7 +30,7 @@ const RoomModal = ({ isOpen, onClose, room, onConfirmReservation, formData, calc
     
     for (let i = 1; i <= maxImages; i++) {
       try {
-        const image = require(`../images/cuarto-${roomNumber}/cuarto-${roomNumber}-pic-${i}.jpg`);
+        const image = require(`../../assets/images/cuarto-${roomNumber}/cuarto-${roomNumber}-pic-${i}.jpg`);
         images.push(image);
       } catch (error) {
         console.warn(`No se pudo cargar la imagen cuarto-${roomNumber}-pic-${i}.jpg`);

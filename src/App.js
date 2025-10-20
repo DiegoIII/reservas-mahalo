@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
-import RoomReservation from './components/RoomReservation';
-import RestaurantReservation from './components/RestaurantReservation';
-import EventReservation from './components/EventReservation';
-import AdminDashboard from './components/AdminDashboard';
+import RoomReservation from './features/rooms/RoomReservation';
+import RestaurantReservation from './features/restaurant/RestaurantReservation';
+import EventReservation from './features/events/EventReservation';
+import AdminDashboard from './features/admin/AdminDashboard';
 import CustomAlert from './components/CustomAlert';
 import HeroVideo from './components/HeroVideo';
 import Navbar from './components/Navbar';
 import useAlert from './hooks/useAlert';
-import mahaloLogo from './images/mahalo-logo.jpng.png';
-import restaurantImg from './images/restaurant.jpg';
-import albercaImg from './images/alberca.jpg';
+import mahaloLogo from './assets/images/mahalo-logo.jpng.png';
+import restaurantImg from './assets/images/restaurant.jpg';
+import albercaImg from './assets/images/alberca.jpg';
 
 function App() {
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
@@ -43,7 +43,7 @@ function App() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [user]);
 
-  // Load user and navigation state from localStorage
+  // Load user from localStorage (always start on home page)
   useEffect(() => {
     try {
       const saved = localStorage.getItem('mahalo_user');
@@ -53,22 +53,9 @@ function App() {
           parsed.is_admin = 1;
         }
         setUser(parsed);
-        
-        // Load saved navigation state (only for non-admin users)
-        const savedView = localStorage.getItem('mahalo_current_view');
-        if (savedView && ['home', 'rooms', 'restaurant', 'events'].includes(savedView)) {
-          // Only restore view if user is not admin
-          if (!parsed.is_admin) {
-            setCurrentView(savedView);
-          }
-        }
-      } else {
-        // No user saved, load navigation state anyway
-        const savedView = localStorage.getItem('mahalo_current_view');
-        if (savedView && ['home', 'rooms', 'restaurant', 'events'].includes(savedView)) {
-          setCurrentView(savedView);
-        }
       }
+      // Always start on home page - don't restore saved view
+      setCurrentView('home');
     } catch (_) {
       // ignore
     }
@@ -160,7 +147,7 @@ function App() {
     setUser(null);
     try {
       localStorage.removeItem('mahalo_user');
-      localStorage.removeItem('mahalo_current_view');
+      // Don't need to remove mahalo_current_view since we don't use it anymore
     } catch (_) {
       // ignore
     }
@@ -171,14 +158,10 @@ function App() {
     setShowLogoutConfirm(false);
   };
 
-  // Function to handle view changes and persist to localStorage
+  // Function to handle view changes (no persistence to localStorage)
   const handleViewChange = (newView) => {
     setCurrentView(newView);
-    try {
-      localStorage.setItem('mahalo_current_view', newView);
-    } catch (_) {
-      // ignore
-    }
+    // Don't save view to localStorage - always start on home page
   };
 
   const renderHomePage = () => (
@@ -314,7 +297,7 @@ function App() {
           </div>
           <div className="social-links">
             <a
-              className="social-button facebook"
+              className="social-icon facebook"
               href="https://www.facebook.com/clubmahalooficial/"
               target="_blank"
               rel="noopener noreferrer"
@@ -326,7 +309,7 @@ function App() {
               </svg>
             </a>
             <a
-              className="social-button instagram"
+              className="social-icon instagram"
               href="https://www.instagram.com/mahalocluboficial/"
               target="_blank"
               rel="noopener noreferrer"
@@ -338,7 +321,7 @@ function App() {
               </svg>
             </a>
             <a
-              className="social-button tiktok"
+              className="social-icon tiktok"
               href="https://www.tiktok.com/"
               target="_blank"
               rel="noopener noreferrer"

@@ -133,7 +133,8 @@
 }
 
 .event-options,
-.venue-options {
+.venue-options,
+.engagement-options {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1rem;
@@ -141,7 +142,8 @@
 
 /* Event and venue options */
 .event-option,
-.venue-option {
+.venue-option,
+.engagement-option {
   background: white;
   border: 2px solid #8C8303;
   border-radius: 12px;
@@ -155,7 +157,8 @@
 }
 
 .event-icon,
-.venue-icon {
+.venue-icon,
+.engagement-icon {
   font-size: 2rem;
   color: #F25C05;
   display: flex;
@@ -169,7 +172,8 @@
 }
 
 .event-option:hover,
-.venue-option:hover {
+.venue-option:hover,
+.engagement-option:hover {
   border-color: #F25C05;
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(242, 92, 5, 0.3);
@@ -177,21 +181,24 @@
 }
 
 .event-option.selected,
-.venue-option.selected {
+.venue-option.selected,
+.engagement-option.selected {
   border-color: #F25C05;
   background: rgba(242, 126, 147, 0.1);
   box-shadow: 0 5px 15px rgba(242, 92, 5, 0.3);
 }
 
 .event-info h5,
-.venue-info h5 {
+.venue-info h5,
+.engagement-info h5 {
   color: #03258C;
   margin: 0 0 0.25rem 0;
   font-size: 1.1rem;
 }
 
 .event-info p,
-.venue-info p {
+.venue-info p,
+.engagement-info p {
   color: #8C8303;
   margin: 0 0 0.5rem 0;
 }
@@ -472,9 +479,9 @@
   .reservation-form { padding: 0; }
   .form-section { padding: 1rem; }
   .form-row { grid-template-columns: 1fr; gap: 0.75rem; }
-  .event-options, .venue-options { grid-template-columns: 1fr; }
-  .event-option, .venue-option { padding: 1rem; }
-  .event-icon, .venue-icon { width: 44px; height: 44px; font-size: 1.5rem; }
+  .event-options, .venue-options, .engagement-options { grid-template-columns: 1fr; }
+  .event-option, .venue-option, .engagement-option { padding: 1rem; }
+  .event-icon, .venue-icon, .engagement-icon { width: 44px; height: 44px; font-size: 1.5rem; }
   .rental-options { grid-template-columns: 1fr; }
   .rental-option { padding: 1rem; }
   .modal-buttons { flex-direction: column; }

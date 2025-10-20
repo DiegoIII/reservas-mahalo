@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import poolImg from '../images/alberca.jpg';
-import restaurantImg from '../images/restaurant.jpg';
-import CustomAlert from './CustomAlert';
-import useAlert from '../hooks/useAlert';
+import poolImg from '../../assets/images/alberca.jpg';
+import restaurantImg from '../../assets/images/restaurant.jpg';
+import CustomAlert from '../../components/CustomAlert';
+import useAlert from '../../hooks/useAlert';
 
 const AdminDashboard = ({ apiUrl }) => {
   const [reservations, setReservations] = useState([]);
