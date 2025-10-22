@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './RestaurantReservation.css';
-import CustomAlert from './CustomAlert';
-import useAlert from '../hooks/useAlert';
+import CustomAlert from '../../components/CustomAlert';
+import useAlert from '../../hooks/useAlert';
 
 const RestaurantReservation = ({ user, apiUrl }) => {
   const initialFormData = {

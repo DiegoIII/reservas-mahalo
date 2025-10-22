@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { FaCamera } from 'react-icons/fa';
 import './RoomReservation.css';
-import CustomAlert from './CustomAlert';
+import CustomAlert from '../../components/CustomAlert';
 import RoomModal from './RoomModal';
-import useAlert from '../hooks/useAlert';
+import useAlert from '../../hooks/useAlert';
 
 const RoomReservation = ({ user, apiUrl }) => {
   const initialFormData = {
