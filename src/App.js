@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import './App.css';
+
+// Componentes
 import RoomReservation from './features/rooms/RoomReservation';
 import RestaurantReservation from './features/restaurant/RestaurantReservation';
 import EventReservation from './features/events/EventReservation';
@@ -7,35 +9,45 @@ import AdminDashboard from './features/admin/AdminDashboard';
 import CustomAlert from './components/CustomAlert';
 import HeroVideo from './components/HeroVideo';
 import Navbar from './components/Navbar';
+import HomePage from './components/HomePage';
+import AuthModal from './components/AuthModal';
+import LogoutModal from './components/LogoutModal';
+
+// Hooks
 import useAlert from './hooks/useAlert';
-import mahaloLogo from './assets/images/mahalo-logo.jpng.png';
-import restaurantImg from './assets/images/restaurant.jpg';
-import albercaImg from './assets/images/alberca.jpg';
+import useLocalStorage from './hooks/useLocalStorage';
+
+// Assets
+import { mahaloLogo } from './assets/images';
+
+// Constantes
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+const ADMIN_EMAIL = 'clubdeplaya@mahaloclubofficial.com';
 
 function App() {
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
-  const ADMIN_EMAIL = 'clubdeplaya@mahaloclubofficial.com';
   const [currentView, setCurrentView] = useState('home');
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useLocalStorage('mahalo_user', null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const [authMode, setAuthMode] = useState('login'); // 'login' | 'signup'
+  const [authMode, setAuthMode] = useState('login');
   const [authForm, setAuthForm] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    password: ''
+    name: '', email: '', phone: '', password: ''
   });
+
   const { alertState, hideAlert, showError, showSuccess } = useAlert();
 
-  // Add warning when user tries to close/refresh the page
+  // Memoizar usuario con permisos de admin
+  const userWithAdmin = useMemo(() => {
+    if (!user) return null;
+    return user.email === ADMIN_EMAIL ? { ...user, is_admin: 1 } : user;
+  }, [user]);
+
+  // Efectos
   useEffect(() => {
     const handleBeforeUnload = (e) => {
-      // Only show warning if user is logged in
       if (user) {
         e.preventDefault();
         e.returnValue = '¿Estás seguro de que quieres cerrar la sesión? Los cambios no guardados se perderán.';
-        return e.returnValue;
       }
     };
 
@@ -43,380 +55,156 @@ function App() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [user]);
 
-  // Load user from localStorage (always start on home page)
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('mahalo_user');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed?.email === ADMIN_EMAIL) {
-          parsed.is_admin = 1;
-        }
-        setUser(parsed);
-      }
-      // Always start on home page - don't restore saved view
-      setCurrentView('home');
-    } catch (_) {
-      // ignore
+    if (userWithAdmin) {
+      setUser(userWithAdmin);
     }
+  }, [userWithAdmin, setUser]);
+
+  // Handlers memoizados
+  const handleViewChange = useCallback((newView) => {
+    setCurrentView(newView);
   }, []);
 
-  const openAuth = (mode) => {
+  const openAuth = useCallback((mode) => {
     setAuthMode(mode);
     setAuthForm({ name: '', email: '', phone: '', password: '' });
     setShowAuthModal(true);
-  };
+  }, []);
 
-  const closeAuth = () => {
+  const closeAuth = useCallback(() => {
     setShowAuthModal(false);
-  };
+  }, []);
 
-  const handleAuthInput = (e) => {
+  const handleAuthInput = useCallback((e) => {
     const { name, value } = e.target;
     setAuthForm(prev => ({ ...prev, [name]: value }));
-  };
+  }, []);
 
+  const handleLogoutClick = useCallback(() => {
+    setShowLogoutConfirm(true);
+  }, []);
+
+  const confirmLogout = useCallback(() => {
+    setUser(null);
+    setShowLogoutConfirm(false);
+  }, [setUser]);
+
+  const cancelLogout = useCallback(() => {
+    setShowLogoutConfirm(false);
+  }, []);
+
+  // Autenticación
   const submitAuth = async (e) => {
     e.preventDefault();
-    if (authMode === 'signup') {
-      if (!authForm.name || !authForm.email || !authForm.password) {
-        showError('Nombre, email y contraseña son obligatorios', 'Campos requeridos');
-        return;
-      }
-      const payload = {
-        name: authForm.name,
-        email: authForm.email,
-        phone: authForm.phone || '',
-        password: authForm.password
-      };
-      try {
-        const resp = await fetch(`${API_URL}/api/users`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        if (!resp.ok) {
-          const err = await resp.json().catch(() => ({}));
-          throw new Error(err.error || 'Error al crear el usuario');
-        }
-        const saved = await resp.json();
-        setUser(saved);
-        try { localStorage.setItem('mahalo_user', JSON.stringify(saved)); } catch (_) {}
-        setShowAuthModal(false);
-      } catch (error) {
-        showError(`No se pudo crear la cuenta: ${error.message}`, 'Error al crear cuenta');
-      }
-    } else {
-      // login
-      if (!authForm.email || !authForm.password) {
-        showError('Email y contraseña son obligatorios', 'Campos requeridos');
-        return;
-      }
-      try {
-        const resp = await fetch(`${API_URL}/api/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: authForm.email, password: authForm.password })
-        });
-        if (!resp.ok) {
-          const err = await resp.json().catch(() => ({}));
-          throw new Error(err.error || 'Credenciales inválidas');
-        }
-        const saved = await resp.json();
-        if (saved?.email === ADMIN_EMAIL) {
-          saved.is_admin = 1;
-        }
-        setUser(saved);
-        try { localStorage.setItem('mahalo_user', JSON.stringify(saved)); } catch (_) {}
-        setShowAuthModal(false);
-        // ensure admin view is immediately visible
-        if (saved?.is_admin) {
-          handleViewChange('home');
-        }
-      } catch (error) {
-        showError(`No se pudo iniciar sesión: ${error.message}`, 'Error al iniciar sesión');
-      }
+    
+    const isSignup = authMode === 'signup';
+    const requiredFields = isSignup 
+      ? ['name', 'email', 'password']
+      : ['email', 'password'];
+
+    const missingFields = requiredFields.filter(field => !authForm[field]);
+    if (missingFields.length > 0) {
+      showError(`${missingFields.join(', ')} ${missingFields.length > 1 ? 'son' : 'es'} obligatorio${missingFields.length > 1 ? 's' : ''}`, 'Campos requeridos');
+      return;
     }
-  };
 
-  const handleLogoutClick = () => {
-    setShowLogoutConfirm(true);
-  };
-
-  const confirmLogout = () => {
-    setUser(null);
     try {
-      localStorage.removeItem('mahalo_user');
-      // Don't need to remove mahalo_current_view since we don't use it anymore
-    } catch (_) {
-      // ignore
+      const endpoint = isSignup ? '/api/users' : '/api/login';
+      const payload = isSignup 
+        ? { name: authForm.name, email: authForm.email, phone: authForm.phone || '', password: authForm.password }
+        : { email: authForm.email, password: authForm.password };
+
+      const resp = await fetch(`${API_URL}${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error || (isSignup ? 'Error al crear el usuario' : 'Credenciales inválidas'));
+      }
+
+      const userData = await resp.json();
+      const finalUser = userData.email === ADMIN_EMAIL ? { ...userData, is_admin: 1 } : userData;
+      
+      setUser(finalUser);
+      setShowAuthModal(false);
+      
+      if (isSignup) {
+        showSuccess('Cuenta creada exitosamente', '¡Bienvenido!');
+      }
+    } catch (error) {
+      showError(`No se pudo ${isSignup ? 'crear la cuenta' : 'iniciar sesión'}: ${error.message}`, 
+                `Error al ${isSignup ? 'crear cuenta' : 'iniciar sesión'}`);
     }
-    setShowLogoutConfirm(false);
   };
 
-  const cancelLogout = () => {
-    setShowLogoutConfirm(false);
-  };
-
-  // Function to handle view changes (no persistence to localStorage)
-  const handleViewChange = (newView) => {
-    setCurrentView(newView);
-    // Don't save view to localStorage - always start on home page
-  };
-
-  const renderHomePage = () => (
-    <div className="homepage">
-      <HeroVideo />
-      <div className="welcome-section">
-        <h2>Bienvenido a Mahalo</h2>
-        <p>Tu casa en la playa</p>
-      </div>
-
-      <div className="location-section">
-        <h2>Como llegar a tu club de playa </h2>
-        <p>Visítanos en nuestra ubicación privilegiada en la costa</p>
-        <div className="location-info">
-          <div className="location-details">
-            <h3>📍 Mahalo Beach Club</h3>
-            <p>Playa Santa Lucía</p>
-            <p>Ubicado en la playa de Acapulco, Guerrero, México</p>
-            <p>Disfruta de nuestras instalaciones con vista al mar</p>
-          </div>
-        </div>
-        <div className="map-container">
-          <iframe 
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4733.665857395477!2d-99.87478248611757!3d16.85744778402588!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85ca59ed50841e61%3A0x8616596a4359a410!2sMahalo%20Beach%20Club%20oficial!5e0!3m2!1ses-419!2smx!4v1757902653511!5m2!1ses-419!2smx" 
-            width="100%" 
-            height="450" 
-            style={{border: 0}} 
-            allowFullScreen="" 
-            loading="lazy" 
-            referrerPolicy="no-referrer-when-downgrade"
-            title="Ubicación de Mahalo Beach Club"
-          ></iframe>
-        </div>
-        
-      </div>
-
-      <section className="zigzag-section">
-        <h2 className="about-title">Acerca de Mahalo Beach Club</h2>
-        <div className="zigzag-item">
-          <div className="zigzag-image">
-            <img src={restaurantImg} alt="Área de restaurant" loading="lazy" />
-          </div>
-          <div className="zigzag-content">
-            <h3>Área de restaurant</h3>
-            <p>Ambiente acogedor junto al mar, platillos frescos y coctelería. Atención personalizada y música relajante para disfrutar con familia o amigos.</p>
-          </div>
-        </div>
-
-        <div className="zigzag-item reverse">
-          <div className="zigzag-image">
-            <img src={albercaImg} alt="Área de alberca" loading="lazy" />
-          </div>
-          <div className="zigzag-content">
-            <h3>Área de alberca</h3>
-            <p>Zona al aire libre con camastros y sombra, ideal para nadar, tomar el sol y disfrutar bebidas refrescantes con vista a la playa.</p>
-          </div>
-        </div>
-      </section>
-    </div>
-  );
-
-
-  const renderBackButton = () => (
-    <div className="back-navigation">
-      <button className="back-button" onClick={() => handleViewChange('home')}>
-        ← Volver al Inicio
-      </button>
-    </div>
-  );
-
-  // Function to get greeting based on time of day
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour >= 5 && hour < 12) {
-      return 'Buenos días';
-    } else if (hour >= 12 && hour < 18) {
-      return 'Buenas tardes';
-    } else {
-      return 'Buenas noches';
+  // Renderizado condicional
+  const renderMainContent = () => {
+    if (userWithAdmin?.is_admin) {
+      return <AdminDashboard apiUrl={API_URL} />;
     }
+
+    return (
+      <>
+        {currentView === 'home' && (
+          <HomePage 
+            onViewChange={handleViewChange}
+            user={userWithAdmin}
+          />
+        )}
+        {currentView !== 'home' && (
+          <div className="back-navigation">
+            <button className="back-button" onClick={() => handleViewChange('home')}>
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                <path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"/>
+              </svg>
+              Volver al Inicio
+            </button>
+          </div>
+        )}
+        {currentView === 'rooms' && <RoomReservation user={userWithAdmin} apiUrl={API_URL} />}
+        {currentView === 'restaurant' && <RestaurantReservation user={userWithAdmin} apiUrl={API_URL} />}
+        {currentView === 'events' && <EventReservation user={userWithAdmin} apiUrl={API_URL} />}
+      </>
+    );
   };
 
   return (
     <div className="App">
-      <header className="app-header">
-        <div className="header-content">
-          <img 
-            src={mahaloLogo} 
-            alt="Mahalo Logo" 
-            className="logo clickable-logo" 
-            onClick={() => handleViewChange('home')}
-            style={{ cursor: 'pointer' }}
-            title="Ir al inicio"
-          />
-          <div className="header-text">
-            <h1> Mahalo Beach Club </h1>
-            <p>Tu casa en la playa</p>
-          </div>
-          <div className="header-right">
-          <div className="auth-buttons">
-            {user ? (
-              <>
-                <span style={{ color: '#F2CEAE', fontWeight: 600 }}>{getGreeting()}, {user.name || user.email}</span>
-                <button
-                  onClick={handleLogoutClick}
-                  className="auth-button logout"
-                  title="Cerrar sesión"
-                  style={{ padding: '0.5rem 0.75rem', borderRadius: 8, border: '2px solid #F2CEAE', background: 'transparent', color: '#F2CEAE', cursor: 'pointer' }}
-                >
-                  Cerrar sesión
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={() => openAuth('login')}
-                  className="auth-button login"
-                  title="Iniciar sesión"
-                  style={{ padding: '0.5rem 0.75rem', borderRadius: 8, border: '2px solid #F2CEAE', background: 'transparent', color: '#F2CEAE', cursor: 'pointer' }}
-                >
-                  Iniciar sesión
-                </button>
-                <button
-                  onClick={() => openAuth('signup')}
-                  className="auth-button signup"
-                  title="Crear cuenta"
-                  style={{ padding: '0.5rem 0.75rem', borderRadius: 8, border: '2px solid #F2CEAE', background: '#F2CEAE', color: '#03258C', cursor: 'pointer', fontWeight: 700 }}
-                >
-                  Crear cuenta
-                </button>
-              </>
-            )}
-          </div>
-          <div className="social-links">
-            <a
-              className="social-icon facebook"
-              href="https://www.facebook.com/clubmahalooficial/"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Facebook"
-              title="Facebook"
-            >
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true" focusable="false">
-                <path d="M22 12.06C22 6.49 17.52 2 11.94 2 6.37 2 1.88 6.49 1.88 12.06c0 4.93 3.6 9.02 8.3 9.88v-6.99H7.96v-2.9h2.22V9.86c0-2.2 1.3-3.42 3.3-3.42.96 0 1.96.17 1.96.17v2.15h-1.1c-1.08 0-1.42.67-1.42 1.36v1.63h2.41l-.38 2.9h-2.03v6.99c4.7-.86 8.3-4.95 8.3-9.88z"/>
-              </svg>
-            </a>
-            <a
-              className="social-icon instagram"
-              href="https://www.instagram.com/mahalocluboficial/"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Instagram"
-              title="Instagram"
-            >
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true" focusable="false">
-                <path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm5 5.8a5.2 5.2 0 1 0 0 10.4 5.2 5.2 0 0 0 0-10.4zm6.4-.9a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8zM12 9.2a2.8 2.8 0 1 1 0 5.6 2.8 2.8 0 0 1 0-5.6z"/>
-              </svg>
-            </a>
-            <a
-              className="social-icon tiktok"
-              href="https://www.tiktok.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="TikTok"
-              title="TikTok"
-            >
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true" focusable="false">
-                <path d="M21 8.5c-1.6 0-3.1-.5-4.3-1.4v7.1c0 3.8-3.1 6.8-6.8 6.8S3 17.9 3 14.2s3.1-6.8 6.8-6.8c.5 0 1 .1 1.5.2v3.2c-.5-.2-1-.3-1.5-.3-2 0-3.6 1.6-3.6 3.6S7.8 18.6 9.8 18.6s3.6-1.6 3.6-3.6V2h3.2c.3 2.3 2.1 4.1 4.4 4.4V8.5z"/>
-              </svg>
-            </a>
-          </div>
-          </div>
-        </div>
-      </header>
-
+      <Header 
+        user={userWithAdmin}
+        onViewChange={handleViewChange}
+        onOpenAuth={openAuth}
+        onLogoutClick={handleLogoutClick}
+      />
+      
       <div className="app-body">
-        {!user?.is_admin && <Navbar onViewChange={handleViewChange} />}
+        {!userWithAdmin?.is_admin && <Navbar onViewChange={handleViewChange} />}
         <main className="main-content">
-          {user?.is_admin ? (
-            <AdminDashboard apiUrl={API_URL} />
-          ) : (
-            <>
-              {currentView === 'home' && renderHomePage()}
-              {currentView !== 'home' && renderBackButton()}
-              {currentView === 'rooms' && <RoomReservation user={user} apiUrl={API_URL} />}
-              {currentView === 'restaurant' && <RestaurantReservation user={user} apiUrl={API_URL} />}
-              {currentView === 'events' && <EventReservation user={user} apiUrl={API_URL} />}
-            </>
-          )}
+          {renderMainContent()}
         </main>
       </div>
 
-      <footer className="app-footer">
-        <p>&copy; 2024 Sistema de  Mahalo Beach Club . Todos los derechos reservados.</p>
-      </footer>
+      <Footer />
 
-      {showAuthModal && (
-        <div className="confirmation-modal" onClick={closeAuth}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h3>{authMode === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}</h3>
-            <form onSubmit={submitAuth} className="reservation-form">
-              {authMode === 'signup' && (
-                <div className="form-group" style={{ marginBottom: '1rem' }}>
-                  <label htmlFor="auth-name">Nombre completo *</label>
-                  <input id="auth-name" name="name" type="text" value={authForm.name} onChange={handleAuthInput} required />
-                </div>
-              )}
-              <div className="form-group" style={{ marginBottom: '1rem' }}>
-                <label htmlFor="auth-email">Email *</label>
-                <input id="auth-email" name="email" type="email" value={authForm.email} onChange={handleAuthInput} required />
-              </div>
-              {authMode === 'signup' && (
-                <div className="form-group" style={{ marginBottom: '1rem' }}>
-                  <label htmlFor="auth-phone">Teléfono</label>
-                  <input id="auth-phone" name="phone" type="tel" value={authForm.phone} onChange={handleAuthInput} />
-                </div>
-              )}
-              <div className="form-group" style={{ marginBottom: '1rem' }}>
-                <label htmlFor="auth-password">Contraseña *</label>
-                <input id="auth-password" name="password" type="password" value={authForm.password} onChange={handleAuthInput} required />
-              </div>
-              <div className="modal-buttons">
-                <button type="button" onClick={closeAuth} className="cancel-button">Cancelar</button>
-                <button type="submit" className="confirm-button">{authMode === 'login' ? 'Entrar' : 'Crear cuenta'}</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Modales */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={closeAuth}
+        mode={authMode}
+        form={authForm}
+        onInputChange={handleAuthInput}
+        onSubmit={submitAuth}
+      />
 
-      {showLogoutConfirm && (
-        <div className="confirmation-modal" onClick={cancelLogout}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div style={{ textAlign: 'center', padding: '1rem' }}>
-              <div style={{ fontSize: '3rem', marginBottom: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor" style={{ color: '#F25C05' }}>
-                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="currentColor" strokeWidth="2" fill="none"/>
-                  <line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" strokeWidth="2"/>
-                  <line x1="12" y1="17" x2="12.01" y2="17" stroke="currentColor" strokeWidth="2"/>
-                </svg>
-              </div>
-              <h3 style={{ marginBottom: '1rem', color: '#03258C' }}>¿Cerrar sesión?</h3>
-              <p style={{ marginBottom: '2rem', color: '#64748b', fontSize: '1rem' }}>
-                ¿Estás seguro de que quieres cerrar tu sesión? Tendrás que iniciar sesión nuevamente para acceder a tus reservas.
-              </p>
-              <div className="modal-buttons">
-                <button onClick={cancelLogout} className="cancel-button">Cancelar</button>
-                <button onClick={confirmLogout} className="confirm-button" style={{ background: '#F25C05' }}>
-                  Sí, cerrar sesión
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <LogoutModal
+        isOpen={showLogoutConfirm}
+        onCancel={cancelLogout}
+        onConfirm={confirmLogout}
+      />
 
       <CustomAlert
         isOpen={alertState.isOpen}
@@ -430,5 +218,176 @@ function App() {
     </div>
   );
 }
+
+// Componente Header separado
+const Header = React.memo(({ user, onViewChange, onOpenAuth, onLogoutClick }) => {
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return 'Buenos días';
+    if (hour >= 12 && hour < 18) return 'Buenas tardes';
+    return 'Buenas noches';
+  };
+
+  return (
+    <header className="app-header">
+      <div className="header-content">
+        <div className="logo-section">
+          <img 
+            src={mahaloLogo} 
+            alt="Mahalo Logo" 
+            className="logo clickable-logo" 
+            onClick={() => onViewChange('home')}
+          />
+          <div className="header-text">
+            <h1>Mahalo Beach Club</h1>
+            <p>Tu casa en la playa</p>
+          </div>
+        </div>
+        
+        <div className="header-right">
+          <AuthSection 
+            user={user}
+            greeting={getGreeting()}
+            onOpenAuth={onOpenAuth}
+            onLogoutClick={onLogoutClick}
+          />
+          <SocialLinks />
+        </div>
+      </div>
+    </header>
+  );
+});
+
+// Componente AuthSection separado
+const AuthSection = React.memo(({ user, greeting, onOpenAuth, onLogoutClick }) => (
+  <div className="auth-buttons">
+    {user ? (
+      <div className="user-welcome">
+        <div className="user-avatar">
+          <UserIcon />
+        </div>
+        <span className="greeting">{greeting}, {user.name || user.email}</span>
+        <button onClick={onLogoutClick} className="auth-button logout" title="Cerrar sesión">
+          <LogoutIcon />
+          Cerrar sesión
+        </button>
+      </div>
+    ) : (
+      <div className="auth-options">
+        <button onClick={() => onOpenAuth('login')} className="auth-button login" title="Iniciar sesión">
+          <LoginIcon />
+          Iniciar sesión
+        </button>
+        <button onClick={() => onOpenAuth('signup')} className="auth-button signup" title="Crear cuenta">
+          <SignupIcon />
+          Crear cuenta
+        </button>
+      </div>
+    )}
+  </div>
+));
+
+// Componente SocialLinks separado
+const SocialLinks = React.memo(() => (
+  <div className="social-links">
+    <SocialIcon 
+      href="https://www.facebook.com/clubmahalooficial/"
+      ariaLabel="Facebook"
+      title="Facebook"
+    >
+      <FacebookIcon />
+    </SocialIcon>
+    <SocialIcon 
+      href="https://www.instagram.com/mahalocluboficial/"
+      ariaLabel="Instagram"
+      title="Instagram"
+    >
+      <InstagramIcon />
+    </SocialIcon>
+    <SocialIcon 
+      href="https://www.tiktok.com/"
+      ariaLabel="TikTok"
+      title="TikTok"
+    >
+      <TikTokIcon />
+    </SocialIcon>
+  </div>
+));
+
+// Componente SocialIcon reutilizable
+const SocialIcon = ({ href, ariaLabel, title, children }) => (
+  <a className={`social-icon ${ariaLabel.toLowerCase()}`} 
+     href={href} target="_blank" rel="noopener noreferrer"
+     aria-label={ariaLabel} title={title}>
+    {children}
+  </a>
+);
+
+// Componente Footer separado
+const Footer = React.memo(() => (
+  <footer className="app-footer">
+    <div className="footer-content">
+      <div className="footer-section">
+        <h4>Mahalo Beach Club</h4>
+        <p>Tu refugio paradisíaco en la costa del Pacífico</p>
+      </div>
+      <div className="footer-section">
+        <h4>Contacto</h4>
+        <p>Playa Santa Lucía, Acapulco</p>
+        <p>clubdeplaya@mahaloclubofficial.com</p>
+      </div>
+      <div className="footer-section">
+        <h4>Horario</h4>
+        <p>Lunes - Domingo: 9:00 AM - 8:00 PM</p>
+      </div>
+    </div>
+    <div className="footer-bottom">
+      <p>&copy; 2024 Mahalo Beach Club. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+));
+
+// Iconos como componentes separados para reutilización
+const UserIcon = () => (
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+    <path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
+  </svg>
+);
+
+const LogoutIcon = () => (
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+    <path d="M16,17V14H9V10H16V7L21,12L16,17M14,2A2,2 0 0,1 16,4V6H14V4H5V20H14V18H16V20A2,2 0 0,1 14,22H5A2,2 0 0,1 3,20V4A2,2 0 0,1 5,2H14Z"/>
+  </svg>
+);
+
+const LoginIcon = () => (
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+    <path d="M10,17V14H3V10H10V7L15,12L10,17M10,2H19A2,2 0 0,1 21,4V20A2,2 0 0,1 19,22H10A2,2 0 0,1 8,20V18H10V20H19V4H10V6H8V4A2,2 0 0,1 10,2Z"/>
+  </svg>
+);
+
+const SignupIcon = () => (
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+    <path d="M15,14C12.33,14 7,15.33 7,18V20H23V18C23,15.33 17.67,14 15,14M6,10V7H4V10H1V12H4V15H6V12H9V10M15,12A4,4 0 0,0 19,8A4,4 0 0,0 15,4A4,4 0 0,0 11,8A4,4 0 0,0 15,12Z"/>
+  </svg>
+);
+
+const FacebookIcon = () => (
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+    <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z"/>
+  </svg>
+);
+
+const InstagramIcon = () => (
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+    <path d="M7.8,2H16.2C19.4,2 22,4.6 22,7.8V16.2A5.8,5.8 0 0,1 16.2,22H7.8C4.6,22 2,19.4 2,16.2V7.8A5.8,5.8 0 0,1 7.8,2M7.6,4A3.6,3.6 0 0,0 4,7.6V16.4C4,18.39 5.61,20 7.6,20H16.4A3.6,3.6 0 0,0 20,16.4V7.6C20,5.61 18.39,4 16.4,4H7.6M17.25,5.5A1.25,1.25 0 0,1 18.5,6.75A1.25,1.25 0 0,1 17.25,8A1.25,1.25 0 0,1 16,6.75A1.25,1.25 0 0,1 17.25,5.5M12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9Z"/>
+  </svg>
+);
+
+const TikTokIcon = () => (
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+    <path d="M16.6 5.82s.51.5 0 0A4.278 4.278 0 0 1 15.54 3h-3.09v12.4a2.592 2.592 0 0 1-2.59 2.5c-1.42 0-2.6-1.16-2.6-2.6c0-1.72 1.66-3.01 3.37-2.48V9.66c-3.45-.46-6.47 2.22-6.47 5.64c0 3.33 2.76 5.7 5.69 5.7c3.14 0 5.69-2.55 5.69-5.7V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3s-1.88.09-3.24-1.48z"/>
+  </svg>
+);
 
 export default App;
