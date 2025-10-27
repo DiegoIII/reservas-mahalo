@@ -3,6 +3,7 @@ import poolImg from '../../assets/images/alberca.jpg';
 import restaurantImg from '../../assets/images/restaurant.jpg';
 import CustomAlert from '../../components/CustomAlert';
 import useAlert from '../../hooks/useAlert';
+import './AdminDashboard.css';
 
 const AdminDashboard = ({ apiUrl }) => {
   const [reservations, setReservations] = useState([]);
@@ -12,6 +13,18 @@ const AdminDashboard = ({ apiUrl }) => {
   const [checkingOut, setCheckingOut] = useState(new Set());
   const [selectedRoom, setSelectedRoom] = useState(null); // reservation object
   const [isRoomModalOpen, setIsRoomModalOpen] = useState(false);
+
+  // Lock body scroll when room modal is open
+  useEffect(() => {
+    if (isRoomModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isRoomModalOpen]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -731,7 +744,7 @@ const AdminDashboard = ({ apiUrl }) => {
           style={{
             position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
             display: 'flex', justifyContent: 'center', alignItems: 'center',
-            zIndex: 1000,
+            zIndex: 2000,
           }}
         >
           <div 

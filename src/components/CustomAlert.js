@@ -11,6 +11,19 @@ const CustomAlert = ({
   autoClose = false,
   autoCloseDelay = 3000
 }) => {
+  // Lock body scroll when alert is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
+  // Auto close logic
   useEffect(() => {
     if (autoClose && isOpen) {
       const timer = setTimeout(() => {

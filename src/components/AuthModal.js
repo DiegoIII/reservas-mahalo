@@ -1,6 +1,18 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import './ModalStyles.css';
 
 const AuthModal = ({ isOpen, onClose, mode, form, onInputChange, onSubmit }) => {
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const isSignup = mode === 'signup';
