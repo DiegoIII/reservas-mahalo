@@ -17,8 +17,17 @@ const useLocalStorage = (key, initialValue) => {
     try {
       // Allow value to be a function so we have the same API as useState
       const valueToStore = value instanceof Function ? value(storedValue) : value;
+      console.log(`Setting ${key} to:`, valueToStore);
       setStoredValue(valueToStore);
-      window.localStorage.setItem(key, JSON.stringify(valueToStore));
+      
+      // If value is null, remove from localStorage, otherwise store it
+      if (valueToStore === null) {
+        console.log(`Removing ${key} from localStorage`);
+        window.localStorage.removeItem(key);
+      } else {
+        window.localStorage.setItem(key, JSON.stringify(valueToStore));
+        console.log(`Stored ${key} in localStorage`);
+      }
     } catch (error) {
       console.error(`Error setting localStorage key "${key}":`, error);
     }

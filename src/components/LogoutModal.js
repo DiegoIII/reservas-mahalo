@@ -16,8 +16,12 @@ const LogoutModal = ({ isOpen, onCancel, onConfirm }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="confirmation-modal">
-      <div className="modal-content">
+    <div className="confirmation-modal" onClick={(e) => {
+      if (e.target === e.currentTarget) {
+        onCancel();
+      }
+    }}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="logout-confirm">
           <div className="warning-icon">
             <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor">
@@ -40,7 +44,15 @@ const LogoutModal = ({ isOpen, onCancel, onConfirm }) => {
               Cancelar
             </button>
             
-            <button className="confirm-button logout-btn" onClick={onConfirm}>
+            <button 
+              className="confirm-button logout-btn" 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Confirm logout clicked');
+                onConfirm();
+              }}
+            >
               <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
                 <path d="M16,17V14H9V10H16V7L21,12L16,17M14,2A2,2 0 0,1 16,4V6H14V4H5V20H14V18H16V20A2,2 0 0,1 14,22H5A2,2 0 0,1 3,20V4A2,2 0 0,1 5,2H14Z"/>
               </svg>

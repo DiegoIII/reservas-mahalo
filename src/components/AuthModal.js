@@ -18,8 +18,12 @@ const AuthModal = ({ isOpen, onClose, mode, form, onInputChange, onSubmit }) => 
   const isSignup = mode === 'signup';
 
   return (
-    <div className="confirmation-modal">
-      <div className="modal-content">
+    <div className="confirmation-modal" onClick={(e) => {
+      if (e.target === e.currentTarget) {
+        onClose();
+      }
+    }}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <h3>{isSignup ? 'Crear Cuenta' : 'Iniciar Sesión'}</h3>
         
         <form onSubmit={onSubmit} className="reservation-form">
