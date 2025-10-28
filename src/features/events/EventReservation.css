@@ -22,7 +22,7 @@
 .reservation-header h1 {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #1a4b6d;
+  color: #F25C05;
   margin-bottom: 1rem;
 }
 
@@ -69,9 +69,9 @@
 }
 
 .step.active .step-icon {
-  background: #1a4b6d;
+  background: #F25C05;
   color: white;
-  border-color: #1a4b6d;
+  border-color: #F25C05;
   transform: scale(1.1);
 }
 
@@ -83,7 +83,7 @@
 }
 
 .step.active .step-label {
-  color: #1a4b6d;
+  color: #F25C05;
 }
 
 .step-connector {
@@ -102,7 +102,7 @@
 
 .step.active .step-connector,
 .step.completed .step-connector {
-  background: #1a4b6d;
+  background: #F25C05;
 }
 
 /* Reservation Content */
@@ -135,7 +135,7 @@
 .section-header h3 {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #1a4b6d;
+  color: #F25C05;
   margin-bottom: 0.5rem;
 }
 
@@ -160,7 +160,7 @@
 }
 
 .input-icon {
-  color: #1a4b6d;
+  color: #F25C05;
   font-size: 0.9rem;
 }
 
@@ -180,7 +180,7 @@
 .input-group select:focus,
 .input-group textarea:focus {
   outline: none;
-  border-color: #1a4b6d;
+  border-color: #F25C05;
   background: white;
   box-shadow: 0 0 0 3px rgba(26, 75, 109, 0.1);
 }
@@ -230,13 +230,13 @@
 }
 
 .option-card:hover {
-  border-color: #1a4b6d;
+  border-color: #F25C05;
   transform: translateY(-2px);
   box-shadow: 0 5px 20px rgba(26, 75, 109, 0.15);
 }
 
 .option-card.selected {
-  border-color: #1a4b6d;
+  border-color: #F25C05;
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   box-shadow: 0 5px 20px rgba(26, 75, 109, 0.2);
 }
@@ -246,7 +246,7 @@
   position: absolute;
   top: 15px;
   right: 15px;
-  background: #1a4b6d;
+  background: #F25C05;
   color: white;
   width: 25px;
   height: 25px;
@@ -277,7 +277,7 @@
 }
 
 .option-icon .icon {
-  color: #1a4b6d;
+  color: #F25C05;
   font-size: 1.5rem;
 }
 
@@ -286,14 +286,14 @@
 }
 
 .option-title h4 {
-  color: #1a4b6d;
+  color: #F25C05;
   margin: 0 0 0.5rem 0;
   font-size: 1.1rem;
   font-weight: 600;
 }
 
 .option-capacity {
-  background: #1a4b6d;
+  background: #F25C05;
   color: white;
   padding: 0.25rem 0.75rem;
   border-radius: 15px;
@@ -325,7 +325,7 @@
 
 .feature-tag {
   background: #e7f1ff;
-  color: #1a4b6d;
+  color: #F25C05;
   padding: 0.25rem 0.75rem;
   border-radius: 15px;
   font-size: 0.8rem;
@@ -342,7 +342,7 @@
   align-items: center;
   gap: 0.5rem;
   background: rgba(26, 75, 109, 0.1);
-  color: #1a4b6d;
+  color: #F25C05;
   padding: 0.75rem 1.5rem;
   border-radius: 25px;
   font-weight: 600;
@@ -371,7 +371,7 @@
 }
 
 .info-icon {
-  color: #1a4b6d;
+  color: #F25C05;
   font-size: 1.2rem;
   margin-top: 0.1rem;
   flex-shrink: 0;
@@ -388,7 +388,7 @@
 }
 
 .info-content strong {
-  color: #1a4b6d;
+  color: #F25C05;
 }
 
 .info-card.warning .info-content strong {
@@ -409,7 +409,7 @@
 }
 
 .summary-header h3 {
-  color: #1a4b6d;
+  color: #F25C05;
   margin: 0;
   font-size: 1.3rem;
 }
@@ -433,11 +433,11 @@
 
 .summary-item.highlight {
   background: rgba(26, 75, 109, 0.1);
-  border-color: #1a4b6d;
+  border-color: #F25C05;
 }
 
 .summary-icon {
-  color: #1a4b6d;
+  color: #F25C05;
   font-size: 1.1rem;
   width: 20px;
   text-align: center;
@@ -457,7 +457,7 @@
 
 .item-value {
   font-weight: 600;
-  color: #1a4b6d;
+  color: #F25C05;
   font-size: 1rem;
 }
 
@@ -468,7 +468,7 @@
 }
 
 .pricing-title {
-  color: #1a4b6d;
+  color: #F25C05;
   margin-bottom: 1rem;
   font-size: 1.2rem;
   text-align: center;
@@ -499,9 +499,9 @@
   align-items: center;
   justify-content: space-between;
   padding: 1rem;
-  border-top: 2px dashed #1a4b6d;
+  border-top: 2px dashed #F25C05;
   margin-top: 0.5rem;
-  color: #1a4b6d;
+  color: #F25C05;
   font-size: 1.2rem;
   font-weight: 700;
   background: rgba(26, 75, 109, 0.05);
@@ -515,7 +515,7 @@
 }
 
 .submit-button {
-  background: linear-gradient(135deg, #1a4b6d 0%, #2c6e95 100%);
+  background: linear-gradient(135deg, #F25C05 0%, #2c6e95 100%);
   color: white;
   border: none;
   border-radius: 12px;
@@ -533,7 +533,7 @@
 .submit-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(26, 75, 109, 0.4);
-  background: linear-gradient(135deg, #2c6e95 0%, #1a4b6d 100%);
+  background: linear-gradient(135deg, #2c6e95 0%, #F25C05 100%);
 }
 
 .button-icon {
@@ -572,7 +572,7 @@
 }
 
 .modal-header h3 {
-  color: #1a4b6d;
+  color: #F25C05;
   margin: 0;
   font-size: 1.5rem;
 }
@@ -582,7 +582,7 @@
 }
 
 .reservation-details h4 {
-  color: #1a4b6d;
+  color: #F25C05;
   margin-bottom: 1.5rem;
   font-size: 1.2rem;
 }
@@ -618,7 +618,7 @@
 }
 
 .detail-item span {
-  color: #1a4b6d;
+  color: #F25C05;
   font-weight: 500;
   text-align: right;
   flex: 1;
@@ -626,6 +626,66 @@
 
 .detail-item.full-width span {
   text-align: left;
+}
+
+.price-breakdown {
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+}
+
+.price-breakdown h4 {
+  margin: 0 0 1rem 0;
+  color: #F25C05;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.price-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.price-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+}
+
+.price-item.total {
+  border-top: 2px solid #F25C05;
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+}
+
+.price-label {
+  color: #495057;
+  font-weight: 500;
+}
+
+.price-value {
+  color: #F25C05;
+  font-weight: 600;
+}
+
+.price-item.total .price-label {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.price-item.total .price-value {
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.total-amount {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #F25C05;
 }
 
 .modal-actions {

@@ -568,51 +568,35 @@ const RoomReservation = ({ user, apiUrl }) => {
                     />
                   </div>
                 </div>
+
+                {/* Desglose de Precios movido aquí, debajo de Información de Contacto */}
+                {total > 0 && (
+                  <div className="pricing-section">
+                    <h4 className="pricing-title">Desglose de Precios</h4>
+                    <div className="pricing-breakdown">
+                      <div className="pricing-row">
+                        <span>Habitación</span>
+                        <span>
+                          {roomTypes.find(r => r.id === formData.roomType)?.name}
+                        </span>
+                      </div>
+                      <div className="pricing-row">
+                        <span>Precio por noche</span>
+                        <span>${roomTypes.find(r => r.id === formData.roomType)?.price || 0}</span>
+                      </div>
+                      <div className="pricing-row">
+                        <span>Número de noches</span>
+                        <span>{nights}</span>
+                      </div>
+                      <div className="pricing-total">
+                        <span>Total estimado</span>
+                        <span>${total.toLocaleString('es-MX')}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </>,
               'contact'
-            )}
-
-            {total > 0 && (
-              <div className="reservation-summary">
-                <div className="summary-header">
-                  <h3>Resumen de Reserva</h3>
-                </div>
-                <div className="summary-details">
-                  <div className="summary-item">
-                    <FaBed className="summary-icon" />
-                    <div className="item-info">
-                      <span className="item-label">Habitación</span>
-                      <span className="item-value">
-                        {roomTypes.find(r => r.id === formData.roomType)?.name}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div className="summary-item">
-                    <FaMoon className="summary-icon" />
-                    <div className="item-info">
-                      <span className="item-label">Duración</span>
-                      <span className="item-value">{nights} noches</span>
-                    </div>
-                  </div>
-                  
-                  <div className="summary-item">
-                    <FaUsers className="summary-icon" />
-                    <div className="item-info">
-                      <span className="item-label">Huéspedes</span>
-                      <span className="item-value">{formData.guests} personas</span>
-                    </div>
-                  </div>
-                  
-                  <div className="summary-item total">
-                    <FaDollarSign className="summary-icon" />
-                    <div className="item-info">
-                      <span className="item-label">Total</span>
-                      <span className="item-value">${total}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
             )}
 
             <div className="form-actions">
@@ -648,16 +632,36 @@ const RoomReservation = ({ user, apiUrl }) => {
                     <span>{formData.guests} personas</span>
                   </div>
                   <div className="detail-item">
-                    <strong>Total:</strong>
-                    <span className="total-amount">${total}</span>
+                    <strong>Noches:</strong>
+                    <span>{nights} noche{nights !== 1 ? 's' : ''}</span>
                   </div>
-                  <div className="detail-item">
-                    <strong>Nombre:</strong>
-                    <span>{formData.name}</span>
+                </div>
+                
+                <div className="price-breakdown">
+                  <h4>Desglose de Precios:</h4>
+                  <div className="price-details">
+                    <div className="price-item">
+                      <span className="price-label">{roomTypes.find(r => r.id === formData.roomType)?.name}</span>
+                      <span className="price-value">${roomTypes.find(r => r.id === formData.roomType)?.price || 0} × {nights} noche{nights !== 1 ? 's' : ''}</span>
+                    </div>
+                    <div className="price-item total">
+                      <span className="price-label">Total:</span>
+                      <span className="price-value total-amount">${total}</span>
+                    </div>
                   </div>
-                  <div className="detail-item">
-                    <strong>Email:</strong>
-                    <span>{formData.email}</span>
+                </div>
+                
+                <div className="reservation-details">
+                  <h4>Información de Contacto:</h4>
+                  <div className="detail-grid">
+                    <div className="detail-item">
+                      <strong>Nombre:</strong>
+                      <span>{formData.name}</span>
+                    </div>
+                    <div className="detail-item">
+                      <strong>Email:</strong>
+                      <span>{formData.email}</span>
+                    </div>
                   </div>
                 </div>
               </div>

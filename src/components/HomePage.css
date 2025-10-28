@@ -561,6 +561,9 @@
 
 .map-container {
   position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .map-wrapper {
@@ -568,18 +571,21 @@
   border-radius: 24px;
   overflow: hidden;
   box-shadow: 0 15px 50px rgba(0, 0, 0, 0.1);
+  flex: 1;
+  min-height: 500px;
 }
 
 .map-overlay {
   position: absolute;
-  top: 1.5rem;
-  left: 1.5rem;
+  top: 2rem;
+  right: 2rem;
   background: rgba(255, 255, 255, 0.95);
   padding: 1.5rem;
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
   z-index: 1;
+  max-width: 280px;
 }
 
 .map-info h4 {
@@ -593,6 +599,15 @@
   color: #6c757d;
   margin: 0;
   font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.map-wrapper iframe {
+  width: 100%;
+  height: 100%;
+  min-height: 500px;
+  border: 0;
+  border-radius: 24px;
 }
 
 /* CTA Section */
@@ -799,6 +814,29 @@
   
   .location-actions {
     flex-direction: column;
+  }
+  
+  .map-container {
+    min-height: 400px;
+  }
+  
+  .map-wrapper {
+    min-height: 400px;
+  }
+  
+  .map-overlay {
+    top: 1rem;
+    right: 1rem;
+    padding: 1rem;
+    max-width: 200px;
+  }
+  
+  .map-info h4 {
+    font-size: 1rem;
+  }
+  
+  .map-info p {
+    font-size: 0.8rem;
   }
   
   .cta-text h2 {

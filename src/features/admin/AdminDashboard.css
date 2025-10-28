@@ -10,7 +10,7 @@
   text-align: center;
   font-size: 2.5rem;
   font-weight: 700;
-  color: #1a4b6d;
+  color: #F25C05;
   margin-bottom: 2rem;
   padding: 0 1rem;
 }
@@ -92,14 +92,14 @@
   gap: 0.5rem;
   font-size: 1.5rem;
   font-weight: 600;
-  color: #1a4b6d;
+  color: #F25C05;
   margin-bottom: 1.5rem;
   padding-bottom: 0.75rem;
   border-bottom: 2px solid #e9ecef;
 }
 
 .admin-section h3 svg {
-  color: #1a4b6d;
+  color: #F25C05;
 }
 
 /* Empty State */
@@ -318,7 +318,7 @@
 
 .room-modal-close:hover {
   background: #f8f9fa;
-  color: #1a4b6d;
+  color: #F25C05;
 }
 
 .room-modal-gallery {
@@ -368,7 +368,7 @@
 .room-modal-info-box h5 {
   font-weight: 600;
   margin-bottom: 0.5rem;
-  color: #1a4b6d;
+  color: #F25C05;
 }
 
 .room-modal-info-box ul {

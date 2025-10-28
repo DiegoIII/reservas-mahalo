@@ -705,121 +705,42 @@ const EventReservation = ({ user, apiUrl }) => {
                     />
                   </div>
                 </div>
-              </>,
-              'contact'
-            )}
 
-            {formData.date && formData.time && formData.rentalType && (
-              <div className="reservation-summary">
-                <div className="summary-header">
-                  <h3>Resumen de tu Evento</h3>
-                </div>
-                <div className="summary-details">
-                  <div className="summary-item">
-                    <FaHeart className="summary-icon" />
-                    <div className="item-info">
-                      <span className="item-label">Tipo de Evento</span>
-                      <span className="item-value">
-                        {eventTypes.find(e => e.id === formData.eventType)?.name}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  {formData.eventType === 'engagement' && formData.engagementType && (
-                    <div className="summary-item">
-                      <FaGem className="summary-icon" />
-                      <div className="item-info">
-                        <span className="item-label">Tipo de Compromiso</span>
-                        <span className="item-value">
-                          {engagementTypes.find(e => e.id === formData.engagementType)?.name}
+                {/* Desglose de Precios movido aquí, debajo de Información de Contacto */}
+                {formData.date && formData.startTime && formData.rentalType && (
+                  <div className="pricing-section">
+                    <h4 className="pricing-title">Desglose de Precios</h4>
+                    <div className="pricing-breakdown">
+                      <div className="pricing-row">
+                        <span>Tipo de renta</span>
+                        <span>
+                          {formData.rentalType === 'salon' ? 'Salón Básico' : 'Salón Decorado'}
                         </span>
                       </div>
-                    </div>
-                  )}
-                  
-                  <div className="summary-item">
-                    <FaCalendarAlt className="summary-icon" />
-                    <div className="item-info">
-                      <span className="item-label">Fecha</span>
-                      <span className="item-value">
-                        {new Date(formData.date).toLocaleDateString('es-ES', {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div className="summary-item">
-                    <FaClock className="summary-icon" />
-                    <div className="item-info">
-                      <span className="item-label">Horario</span>
-                      <span className="item-value">{formData.startTime} - {formData.endTime}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="summary-item">
-                    <FaUsers className="summary-icon" />
-                    <div className="item-info">
-                      <span className="item-label">Invitados</span>
-                      <span className="item-value">{formData.guests} personas</span>
-                    </div>
-                  </div>
-                  
-                  <div className="summary-item">
-                    <FaMapMarkerAlt className="summary-icon" />
-                    <div className="item-info">
-                      <span className="item-label">Lugar</span>
-                      <span className="item-value">
-                        {venues.find(v => v.id === formData.venue)?.name}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  {duration > 0 && (
-                    <div className="summary-item highlight">
-                      <FaHourglassHalf className="summary-icon" />
-                      <div className="item-info">
-                        <span className="item-label">Duración</span>
-                        <span className="item-value">{duration} horas</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                
-                <div className="pricing-section">
-                  <h4 className="pricing-title">Desglose de Precios</h4>
-                  <div className="pricing-breakdown">
-                    <div className="pricing-row">
-                      <span>Tipo de renta</span>
-                      <span>
-                        {formData.rentalType === 'salon' ? 'Salón Básico' : 'Salón Decorado'}
-                      </span>
-                    </div>
-                    <div className="pricing-row">
-                      <span>Precio base</span>
-                      <span>${pricing.baseRental.toLocaleString('es-MX')}</span>
-                    </div>
-                    {pricing.shortHoursApplied ? (
                       <div className="pricing-row">
-                        <span>Menos de 5 horas (15%)</span>
-                        <span>${pricing.shortHoursCharge.toLocaleString('es-MX')}</span>
+                        <span>Precio base</span>
+                        <span>${pricing.baseRental.toLocaleString('es-MX')}</span>
                       </div>
-                    ) : (
-                      <div className="pricing-row">
-                        <span>Horas extra ({pricing.extraHours} × ${pricing.extraHourRate.toLocaleString('es-MX')})</span>
-                        <span>${pricing.extraHoursCharge.toLocaleString('es-MX')}</span>
+                      {pricing.shortHoursApplied ? (
+                        <div className="pricing-row">
+                          <span>Menos de 5 horas (15%)</span>
+                          <span>${pricing.shortHoursCharge.toLocaleString('es-MX')}</span>
+                        </div>
+                      ) : (
+                        <div className="pricing-row">
+                          <span>Horas extra ({pricing.extraHours} × ${pricing.extraHourRate.toLocaleString('es-MX')})</span>
+                          <span>${pricing.extraHoursCharge.toLocaleString('es-MX')}</span>
+                        </div>
+                      )}
+                      <div className="pricing-total">
+                        <span>Total estimado</span>
+                        <span>${pricing.subtotal.toLocaleString('es-MX')}</span>
                       </div>
-                    )}
-                    <div className="pricing-total">
-                      <span>Total estimado</span>
-                      <span>${pricing.subtotal.toLocaleString('es-MX')}</span>
                     </div>
                   </div>
-                </div>
-              </div>
+                )}
+              </>,
+              'contact'
             )}
 
             <div className="form-actions">
@@ -872,26 +793,70 @@ const EventReservation = ({ user, apiUrl }) => {
                     <strong>Duración:</strong>
                     <span>{duration} horas</span>
                   </div>
-                  <div className="detail-item">
-                    <strong>Contacto:</strong>
-                    <span>{formData.name}</span>
-                  </div>
-                  <div className="detail-item">
-                    <strong>Email:</strong>
-                    <span>{formData.email}</span>
-                  </div>
-                  {formData.company && (
+                </div>
+                
+                <div className="reservation-details">
+                  <h4>Información de Contacto:</h4>
+                  <div className="detail-grid">
                     <div className="detail-item">
-                      <strong>Empresa:</strong>
-                      <span>{formData.company}</span>
+                      <strong>Contacto:</strong>
+                      <span>{formData.name}</span>
                     </div>
-                  )}
-                  {formData.specialRequests && (
-                    <div className="detail-item full-width">
-                      <strong>Solicitudes Especiales:</strong>
-                      <span>{formData.specialRequests}</span>
+                    <div className="detail-item">
+                      <strong>Email:</strong>
+                      <span>{formData.email}</span>
                     </div>
-                  )}
+                    {formData.company && (
+                      <div className="detail-item">
+                        <strong>Empresa:</strong>
+                        <span>{formData.company}</span>
+                      </div>
+                    )}
+                    {formData.specialRequests && (
+                      <div className="detail-item full-width">
+                        <strong>Solicitudes Especiales:</strong>
+                        <span>{formData.specialRequests}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="price-breakdown">
+                  <h4>Desglose de Precios:</h4>
+                  <div className="price-details">
+                    {formData.eventType && formData.rentalType ? (() => {
+                      const pricing = calculatePricing();
+                      return (
+                        <>
+                          <div className="price-item">
+                            <span className="price-label">Renta Base ({formData.rentalType === 'decorado' ? 'Decorado' : 'Básico'})</span>
+                            <span className="price-value">${pricing.baseRental}</span>
+                          </div>
+                          {formData.startTime && formData.endTime && pricing.extraHours > 0 && (
+                            <div className="price-item">
+                              <span className="price-label">Horas Extra ({pricing.extraHours} × ${pricing.extraHourRate})</span>
+                              <span className="price-value">${pricing.extraHoursCharge}</span>
+                            </div>
+                          )}
+                          {formData.startTime && formData.endTime && pricing.shortHoursApplied && (
+                            <div className="price-item">
+                              <span className="price-label">Tarifa Reducida (menos de {pricing.baseHours} horas)</span>
+                              <span className="price-value">${pricing.shortHoursCharge}</span>
+                            </div>
+                          )}
+                          <div className="price-item total">
+                            <span className="price-label">Total:</span>
+                            <span className="price-value total-amount">${formData.startTime && formData.endTime ? pricing.subtotal : pricing.baseRental}</span>
+                          </div>
+                        </>
+                      );
+                    })() : (
+                      <div className="price-item">
+                        <span className="price-label">Seleccione tipo de evento y renta para ver el precio</span>
+                        <span className="price-value">-</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

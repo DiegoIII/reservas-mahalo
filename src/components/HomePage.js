@@ -366,16 +366,13 @@ const HomePage = ({ onViewChange, user }) => {
                     <p>Playa Santa Lucía, Acapulco de Juárez, Guerrero</p>
                   </div>
                 </div>
-                <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3818.3647289414416!2d-99.87537142464252!3d16.857842817843938!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85ca59ed50841e61%3A0x8616596a4359a410!2sMahalo%20Beach%20Club%20oficial!5e0!3m2!1ses-419!2smx!4v1761259640738!5m2!1ses-419!2smx"
-                  width="100%"
-                  height="400"
-                  style={{ border: 0, borderRadius: '16px' }}
-                  allowFullScreen=""
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title="Ubicación de Mahalo Beach Club"
-                />
+                 <iframe
+                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3818.3647289414416!2d-99.87537142464252!3d16.857842817843938!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85ca59ed50841e61%3A0x8616596a4359a410!2sMahalo%20Beach%20Club%20oficial!5e0!3m2!1ses-419!2smx!4v1761259640738!5m2!1ses-419!2smx"
+                   allowFullScreen=""
+                   loading="lazy"
+                   referrerPolicy="no-referrer-when-downgrade"
+                   title="Ubicación de Mahalo Beach Club"
+                 />
               </div>
             </div>
           </div>

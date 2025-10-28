@@ -65,7 +65,8 @@ const RestaurantReservation = ({ user, apiUrl }) => {
       description: 'Mesa interior cómoda para comidas familiares', 
       icon: FaChair,
       min: 2,
-      max: 4
+      max: 4,
+      price: 25
     },
     { 
       id: 'window', 
@@ -74,7 +75,8 @@ const RestaurantReservation = ({ user, apiUrl }) => {
       description: 'Vista panorámica al mar, ideal para ocasiones especiales', 
       icon: FaEye,
       min: 2,
-      max: 4
+      max: 4,
+      price: 35
     },
     { 
       id: 'booth', 
@@ -83,7 +85,8 @@ const RestaurantReservation = ({ user, apiUrl }) => {
       description: 'Área privada y acogedora, perfecta para grupos', 
       icon: FaUsers,
       min: 4,
-      max: 6
+      max: 6,
+      price: 45
     },
     { 
       id: 'terrace', 
@@ -92,12 +95,13 @@ const RestaurantReservation = ({ user, apiUrl }) => {
       description: 'Mesa al aire libre con vista al jardín tropical', 
       icon: FaLeaf,
       min: 2,
-      max: 6
+      max: 6,
+      price: 30
     }
   ];
 
   const timeSlots = [
-    '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', 
+    '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30',
     '19:00', '19:30', '20:00', '20:30', '21:00', '21:30', '22:00'
   ];
   
@@ -193,6 +197,12 @@ const RestaurantReservation = ({ user, apiUrl }) => {
     return tableTypes.filter(table => {
       return table.max >= formData.partySize && table.min <= formData.partySize;
     });
+  };
+
+  const calculateTotal = () => {
+    const selectedTable = tableTypes.find(table => table.id === formData.tableType);
+    const partySize = Number(formData.partySize);
+    return selectedTable ? selectedTable.price * partySize : 0;
   };
 
   const ProgressSteps = () => (
@@ -450,68 +460,35 @@ const RestaurantReservation = ({ user, apiUrl }) => {
                     />
                   </div>
                 </div>
+
+                {/* Desglose de Precios movido aquí, debajo de Información de Contacto */}
+                {formData.date && formData.time && formData.tableType && (
+                  <div className="pricing-section">
+                    <h4 className="pricing-title">Desglose de Precios</h4>
+                    <div className="pricing-breakdown">
+                      <div className="pricing-row">
+                        <span>Tipo de mesa</span>
+                        <span>
+                          {tableTypes.find(t => t.id === formData.tableType)?.name}
+                        </span>
+                      </div>
+                      <div className="pricing-row">
+                        <span>Precio por persona</span>
+                        <span>${tableTypes.find(t => t.id === formData.tableType)?.price || 0}</span>
+                      </div>
+                      <div className="pricing-row">
+                        <span>Número de personas</span>
+                        <span>{formData.partySize}</span>
+                      </div>
+                      <div className="pricing-total">
+                        <span>Total estimado</span>
+                        <span>${calculateTotal().toLocaleString('es-MX')}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </>,
               'contact'
-            )}
-
-            {formData.date && formData.time && formData.tableType && (
-              <div className="reservation-summary">
-                <div className="summary-header">
-                  <h3>Resumen de tu Reserva</h3>
-                </div>
-                <div className="summary-details">
-                  <div className="summary-item">
-                    <FaCalendarAlt className="summary-icon" />
-                    <div className="item-info">
-                      <span className="item-label">Fecha</span>
-                      <span className="item-value">
-                        {new Date(formData.date).toLocaleDateString('es-ES', {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div className="summary-item">
-                    <FaClock className="summary-icon" />
-                    <div className="item-info">
-                      <span className="item-label">Hora</span>
-                      <span className="item-value">{formData.time} hrs</span>
-                    </div>
-                  </div>
-                  
-                  <div className="summary-item">
-                    <FaUsers className="summary-icon" />
-                    <div className="item-info">
-                      <span className="item-label">Invitados</span>
-                      <span className="item-value">{formData.partySize} personas</span>
-                    </div>
-                  </div>
-                  
-                  <div className="summary-item">
-                    <FaMapMarkerAlt className="summary-icon" />
-                    <div className="item-info">
-                      <span className="item-label">Área</span>
-                      <span className="item-value">
-                        {reservationAreas.find(a => a.id === formData.locationArea)?.name}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div className="summary-item">
-                    <FaChair className="summary-icon" />
-                    <div className="item-info">
-                      <span className="item-label">Mesa</span>
-                      <span className="item-value">
-                        {tableTypes.find(t => t.id === formData.tableType)?.name}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
             )}
 
             <div className="form-actions">
@@ -554,20 +531,49 @@ const RestaurantReservation = ({ user, apiUrl }) => {
                     <strong>Mesa:</strong>
                     <span>{tableTypes.find(t => t.id === formData.tableType)?.name}</span>
                   </div>
-                  <div className="detail-item">
-                    <strong>Nombre:</strong>
-                    <span>{formData.name}</span>
-                  </div>
-                  <div className="detail-item">
-                    <strong>Email:</strong>
-                    <span>{formData.email}</span>
-                  </div>
-                  {formData.specialRequests && (
-                    <div className="detail-item full-width">
-                      <strong>Solicitudes Especiales:</strong>
-                      <span>{formData.specialRequests}</span>
+                </div>
+                
+                <div className="reservation-details">
+                  <h4>Información de Contacto:</h4>
+                  <div className="detail-grid">
+                    <div className="detail-item">
+                      <strong>Nombre:</strong>
+                      <span>{formData.name}</span>
                     </div>
-                  )}
+                    <div className="detail-item">
+                      <strong>Email:</strong>
+                      <span>{formData.email}</span>
+                    </div>
+                    {formData.specialRequests && (
+                      <div className="detail-item full-width">
+                        <strong>Solicitudes Especiales:</strong>
+                        <span>{formData.specialRequests}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="price-breakdown">
+                  <h4>Desglose de Precios:</h4>
+                  <div className="price-details">
+                    {formData.tableType ? (
+                      <>
+                        <div className="price-item">
+                          <span className="price-label">{tableTypes.find(t => t.id === formData.tableType)?.name}</span>
+                          <span className="price-value">${tableTypes.find(t => t.id === formData.tableType)?.price || 0} × {formData.partySize} persona{formData.partySize !== 1 ? 's' : ''}</span>
+                        </div>
+                        <div className="price-item total">
+                          <span className="price-label">Total:</span>
+                          <span className="price-value total-amount">${calculateTotal()}</span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="price-item">
+                        <span className="price-label">Seleccione una mesa para ver el precio</span>
+                        <span className="price-value">-</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

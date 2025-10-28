@@ -39,7 +39,7 @@
 }
 
 .nav-button:hover {
-  border-color: #1a4b6d;
+  border-color: #F25C05;
   background: #f8f9fa;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(26, 75, 109, 0.15);
@@ -50,8 +50,8 @@
 }
 
 .nav-button.active {
-  border-color: #1a4b6d;
-  background: linear-gradient(135deg, #1a4b6d 0%, #2c6e95 100%);
+  border-color: #F25C05;
+  background: linear-gradient(135deg, #F25C05 0%, #2c6e95 100%);
   color: white;
   box-shadow: 0 4px 15px rgba(26, 75, 109, 0.25);
 }
@@ -86,7 +86,7 @@
 }
 
 .nav-button:hover .nav-icon svg {
-  color: #1a4b6d;
+  color: #F25C05;
 }
 
 .nav-button.active .nav-icon svg {
@@ -119,7 +119,7 @@
 }
 
 .nav-button:hover .nav-title {
-  color: #1a4b6d;
+  color: #F25C05;
 }
 
 .nav-button:hover .nav-description {
@@ -142,7 +142,7 @@
 }
 
 .nav-button:focus-visible {
-  outline: 3px solid #1a4b6d;
+  outline: 3px solid #F25C05;
   outline-offset: 2px;
 }
 
