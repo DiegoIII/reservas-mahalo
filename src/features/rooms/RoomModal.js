@@ -211,14 +211,9 @@ const RoomModal = ({ isOpen, onClose, room, onConfirmReservation, formData, calc
           </div>
         </div>
 
+        {/* Footer simplificado sin desglose de precio */}
         <div className="room-modal-footer">
           <div className="footer-content">
-            <div className="price-breakdown">
-              <span className="nights-count">
-                {calculateNights()} {calculateNights() === 1 ? 'noche' : 'noches'} × ${room.price}
-              </span>
-              <span className="total-price">${calculateTotal().toLocaleString('es-MX')}</span>
-            </div>
             <div className="footer-actions">
               <button className="room-modal-cancel" onClick={onClose}>
                 Explorar Más

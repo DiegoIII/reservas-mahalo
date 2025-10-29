@@ -1,9 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaBed, FaUtensils, FaCalendarAlt } from 'react-icons/fa';
 import './Navbar.css';
 
-const Navbar = ({ onViewChange }) => {
+const Navbar = ({ onViewChange, currentView }) => {
   const [activeOption, setActiveOption] = useState(null);
+
+  // Actualizar activeOption cuando currentView cambie
+  useEffect(() => {
+    if (currentView === 'home') {
+      setActiveOption(null);
+    } else {
+      setActiveOption(currentView);
+    }
+  }, [currentView]);
 
   const handleOptionClick = (option) => {
     setActiveOption(option);

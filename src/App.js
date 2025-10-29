@@ -182,7 +182,7 @@ function App() {
       />
       
       <div className="app-body">
-        {!userWithAdmin?.is_admin && <Navbar onViewChange={handleViewChange} />}
+        {!userWithAdmin?.is_admin && <Navbar onViewChange={handleViewChange} currentView={currentView} />}
         <main className="main-content">
           {renderMainContent()}
         </main>

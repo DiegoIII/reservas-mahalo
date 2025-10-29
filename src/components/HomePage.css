@@ -101,7 +101,7 @@
 .stars {
   display: flex;
   gap: 0.1rem;
-  color: #ffd700;
+  color: #ffffff;
 }
 
 /* Quick Actions */
@@ -680,7 +680,7 @@
 }
 
 .feature-icon {
-  color: #ffd700;
+  color: #ffffff;
   font-size: 1rem;
 }
 
@@ -885,5 +885,230 @@
   
   .stats-bar {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Carousel Styles */
+.carousel-section {
+  margin-bottom: 4rem;
+}
+
+.carousel-container {
+  position: relative;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  margin: 0 auto;
+  max-width: 1000px;
+}
+
+.carousel {
+  position: relative;
+  width: 100%;
+  height: 500px;
+  overflow: hidden;
+}
+
+.carousel-item {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.8s ease-in-out;
+}
+
+.carousel-item.active {
+  opacity: 1;
+}
+
+.carousel-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.carousel-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  color: white;
+  padding: 3rem 2rem 2rem;
+  text-align: center;
+}
+
+.carousel-caption h5 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.carousel-caption p {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  margin: 0;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.carousel-control {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.9);
+  color: #F25C05;
+  border: none;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 10;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.carousel-control:hover {
+  background: #F25C05;
+  color: white;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.carousel-control.prev {
+  left: 2rem;
+}
+
+.carousel-control.next {
+  right: 2rem;
+}
+
+.carousel-indicators {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+  z-index: 10;
+}
+
+.indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid white;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.indicator.active {
+  background: white;
+  transform: scale(1.2);
+}
+
+.indicator:hover {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+/* Responsive Design for Carousel */
+@media (max-width: 968px) {
+  .carousel {
+    height: 400px;
+  }
+  
+  .carousel-caption {
+    padding: 2rem 1.5rem 1.5rem;
+  }
+  
+  .carousel-caption h5 {
+    font-size: 1.5rem;
+  }
+  
+  .carousel-caption p {
+    font-size: 1rem;
+  }
+  
+  .carousel-control {
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
+  }
+  
+  .carousel-control.prev {
+    left: 1rem;
+  }
+  
+  .carousel-control.next {
+    right: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .carousel {
+    height: 350px;
+  }
+  
+  .carousel-caption {
+    padding: 1.5rem 1rem 1rem;
+  }
+  
+  .carousel-caption h5 {
+    font-size: 1.3rem;
+  }
+  
+  .carousel-caption p {
+    font-size: 0.9rem;
+  }
+  
+  .carousel-control {
+    width: 44px;
+    height: 44px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .carousel {
+    height: 300px;
+  }
+  
+  .carousel-caption {
+    padding: 1rem 0.75rem 0.75rem;
+  }
+  
+  .carousel-caption h5 {
+    font-size: 1.1rem;
+  }
+  
+  .carousel-caption p {
+    font-size: 0.8rem;
+  }
+  
+  .carousel-control {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .carousel-control.prev {
+    left: 0.5rem;
+  }
+  
+  .carousel-control.next {
+    right: 0.5rem;
+  }
+  
+  .indicator {
+    width: 10px;
+    height: 10px;
   }
 }

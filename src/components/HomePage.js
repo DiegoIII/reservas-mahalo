@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './HomePage.css';
 import HeroVideo from './HeroVideo';
 import { alberca, restaurant, roomImages } from '../assets/images';
@@ -16,10 +16,57 @@ import {
   FaCheckCircle,
   FaWifi,
   FaCocktail,
-  FaConciergeBell
+  FaConciergeBell,
+  FaChevronLeft,
+  FaChevronRight
 } from 'react-icons/fa';
 
 const HomePage = ({ onViewChange, user }) => {
+  const [currentCarouselIndex, setCurrentCarouselIndex] = useState(0);
+
+  // Importar imágenes del carousel
+  const carouselImages = [
+    require('../assets/images/pagina-principal/mahalo_pic_1.jpg'),
+    require('../assets/images/pagina-principal/mahalo_pic_2.jpg'),
+    require('../assets/images/pagina-principal/mahalo_pic_3.jpg'),
+    require('../assets/images/pagina-principal/mahalo_pic_4.jpg')
+  ];
+
+  const carouselTexts = [
+    {
+      title: "Vista Panorámica al Océano",
+      description: "Disfruta de atardeceres espectaculares desde nuestras instalaciones"
+    },
+    {
+      title: "Alberca Infinity de Lujo",
+      description: "Relájate en nuestra alberca con vista infinita al mar"
+    },
+    {
+      title: "Gastronomía Excepcional",
+      description: "Saborea los mejores platillos con ingredientes frescos del mar"
+    },
+    {
+      title: "Espacios para Eventos",
+      description: "Celebra tus momentos especiales en un ambiente único"
+    }
+  ];
+
+  const nextCarousel = () => {
+    setCurrentCarouselIndex((prev) => (prev + 1) % carouselImages.length);
+  };
+
+  const prevCarousel = () => {
+    setCurrentCarouselIndex((prev) => (prev - 1 + carouselImages.length) % carouselImages.length);
+  };
+
+  // Auto-advance carousel
+  useEffect(() => {
+    const interval = setInterval(() => {
+      nextCarousel();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="homepage">
       <HeroVideo />
@@ -145,6 +192,41 @@ const HomePage = ({ onViewChange, user }) => {
             <p className="section-description">
               Descubre todo lo que tenemos para ofrecerte en nuestro exclusivo beach club
             </p>
+          </div>
+
+          {/* Carousel Section */}
+          <div className="carousel-section">
+            <div className="carousel-container">
+              <div className="carousel">
+                <div className="carousel-item active">
+                  <img 
+                    src={carouselImages[currentCarouselIndex]} 
+                    alt={`Mahalo Beach Club - ${carouselTexts[currentCarouselIndex].title}`}
+                  />
+                  <div className="carousel-caption">
+                    <h5>{carouselTexts[currentCarouselIndex].title}</h5>
+                    <p>{carouselTexts[currentCarouselIndex].description}</p>
+                  </div>
+                </div>
+                
+                <button className="carousel-control prev" onClick={prevCarousel}>
+                  <FaChevronLeft />
+                </button>
+                <button className="carousel-control next" onClick={nextCarousel}>
+                  <FaChevronRight />
+                </button>
+                
+                <div className="carousel-indicators">
+                  {carouselImages.map((_, index) => (
+                    <button
+                      key={index}
+                      className={`indicator ${index === currentCarouselIndex ? 'active' : ''}`}
+                      onClick={() => setCurrentCarouselIndex(index)}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
           
           <div className="features-grid">
@@ -366,13 +448,16 @@ const HomePage = ({ onViewChange, user }) => {
                     <p>Playa Santa Lucía, Acapulco de Juárez, Guerrero</p>
                   </div>
                 </div>
-                 <iframe
-                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3818.3647289414416!2d-99.87537142464252!3d16.857842817843938!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85ca59ed50841e61%3A0x8616596a4359a410!2sMahalo%20Beach%20Club%20oficial!5e0!3m2!1ses-419!2smx!4v1761259640738!5m2!1ses-419!2smx"
-                   allowFullScreen=""
-                   loading="lazy"
-                   referrerPolicy="no-referrer-when-downgrade"
-                   title="Ubicación de Mahalo Beach Club"
-                 />
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3818.3647289414416!2d-99.87537142464252!3d16.857842817843938!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85ca59ed50841e61%3A0x8616596a4359a410!2sMahalo%20Beach%20Club%20oficial!5e0!3m2!1ses-419!2smx!4v1761259640738!5m2!1ses-419!2smx"
+                  width="100%"
+                  height="400"
+                  style={{ border: 0, borderRadius: '16px' }}
+                  allowFullScreen=""
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Ubicación de Mahalo Beach Club"
+                />
               </div>
             </div>
           </div>
