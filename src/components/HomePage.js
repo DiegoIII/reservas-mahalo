@@ -152,7 +152,7 @@ const HomePage = ({ onViewChange, user }) => {
                   </div>
                 </div>
                 <div className="action-link">
-                  Ver Menú Completo
+                  Rerservar Daypass
                   <FaArrowRight className="link-arrow" />
                 </div>
               </div>
@@ -162,7 +162,7 @@ const HomePage = ({ onViewChange, user }) => {
                   <FaCalendarAlt />
                 </div>
                 <div className="action-content">
-                  <h3>Reservar Eventos</h3>
+                  <h3>Cotiza tu Evento</h3>
                   <p>Celebra tus momentos especiales en un ambiente único y con servicio personalizado</p>
                   <div className="action-features">
                     <span><FaCheckCircle /> Bodas</span>
@@ -257,7 +257,10 @@ const HomePage = ({ onViewChange, user }) => {
               </div>
             </div>
             
-            <div className="feature-card">
+            <div className="feature-card clickable" onClick={() => {
+              onViewChange('food');
+              window.scrollTo(0, 0);
+            }}>
               <div className="feature-image">
                 <img src={restaurant} alt="Restaurante gourmet" />
                 <div className="feature-overlay">
@@ -280,6 +283,10 @@ const HomePage = ({ onViewChange, user }) => {
                   <span className="tag">Mariscos frescos</span>
                   <span className="tag">Chef ejecutivo</span>
                   <span className="tag">Terraza al mar</span>
+                </div>
+                <div className="feature-action">
+                  <span className="action-text">Ver galería de platillos</span>
+                  <FaArrowRight className="action-arrow" />
                 </div>
               </div>
             </div>

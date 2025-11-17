@@ -476,7 +476,7 @@ const EventReservation = ({ user, apiUrl }) => {
     <div className="event-reservation">
       <div className="reservation-container">
         <div className="reservation-header">
-          <h1>Reserva tu Evento Especial</h1>
+          <h1>Cotiza tu Evento Especial</h1>
           <p className="reservation-subtitle">
             Crea momentos inolvidables en Mahalo Beach Club
           </p>

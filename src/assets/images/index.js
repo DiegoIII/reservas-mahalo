@@ -45,6 +45,16 @@ import mahaloPic2 from './pagina-principal/mahalo_pic_2.jpg';
 import mahaloPic3 from './pagina-principal/mahalo_pic_3.jpg';
 import mahaloPic4 from './pagina-principal/mahalo_pic_4.jpg';
 
+// Food images
+import comida1 from './comidas/comida_1.jpg';
+import comida2 from './comidas/comida_2.jpg';
+import comida3 from './comidas/comida_3.jpg';
+import comida4 from './comidas/comida_4.jpg';
+import comida5 from './comidas/comida_5.jpg';
+import comida6 from './comidas/comida_6.jpg';
+import comida7 from './comidas/comida_7.jpg';
+import comida8 from './comidas/comida_8.jpg';
+
 // Export main logo
 export { mahaloLogo };
 
@@ -63,11 +73,15 @@ export const roomImages = {
 // Export main page images
 export const mainPageImages = [mahaloPic1, mahaloPic2, mahaloPic3, mahaloPic4];
 
+// Export food images
+export const foodImages = [comida1, comida2, comida3, comida4, comida5, comida6, comida7, comida8];
+
 // Export all images as a single object for easy access
 export const images = {
   logo: mahaloLogo,
   alberca,
   restaurant,
   roomImages,
-  mainPageImages
+  mainPageImages,
+  foodImages
 };

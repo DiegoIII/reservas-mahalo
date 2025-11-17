@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { BrowserRouter, Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom';
 import './App.css';
 
 // Componentes
 import RoomReservation from './features/rooms/RoomReservation';
 import RestaurantReservation from './features/restaurant/RestaurantReservation';
 import EventReservation from './features/events/EventReservation';
+import FoodGallery from './features/food/FoodGallery';
 import AdminDashboard from './features/admin/AdminDashboard';
 import CustomAlert from './components/CustomAlert';
 import HeroVideo from './components/HeroVideo';
@@ -55,11 +57,15 @@ function App() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [user]);
 
+  // Efecto para actualizar el usuario con permisos de admin solo si el usuario existe
+  // No restaurar si el usuario fue eliminado (logout)
   useEffect(() => {
-    if (userWithAdmin) {
-      setUser(userWithAdmin);
+    // Verificar que el usuario existe y que también existe en localStorage (no fue eliminado)
+    const storedUser = window.localStorage.getItem('mahalo_user');
+    if (user && storedUser && user.email === ADMIN_EMAIL && !user.is_admin) {
+      setUser({ ...user, is_admin: 1 });
     }
-  }, [userWithAdmin, setUser]);
+  }, [user, setUser]);
 
   // Handlers memoizados
   const handleViewChange = useCallback((newView) => {
@@ -81,14 +87,44 @@ function App() {
     setAuthForm(prev => ({ ...prev, [name]: value }));
   }, []);
 
+  // Hook de navegación
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Efecto para redirigir si el usuario pierde permisos de admin mientras está en el panel
+  useEffect(() => {
+    if (location.pathname === '/mahalo-panel-de-administracion' && !userWithAdmin?.is_admin) {
+      // Si está en el panel pero ya no es admin, redirigir a la página principal
+      navigate('/', { replace: true });
+    }
+  }, [location.pathname, userWithAdmin?.is_admin, navigate]);
+
   const handleLogoutClick = useCallback(() => {
     setShowLogoutConfirm(true);
   }, []);
 
   const confirmLogout = useCallback(() => {
-    setUser(null);
+    // Cerrar el modal primero
     setShowLogoutConfirm(false);
-  }, [setUser]);
+    
+    // Eliminar manualmente del localStorage PRIMERO para evitar que se restaure
+    try {
+      window.localStorage.removeItem('mahalo_user');
+      window.localStorage.removeItem('mahalo_token');
+      window.localStorage.removeItem('mahalo_session');
+    } catch (error) {
+      console.error('Error al limpiar localStorage:', error);
+    }
+    
+    // Limpiar el estado del usuario (esto también eliminará del localStorage gracias a useLocalStorage)
+    setUser(null);
+    
+    // Limpiar el estado de la vista
+    setCurrentView('home');
+    
+    // Redirigir a la página principal inmediatamente
+    navigate('/', { replace: true });
+  }, [setUser, setCurrentView, navigate]);
 
   const cancelLogout = useCallback(() => {
     setShowLogoutConfirm(false);
@@ -132,6 +168,11 @@ function App() {
       setUser(finalUser);
       setShowAuthModal(false);
       
+      // Redirigir al panel de administración si es admin
+      if (finalUser.is_admin) {
+        navigate('/mahalo-panel-de-administracion');
+      }
+      
       if (isSignup) {
         showSuccess('Cuenta creada exitosamente', '¡Bienvenido!');
       }
@@ -141,12 +182,8 @@ function App() {
     }
   };
 
-  // Renderizado condicional
+  // Renderizado condicional para la página principal
   const renderMainContent = () => {
-    if (userWithAdmin?.is_admin) {
-      return <AdminDashboard apiUrl={API_URL} />;
-    }
-
     return (
       <>
         {currentView === 'home' && (
@@ -168,6 +205,7 @@ function App() {
         {currentView === 'rooms' && <RoomReservation user={userWithAdmin} apiUrl={API_URL} />}
         {currentView === 'restaurant' && <RestaurantReservation user={userWithAdmin} apiUrl={API_URL} />}
         {currentView === 'events' && <EventReservation user={userWithAdmin} apiUrl={API_URL} />}
+        {currentView === 'food' && <FoodGallery onBack={() => handleViewChange('home')} />}
       </>
     );
   };
@@ -182,10 +220,36 @@ function App() {
       />
       
       <div className="app-body">
-        {!userWithAdmin?.is_admin && <Navbar onViewChange={handleViewChange} currentView={currentView} />}
-        <main className="main-content">
-          {renderMainContent()}
-        </main>
+        <Routes>
+          {/* Ruta del panel de administración */}
+          <Route 
+            path="/mahalo-panel-de-administracion" 
+            element={
+              userWithAdmin?.is_admin ? (
+                <>
+                  <main className="main-content">
+                    <AdminDashboard apiUrl={API_URL} />
+                  </main>
+                </>
+              ) : (
+                <Navigate to="/" replace />
+              )
+            } 
+          />
+          
+          {/* Ruta principal */}
+          <Route 
+            path="/*" 
+            element={
+              <>
+                {!userWithAdmin?.is_admin && <Navbar onViewChange={handleViewChange} currentView={currentView} />}
+                <main className="main-content">
+                  {renderMainContent()}
+                </main>
+              </>
+            } 
+          />
+        </Routes>
       </div>
 
       <Footer />
@@ -221,11 +285,18 @@ function App() {
 
 // Componente Header separado
 const Header = React.memo(({ user, onViewChange, onOpenAuth, onLogoutClick }) => {
+  const navigate = useNavigate();
+  
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour >= 5 && hour < 12) return 'Buenos días';
     if (hour >= 12 && hour < 18) return 'Buenas tardes';
     return 'Buenas noches';
+  };
+
+  const handleLogoClick = () => {
+    navigate('/');
+    onViewChange('home');
   };
 
   return (
@@ -236,7 +307,7 @@ const Header = React.memo(({ user, onViewChange, onOpenAuth, onLogoutClick }) =>
             src={mahaloLogo} 
             alt="Mahalo Logo" 
             className="logo clickable-logo" 
-            onClick={() => onViewChange('home')}
+            onClick={handleLogoClick}
           />
           <div className="header-text">
             <h1>Mahalo Beach Club</h1>
@@ -335,6 +406,7 @@ const Footer = React.memo(() => (
         <h4>Contacto</h4>
         <p>Playa Santa Lucía, Acapulco</p>
         <p>clubdeplaya@mahaloclubofficial.com</p>
+        <p>Teléfono: 7444813854 - 7444840019</p>
       </div>
       <div className="footer-section">
         <h4>Horario</h4>
@@ -390,4 +462,13 @@ const TikTokIcon = () => (
   </svg>
 );
 
-export default App;
+// Componente wrapper con Router
+const AppWithRouter = () => {
+  return (
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  );
+};
+
+export default AppWithRouter;
