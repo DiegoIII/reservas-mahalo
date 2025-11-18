@@ -182,7 +182,7 @@
   outline: none;
   border-color: #F25C05;
   background: white;
-  box-shadow: 0 0 0 3px rgba(26, 75, 109, 0.1);
+  box-shadow: 0 0 0 3px rgba(242, 92, 5, 0.1);
 }
 
 .input-row {
@@ -252,13 +252,13 @@
 .room-card:hover {
   border-color: #F25C05;
   transform: translateY(-2px);
-  box-shadow: 0 5px 20px rgba(26, 75, 109, 0.15);
+  box-shadow: 0 5px 20px rgba(242, 92, 5, 0.15);
 }
 
 .room-card.selected {
   border-color: #F25C05;
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  box-shadow: 0 5px 20px rgba(26, 75, 109, 0.2);
+  box-shadow: 0 5px 20px rgba(242, 92, 5, 0.2);
 }
 
 .room-card.unavailable {
@@ -582,12 +582,12 @@
   display: inline-flex;
   align-items: center;
   gap: 0.75rem;
-  box-shadow: 0 4px 15px rgba(26, 75, 109, 0.3);
+  box-shadow: 0 4px 15px rgba(242, 92, 5, 0.3);
 }
 
 .submit-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(26, 75, 109, 0.4);
+  box-shadow: 0 6px 20px rgba(242, 92, 5, 0.4);
   background: #F25C05;
 }
 

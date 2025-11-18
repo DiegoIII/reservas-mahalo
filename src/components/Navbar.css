@@ -42,7 +42,7 @@
   border-color: #F25C05;
   background: #f8f9fa;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(26, 75, 109, 0.15);
+  box-shadow: 0 4px 12px rgba(242, 92, 5, 0.15);
 }
 
 .nav-button:active {
@@ -51,9 +51,9 @@
 
 .nav-button.active {
   border-color: #F25C05;
-  background: linear-gradient(135deg, #F25C05 0%, #2c6e95 100%);
+  background: #F25C05;
   color: white;
-  box-shadow: 0 4px 15px rgba(26, 75, 109, 0.25);
+  box-shadow: 0 4px 15px rgba(242, 92, 5, 0.25);
 }
 
 .nav-icon {
@@ -133,7 +133,7 @@
 
 /* Focus states for accessibility */
 .nav-button:focus {
-  outline: 3px solid rgba(26, 75, 109, 0.3);
+  outline: 3px solid rgba(242, 92, 5, 0.3);
   outline-offset: 2px;
 }
 
@@ -251,13 +251,13 @@
 /* Animation for active state */
 @keyframes pulse {
   0% {
-    box-shadow: 0 4px 15px rgba(26, 75, 109, 0.25);
+    box-shadow: 0 4px 15px rgba(242, 92, 5, 0.25);
   }
   50% {
-    box-shadow: 0 4px 20px rgba(26, 75, 109, 0.4);
+    box-shadow: 0 4px 20px rgba(242, 92, 5, 0.4);
   }
   100% {
-    box-shadow: 0 4px 15px rgba(26, 75, 109, 0.25);
+    box-shadow: 0 4px 15px rgba(242, 92, 5, 0.25);
   }
 }
 

@@ -182,7 +182,7 @@
   outline: none;
   border-color: #F25C05;
   background: white;
-  box-shadow: 0 0 0 3px rgba(26, 75, 109, 0.1);
+  box-shadow: 0 0 0 3px rgba(242, 92, 5, 0.1);
 }
 
 .datetime-inputs {
@@ -232,13 +232,13 @@
 .option-card:hover {
   border-color: #F25C05;
   transform: translateY(-2px);
-  box-shadow: 0 5px 20px rgba(26, 75, 109, 0.15);
+  box-shadow: 0 5px 20px rgba(242, 92, 5, 0.15);
 }
 
 .option-card.selected {
   border-color: #F25C05;
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  box-shadow: 0 5px 20px rgba(26, 75, 109, 0.2);
+  box-shadow: 0 5px 20px rgba(242, 92, 5, 0.2);
 }
 
 .option-card.selected::before {
@@ -341,12 +341,12 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: rgba(26, 75, 109, 0.1);
+  background: rgba(242, 92, 5, 0.1);
   color: #F25C05;
   padding: 0.75rem 1.5rem;
   border-radius: 25px;
   font-weight: 600;
-  border: 1px solid rgba(26, 75, 109, 0.3);
+  border: 1px solid rgba(242, 92, 5, 0.3);
 }
 
 .duration-icon {
@@ -359,7 +359,7 @@
   align-items: flex-start;
   gap: 0.75rem;
   background: rgba(231, 241, 255, 0.5);
-  border: 1px solid rgba(26, 75, 109, 0.2);
+  border: 1px solid rgba(242, 92, 5, 0.2);
   border-radius: 10px;
   padding: 1rem;
   margin: 1rem 0;
@@ -432,7 +432,7 @@
 }
 
 .summary-item.highlight {
-  background: rgba(26, 75, 109, 0.1);
+  background: rgba(242, 92, 5, 0.1);
   border-color: #F25C05;
 }
 
@@ -504,7 +504,7 @@
   color: #F25C05;
   font-size: 1.2rem;
   font-weight: 700;
-  background: rgba(26, 75, 109, 0.05);
+  background: rgba(242, 92, 5, 0.05);
   border-radius: 8px;
 }
 
@@ -515,7 +515,7 @@
 }
 
 .submit-button {
-  background: linear-gradient(135deg, #F25C05 0%, #2c6e95 100%);
+  background: #F25C05;
   color: white;
   border: none;
   border-radius: 12px;
@@ -527,13 +527,14 @@
   display: inline-flex;
   align-items: center;
   gap: 0.75rem;
-  box-shadow: 0 4px 15px rgba(26, 75, 109, 0.3);
+  box-shadow: 0 4px 15px rgba(242, 92, 5, 0.3);
 }
 
 .submit-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(26, 75, 109, 0.4);
-  background: linear-gradient(135deg, #2c6e95 0%, #F25C05 100%);
+  box-shadow: 0 6px 20px rgba(242, 92, 5, 0.4);
+  background: #F25C05;
+  opacity: 0.9;
 }
 
 .button-icon {

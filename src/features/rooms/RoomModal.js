@@ -157,11 +157,10 @@ const RoomModal = ({ isOpen, onClose, room, onConfirmReservation, formData, calc
                 </>
               )}
             </div>
-          </div>
 
-          <div className="room-details-section">
-            <div className="room-info-card">
-              <div className="card-header">
+            {/* Características movidas debajo de la galería */}
+            <div className="room-features-section">
+              <div className="features-header">
                 <h3>Características de la Habitación</h3>
                 <div className="room-highlight">
                   {room.hasView ? 'Vista Premium al Mar' : 'Comodidad y Elegancia'}
@@ -178,7 +177,9 @@ const RoomModal = ({ isOpen, onClose, room, onConfirmReservation, formData, calc
                 ))}
               </div>
             </div>
+          </div>
 
+          <div className="room-details-section">
             {formData && formData.checkIn && formData.checkOut && (
               <div className="reservation-summary-card">
                 <div className="card-header">
@@ -211,10 +212,10 @@ const RoomModal = ({ isOpen, onClose, room, onConfirmReservation, formData, calc
           </div>
         </div>
 
-        {/* Footer simplificado sin desglose de precio */}
+        {/* Footer con botones en horizontal */}
         <div className="room-modal-footer">
           <div className="footer-content">
-            <div className="footer-actions">
+            <div className="footer-actions-horizontal">
               <button className="room-modal-cancel" onClick={onClose}>
                 Explorar Más
               </button>

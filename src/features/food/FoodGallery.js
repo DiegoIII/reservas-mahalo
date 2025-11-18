@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { FaChevronLeft, FaChevronRight, FaTimes, FaUtensils } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaTimes, FaUtensils, FaStar, FaClock, FaLeaf } from 'react-icons/fa';
 import './FoodGallery.css';
 
 const FoodGallery = ({ onBack }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Scroll automático al inicio de la página cuando se carga el componente
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Importar imágenes de comidas dinámicamente
   const foodImages = [
     require('../../assets/images/comidas/comida_1.jpg'),
     require('../../assets/images/comidas/comida_2.jpg'),
@@ -23,6 +21,17 @@ const FoodGallery = ({ onBack }) => {
     require('../../assets/images/comidas/comida_8.jpg')
   ];
 
+  const foodTitles = [
+    "Ceviche de Camarón Premium",
+    "Pescado a la Plancha Gourmet",
+    "Camarones al Ajillo Especial",
+    "Pulpo a la Parrilla Mediterráneo",
+    "Langosta Termidor Clásica",
+    "Tacos de Pescado Tropical",
+    "Ensalada de Mariscos Frescos",
+    "Cóctel de Camarón Signature"
+  ];
+
   const foodDescriptions = [
     "Ceviche de camarón fresco con aguacate y cilantro",
     "Pescado a la plancha con vegetales de temporada",
@@ -32,6 +41,17 @@ const FoodGallery = ({ onBack }) => {
     "Tacos de pescado con salsa de mango",
     "Ensalada de mariscos con vinagreta de limón",
     "Cóctel de camarón estilo Mahalo"
+  ];
+
+  const foodDetails = [
+    { time: "15 min", category: "Entrada" },
+    { time: "25 min", category: "Plato Principal" },
+    { time: "20 min", category: "Plato Principal" },
+    { time: "30 min", category: "Especialidad" },
+    { time: "35 min", category: "Premium" },
+    { time: "15 min", category: "Especialidad" },
+    { time: "10 min", category: "Entrada" },
+    { time: "12 min", category: "Entrada" }
   ];
 
   const nextImage = () => {
@@ -55,8 +75,12 @@ const FoodGallery = ({ onBack }) => {
     <div className="food-gallery">
       <div className="food-gallery-header">
         <div className="gallery-title-section">
-          <div className="title-icon">
-            <FaUtensils />
+          <div className="title-decoration">
+            <div className="decoration-line"></div>
+            <div className="title-icon">
+              <FaUtensils />
+            </div>
+            <div className="decoration-line"></div>
           </div>
           <div className="title-content">
             <h1>Gastronomía de Mahalo</h1>
@@ -68,7 +92,10 @@ const FoodGallery = ({ onBack }) => {
       <div className="food-gallery-content">
         <div className="gallery-intro">
           <div className="intro-card">
-            <h2>Nuestros Platillos Estrella</h2>
+            <div className="intro-header">
+              <h2>Nuestros Platillos Estrella</h2>
+              <div className="title-underline"></div>
+            </div>
             <p>
               En Mahalo Beach Club, cada platillo es una obra de arte culinaria. 
               Nuestro chef ejecutivo utiliza ingredientes frescos del mar y productos 
@@ -77,16 +104,31 @@ const FoodGallery = ({ onBack }) => {
             </p>
             <div className="intro-features">
               <div className="feature-item">
-                <FaUtensils className="feature-icon" />
-                <span>Mariscos frescos del día</span>
+                <div className="feature-icon-wrapper">
+                  <FaStar className="feature-icon" />
+                </div>
+                <div className="feature-text">
+                  <span className="feature-title">Ingredientes Premium</span>
+                  <span>Mariscos frescos del día</span>
+                </div>
               </div>
               <div className="feature-item">
-                <FaUtensils className="feature-icon" />
-                <span>Chef ejecutivo certificado</span>
+                <div className="feature-icon-wrapper">
+                  <FaUtensils className="feature-icon" />
+                </div>
+                <div className="feature-text">
+                  <span className="feature-title">Chef Certificado</span>
+                  <span>Ejecutivo internacional</span>
+                </div>
               </div>
               <div className="feature-item">
-                <FaUtensils className="feature-icon" />
-                <span>Vista panorámica al mar</span>
+                <div className="feature-icon-wrapper">
+                  <FaLeaf className="feature-icon" />
+                </div>
+                <div className="feature-text">
+                  <span className="feature-title">Ambiente Único</span>
+                  <span>Vista panorámica al mar</span>
+                </div>
               </div>
             </div>
           </div>
@@ -105,6 +147,9 @@ const FoodGallery = ({ onBack }) => {
                   alt={`Platillo ${index + 1}`}
                   className="food-image"
                 />
+                <div className="food-badge">
+                  <span>{foodDetails[index].category}</span>
+                </div>
                 <div className="food-overlay">
                   <div className="overlay-content">
                     <FaUtensils className="overlay-icon" />
@@ -113,8 +158,17 @@ const FoodGallery = ({ onBack }) => {
                 </div>
               </div>
               <div className="food-info">
-                <h3>Platillo {index + 1}</h3>
+                <div className="food-header">
+                  <h3>{foodTitles[index]}</h3>
+                  <div className="food-time">
+                    <FaClock className="time-icon" />
+                    <span>{foodDetails[index].time}</span>
+                  </div>
+                </div>
                 <p>{foodDescriptions[index]}</p>
+                <div className="food-cta">
+                  <span>Descubrir más</span>
+                </div>
               </div>
             </div>
           ))}
@@ -153,7 +207,19 @@ const FoodGallery = ({ onBack }) => {
             </div>
             
             <div className="modal-info">
-              <h3>Platillo {currentImageIndex + 1}</h3>
+              <div className="modal-header">
+                <h3>{foodTitles[currentImageIndex]}</h3>
+                <div className="modal-details">
+                  <div className="detail-item">
+                    <FaClock className="detail-icon" />
+                    <span>{foodDetails[currentImageIndex].time}</span>
+                  </div>
+                  <div className="detail-item">
+                    <FaUtensils className="detail-icon" />
+                    <span>{foodDetails[currentImageIndex].category}</span>
+                  </div>
+                </div>
+              </div>
               <p>{foodDescriptions[currentImageIndex]}</p>
             </div>
           </div>

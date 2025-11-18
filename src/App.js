@@ -27,7 +27,6 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
 const ADMIN_EMAIL = 'clubdeplaya@mahaloclubofficial.com';
 
 function App() {
-  const [currentView, setCurrentView] = useState('home');
   const [user, setUser] = useLocalStorage('mahalo_user', null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -38,11 +37,25 @@ function App() {
 
   const { alertState, hideAlert, showError, showSuccess } = useAlert();
 
+  // Hook de navegación
+  const navigate = useNavigate();
+  const location = useLocation();
+
   // Memoizar usuario con permisos de admin
   const userWithAdmin = useMemo(() => {
     if (!user) return null;
     return user.email === ADMIN_EMAIL ? { ...user, is_admin: 1 } : user;
   }, [user]);
+
+  // Determinar currentView basado en la ruta actual
+  const currentView = useMemo(() => {
+    const path = location.pathname;
+    if (path === '/habitaciones' || path === '/rooms') return 'rooms';
+    if (path === '/restaurante' || path === '/restaurant') return 'restaurant';
+    if (path === '/eventos' || path === '/events') return 'events';
+    if (path === '/comida' || path === '/food') return 'food';
+    return 'home';
+  }, [location.pathname]);
 
   // Efectos
   useEffect(() => {
@@ -69,8 +82,16 @@ function App() {
 
   // Handlers memoizados
   const handleViewChange = useCallback((newView) => {
-    setCurrentView(newView);
-  }, []);
+    const routeMap = {
+      'home': '/',
+      'rooms': '/habitaciones',
+      'restaurant': '/restaurante',
+      'events': '/eventos',
+      'food': '/comida'
+    };
+    const route = routeMap[newView] || '/';
+    navigate(route);
+  }, [navigate]);
 
   const openAuth = useCallback((mode) => {
     setAuthMode(mode);
@@ -86,10 +107,6 @@ function App() {
     const { name, value } = e.target;
     setAuthForm(prev => ({ ...prev, [name]: value }));
   }, []);
-
-  // Hook de navegación
-  const navigate = useNavigate();
-  const location = useLocation();
 
   // Efecto para redirigir si el usuario pierde permisos de admin mientras está en el panel
   useEffect(() => {
@@ -119,12 +136,9 @@ function App() {
     // Limpiar el estado del usuario (esto también eliminará del localStorage gracias a useLocalStorage)
     setUser(null);
     
-    // Limpiar el estado de la vista
-    setCurrentView('home');
-    
     // Redirigir a la página principal inmediatamente
     navigate('/', { replace: true });
-  }, [setUser, setCurrentView, navigate]);
+  }, [setUser, navigate]);
 
   const cancelLogout = useCallback(() => {
     setShowLogoutConfirm(false);
@@ -182,39 +196,10 @@ function App() {
     }
   };
 
-  // Renderizado condicional para la página principal
-  const renderMainContent = () => {
-    return (
-      <>
-        {currentView === 'home' && (
-          <HomePage 
-            onViewChange={handleViewChange}
-            user={userWithAdmin}
-          />
-        )}
-        {currentView !== 'home' && (
-          <div className="back-navigation">
-            <button className="back-button" onClick={() => handleViewChange('home')}>
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                <path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"/>
-              </svg>
-              Volver al Inicio
-            </button>
-          </div>
-        )}
-        {currentView === 'rooms' && <RoomReservation user={userWithAdmin} apiUrl={API_URL} />}
-        {currentView === 'restaurant' && <RestaurantReservation user={userWithAdmin} apiUrl={API_URL} />}
-        {currentView === 'events' && <EventReservation user={userWithAdmin} apiUrl={API_URL} />}
-        {currentView === 'food' && <FoodGallery onBack={() => handleViewChange('home')} />}
-      </>
-    );
-  };
-
   return (
     <div className="App">
       <Header 
         user={userWithAdmin}
-        onViewChange={handleViewChange}
         onOpenAuth={openAuth}
         onLogoutClick={handleLogoutClick}
       />
@@ -239,16 +224,109 @@ function App() {
           
           {/* Ruta principal */}
           <Route 
-            path="/*" 
+            path="/" 
             element={
               <>
                 {!userWithAdmin?.is_admin && <Navbar onViewChange={handleViewChange} currentView={currentView} />}
                 <main className="main-content">
-                  {renderMainContent()}
+                  <HomePage 
+                    onViewChange={handleViewChange}
+                    user={userWithAdmin}
+                  />
                 </main>
               </>
             } 
           />
+          
+          {/* Ruta de habitaciones */}
+          <Route 
+            path="/habitaciones" 
+            element={
+              <>
+                {!userWithAdmin?.is_admin && <Navbar onViewChange={handleViewChange} currentView={currentView} />}
+                <main className="main-content">
+                  <div className="back-navigation">
+                    <button className="back-button" onClick={() => handleViewChange('home')}>
+                      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"/>
+                      </svg>
+                      Volver al Inicio
+                    </button>
+                  </div>
+                  <RoomReservation user={userWithAdmin} apiUrl={API_URL} />
+                </main>
+              </>
+            } 
+          />
+          
+          {/* Ruta de restaurante */}
+          <Route 
+            path="/restaurante" 
+            element={
+              <>
+                {!userWithAdmin?.is_admin && <Navbar onViewChange={handleViewChange} currentView={currentView} />}
+                <main className="main-content">
+                  <div className="back-navigation">
+                    <button className="back-button" onClick={() => handleViewChange('home')}>
+                      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"/>
+                      </svg>
+                      Volver al Inicio
+                    </button>
+                  </div>
+                  <RestaurantReservation user={userWithAdmin} apiUrl={API_URL} />
+                </main>
+              </>
+            } 
+          />
+          
+          {/* Ruta de eventos */}
+          <Route 
+            path="/eventos" 
+            element={
+              <>
+                {!userWithAdmin?.is_admin && <Navbar onViewChange={handleViewChange} currentView={currentView} />}
+                <main className="main-content">
+                  <div className="back-navigation">
+                    <button className="back-button" onClick={() => handleViewChange('home')}>
+                      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"/>
+                      </svg>
+                      Volver al Inicio
+                    </button>
+                  </div>
+                  <EventReservation user={userWithAdmin} apiUrl={API_URL} />
+                </main>
+              </>
+            } 
+          />
+          
+          {/* Ruta de comida */}
+          <Route 
+            path="/comida" 
+            element={
+              <>
+                {!userWithAdmin?.is_admin && <Navbar onViewChange={handleViewChange} currentView={currentView} />}
+                <main className="main-content">
+                  <div className="back-navigation">
+                    <button className="back-button" onClick={() => handleViewChange('home')}>
+                      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"/>
+                      </svg>
+                      Volver al Inicio
+                    </button>
+                  </div>
+                  <FoodGallery onBack={() => handleViewChange('home')} />
+                </main>
+              </>
+            } 
+          />
+          
+          {/* Redirects para rutas en inglés */}
+          <Route path="/rooms" element={<Navigate to="/habitaciones" replace />} />
+          <Route path="/restaurant" element={<Navigate to="/restaurante" replace />} />
+          <Route path="/events" element={<Navigate to="/eventos" replace />} />
+          <Route path="/food" element={<Navigate to="/comida" replace />} />
         </Routes>
       </div>
 
@@ -284,7 +362,7 @@ function App() {
 }
 
 // Componente Header separado
-const Header = React.memo(({ user, onViewChange, onOpenAuth, onLogoutClick }) => {
+const Header = React.memo(({ user, onOpenAuth, onLogoutClick }) => {
   const navigate = useNavigate();
   
   const getGreeting = () => {
@@ -296,7 +374,6 @@ const Header = React.memo(({ user, onViewChange, onOpenAuth, onLogoutClick }) =>
 
   const handleLogoClick = () => {
     navigate('/');
-    onViewChange('home');
   };
 
   return (

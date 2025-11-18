@@ -112,7 +112,7 @@
   outline: none;
   border-color: #F25C05;
   background: white;
-  box-shadow: 0 0 0 3px rgba(26, 75, 109, 0.1);
+  box-shadow: 0 0 0 3px rgba(242, 92, 5, 0.1);
 }
 
 .form-group input::placeholder,
@@ -156,15 +156,16 @@
 }
 
 .confirm-button {
-  background: linear-gradient(135deg, #F25C05 0%, #2c6e95 100%);
+  background: #F25C05;
   color: white;
-  box-shadow: 0 4px 15px rgba(26, 75, 109, 0.3);
+  box-shadow: 0 4px 15px rgba(242, 92, 5, 0.3);
 }
 
 .confirm-button:hover {
-  background: linear-gradient(135deg, #2c6e95 0%, #F25C05 100%);
+  background: #F25C05;
+  opacity: 0.9;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(26, 75, 109, 0.4);
+  box-shadow: 0 6px 20px rgba(242, 92, 5, 0.4);
 }
 
 .confirm-button.logout-btn {

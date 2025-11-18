@@ -12,27 +12,39 @@
   margin-bottom: 3rem;
 }
 
-
 .gallery-title-section {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
+  text-align: center;
   background: #fff;
-  padding: 2rem;
+  padding: 3rem 2rem;
   border-radius: 20px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.title-decoration {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.decoration-line {
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #f25c05, transparent);
 }
 
 .title-icon {
   background: #f25c05;
   color: white;
-  width: 80px;
-  height: 80px;
-  border-radius: 20px;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
+  font-size: 1.8rem;
+  box-shadow: 0 5px 15px rgba(242, 92, 5, 0.3);
 }
 
 .title-content h1 {
@@ -40,6 +52,7 @@
   font-weight: 700;
   color: #1e293b;
   margin: 0 0 0.5rem 0;
+  letter-spacing: -0.5px;
 }
 
 .title-content p {
@@ -55,59 +68,103 @@
 }
 
 .gallery-intro {
-  margin-bottom: 3rem;
+  margin-bottom: 4rem;
 }
 
 .intro-card {
   background: #fff;
-  padding: 2.5rem;
+  padding: 3rem;
   border-radius: 20px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   text-align: center;
 }
 
+.intro-header {
+  margin-bottom: 2rem;
+}
+
 .intro-card h2 {
-  font-size: 2rem;
+  font-size: 2.2rem;
   font-weight: 700;
   color: #1e293b;
   margin: 0 0 1rem 0;
 }
 
+.title-underline {
+  width: 80px;
+  height: 3px;
+  background: #f25c05;
+  margin: 0 auto;
+  border-radius: 2px;
+}
+
 .intro-card p {
   font-size: 1.1rem;
   color: #64748b;
-  line-height: 1.6;
-  margin: 0 0 2rem 0;
+  line-height: 1.7;
+  margin: 0 0 3rem 0;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .intro-features {
-  display: flex;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 2rem;
-  flex-wrap: wrap;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .feature-item {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  align-items: flex-start;
+  gap: 1rem;
+  text-align: left;
+  padding: 1.5rem;
   background: #f8fafc;
-  padding: 0.75rem 1.5rem;
-  border-radius: 12px;
-  font-weight: 500;
-  color: #475569;
+  border-radius: 15px;
+  transition: transform 0.3s ease;
 }
 
-.feature-item .feature-icon {
-  font-size: 1.2rem;
+.feature-item:hover {
+  transform: translateY(-3px);
+}
+
+.feature-icon-wrapper {
+  background: #fff;
+  padding: 0.8rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.feature-icon {
+  font-size: 1.5rem;
   color: #f25c05;
-  margin-right: 0.5rem;
+}
+
+.feature-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.feature-title {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 1rem;
+}
+
+.feature-text span:last-child {
+  font-size: 0.9rem;
+  color: #64748b;
 }
 
 .food-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2.5rem;
 }
 
 .food-item {
@@ -115,18 +172,19 @@
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  transition: all 0.4s ease;
   cursor: pointer;
+  position: relative;
 }
 
 .food-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  transform: translateY(-8px);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
 }
 
 .food-image-container {
   position: relative;
-  height: 250px;
+  height: 280px;
   overflow: hidden;
 }
 
@@ -134,11 +192,24 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s ease;
+  transition: transform 0.4s ease;
 }
 
 .food-item:hover .food-image {
-  transform: scale(1.05);
+  transform: scale(1.08);
+}
+
+.food-badge {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: #f25c05;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  z-index: 2;
 }
 
 .food-overlay {
@@ -147,12 +218,12 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: linear-gradient(135deg, rgba(242, 92, 5, 0.9), rgba(0, 0, 0, 0.7));
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.4s ease;
 }
 
 .food-item:hover .food-overlay {
@@ -163,83 +234,134 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.8rem;
   color: white;
   font-weight: 600;
+  transform: translateY(20px);
+  transition: transform 0.3s ease;
+}
+
+.food-item:hover .overlay-content {
+  transform: translateY(0);
 }
 
 .overlay-icon {
-  font-size: 2rem;
+  font-size: 2.2rem;
 }
 
 .food-info {
-  padding: 1.5rem;
+  padding: 2rem;
 }
 
-.food-info h3 {
-  font-size: 1.25rem;
+.food-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.food-header h3 {
+  font-size: 1.3rem;
   font-weight: 600;
   color: #1e293b;
-  margin: 0 0 0.5rem 0;
+  margin: 0;
+  flex: 1;
+}
+
+.food-time {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f1f5f9;
+  padding: 0.4rem 0.8rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.time-icon {
+  font-size: 0.8rem;
+  color: #f25c05;
 }
 
 .food-info p {
   font-size: 0.95rem;
   color: #64748b;
-  line-height: 1.5;
-  margin: 0;
+  line-height: 1.6;
+  margin: 0 0 1.5rem 0;
 }
 
-/* Modal Styles */
+.food-cta {
+  text-align: center;
+  padding: 0.8rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  font-weight: 600;
+  color: #f25c05;
+  transition: all 0.3s ease;
+}
+
+.food-item:hover .food-cta {
+  background: #f25c05;
+  color: white;
+}
+
+/* Modal Styles Mejorados */
 .food-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(0, 0, 0, 0.95);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   padding: 2rem;
+  backdrop-filter: blur(5px);
 }
 
 .food-modal-content {
   background: #fff;
-  border-radius: 20px;
-  max-width: 800px;
+  border-radius: 25px;
+  max-width: 900px;
   width: 100%;
   max-height: 90vh;
   overflow: hidden;
   position: relative;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
 }
 
 .modal-close {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: rgba(0, 0, 0, 0.5);
+  top: 1.5rem;
+  right: 1.5rem;
+  background: rgba(0, 0, 0, 0.6);
   color: white;
   border: none;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  width: 45px;
+  height: 45px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 10;
-  transition: background 0.3s ease;
+  transition: all 0.3s ease;
+  font-size: 1.1rem;
 }
 
 .modal-close:hover {
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.8);
+  transform: scale(1.1);
 }
 
 .modal-image-container {
   position: relative;
-  height: 400px;
+  height: 450px;
   overflow: hidden;
 }
 
@@ -253,70 +375,101 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
   color: white;
   border: none;
   border-radius: 50%;
-  width: 50px;
-  height: 50px;
+  width: 55px;
+  height: 55px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: all 0.3s ease;
+  font-size: 1.2rem;
 }
 
 .modal-nav:hover {
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-50%) scale(1.1);
 }
 
 .modal-nav.prev {
-  left: 1rem;
+  left: 1.5rem;
 }
 
 .modal-nav.next {
-  right: 1rem;
+  right: 1.5rem;
 }
 
 .image-counter {
   position: absolute;
-  bottom: 1rem;
-  right: 1rem;
-  background: rgba(0, 0, 0, 0.5);
+  bottom: 1.5rem;
+  right: 1.5rem;
+  background: rgba(0, 0, 0, 0.6);
   color: white;
-  padding: 0.5rem 1rem;
+  padding: 0.6rem 1.2rem;
   border-radius: 20px;
   font-weight: 500;
+  backdrop-filter: blur(5px);
 }
 
 .modal-info {
-  padding: 2rem;
+  padding: 2.5rem;
 }
 
-.modal-info h3 {
-  font-size: 1.5rem;
-  font-weight: 600;
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  gap: 2rem;
+}
+
+.modal-header h3 {
+  font-size: 1.8rem;
+  font-weight: 700;
   color: #1e293b;
-  margin: 0 0 1rem 0;
+  margin: 0;
+  flex: 1;
+}
+
+.modal-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 150px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.detail-icon {
+  color: #f25c05;
+  font-size: 0.9rem;
 }
 
 .modal-info p {
-  font-size: 1rem;
+  font-size: 1.1rem;
   color: #64748b;
-  line-height: 1.6;
+  line-height: 1.7;
   margin: 0;
 }
 
-/* Responsive Design */
+/* Responsive Design Mejorado */
 @media (max-width: 768px) {
   .food-gallery-header {
     padding: 0 1rem;
   }
   
   .gallery-title-section {
-    flex-direction: column;
-    text-align: center;
-    gap: 1rem;
+    padding: 2rem 1rem;
   }
   
   .title-content h1 {
@@ -329,12 +482,16 @@
   
   .food-grid {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 2rem;
   }
   
   .intro-features {
-    flex-direction: column;
-    gap: 1rem;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .intro-card {
+    padding: 2rem 1.5rem;
   }
   
   .food-modal-overlay {
@@ -346,7 +503,36 @@
   }
   
   .modal-nav {
-    width: 40px;
-    height: 40px;
+    width: 45px;
+    height: 45px;
+  }
+  
+  .modal-info {
+    padding: 2rem 1.5rem;
+  }
+  
+  .modal-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .modal-details {
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-around;
+  }
+}
+
+@media (max-width: 480px) {
+  .food-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .food-image-container {
+    height: 220px;
+  }
+  
+  .food-info {
+    padding: 1.5rem;
   }
 }

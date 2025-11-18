@@ -198,7 +198,7 @@
 
 .action-card:hover .action-link {
   gap: 0.75rem;
-  color: #2c6e95;
+  color: #F25C05;
 }
 
 .link-arrow {
@@ -220,7 +220,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: rgba(26, 75, 109, 0.1);
+  background: rgba(242, 92, 5, 0.1);
   color: #F25C05;
   padding: 0.5rem 1.5rem;
   border-radius: 25px;
@@ -352,7 +352,7 @@
 }
 
 .tag {
-  background: rgba(26, 75, 109, 0.1);
+  background: rgba(242, 92, 5, 0.1);
   color: #F25C05;
   padding: 0.5rem 1rem;
   border-radius: 20px;
@@ -489,7 +489,7 @@
 .detail-icon {
   width: 50px;
   height: 50px;
-  background: rgba(26, 75, 109, 0.1);
+  background: rgba(242, 92, 5, 0.1);
   border-radius: 14px;
   display: flex;
   align-items: center;
@@ -556,7 +556,7 @@
   background: #F25C05;
   color: white;
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(26, 75, 109, 0.3);
+  box-shadow: 0 8px 25px rgba(242, 92, 5, 0.3);
 }
 
 .map-container {
@@ -705,12 +705,15 @@
 }
 
 .cta-button.primary {
-  background: white;
-  color: #F25C05;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
 }
 
 .cta-button.primary:hover {
-  background: #f8f9fa;
+  background: white;
+  color: #F25C05;
   transform: translateY(-3px);
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
 }
@@ -723,7 +726,8 @@
 }
 
 .cta-button.secondary:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: white;
+  color: #F25C05;
   transform: translateY(-3px);
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
 }
