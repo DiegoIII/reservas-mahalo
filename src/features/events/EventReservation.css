@@ -17,6 +17,14 @@
   text-align: center;
   margin-bottom: 3rem;
   padding: 2rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.header-content {
+  width: 100%;
 }
 
 .reservation-header h1 {
@@ -541,6 +549,57 @@
   font-size: 1.2rem;
 }
 
+/* Member Toggle Button */
+.member-toggle-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: white;
+  border: 2px solid #F25C05;
+  border-radius: 25px;
+  color: #F25C05;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.member-toggle-button:hover {
+  background: rgba(242, 92, 5, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(242, 92, 5, 0.2);
+}
+
+.member-toggle-button.active {
+  background: #F25C05;
+  color: white;
+}
+
+.member-toggle-button.active:hover {
+  background: #d14d04;
+}
+
+.member-icon {
+  font-size: 1rem;
+}
+
+/* Pricing Discount */
+.pricing-row.discount {
+  color: #28a745;
+  background: rgba(40, 167, 69, 0.1);
+}
+
+.price-item.discount {
+  color: #28a745;
+}
+
+.price-item.discount .price-label,
+.price-item.discount .price-value {
+  color: #28a745;
+  font-weight: 600;
+}
+
 /* Confirmation Modal */
 .confirmation-modal-overlay {
   position: fixed;
@@ -689,10 +748,11 @@
   color: #F25C05;
 }
 
-.modal-actions {
+.reservation-summary-actions {
   display: flex;
   gap: 1rem;
-  padding: 1.5rem 2rem 2rem 2rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
   border-top: 1px solid #e9ecef;
 }
 
@@ -768,7 +828,7 @@
     justify-content: center;
   }
   
-  .modal-actions {
+  .reservation-summary-actions {
     flex-direction: column;
   }
   

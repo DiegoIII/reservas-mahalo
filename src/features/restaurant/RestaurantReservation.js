@@ -15,7 +15,11 @@ import {
   FaEye, 
   FaLeaf,
   FaExclamationTriangle,
-  FaMapMarkerAlt
+  FaMapMarkerAlt,
+  FaIdCard,
+  FaTag,
+  FaUmbrellaBeach,
+  FaCocktail
 } from 'react-icons/fa';
 import './RestaurantReservation.css';
 import CustomAlert from '../../components/CustomAlert';
@@ -24,10 +28,11 @@ import useAlert from '../../hooks/useAlert';
 const RestaurantReservation = ({ user, apiUrl }) => {
   const initialFormData = {
     date: '', time: '', partySize: 2, tableType: '', locationArea: '',
-    name: '', email: '', phone: '', specialRequests: ''
+    name: '', email: '', phone: '', specialRequests: '', memberNumber: '', daypassType: ''
   };
 
   const [formData, setFormData] = useState(initialFormData);
+  const [isMember, setIsMember] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [activeSection, setActiveSection] = useState('datetime');
   const { alertState, hideAlert, showError, showSuccess } = useAlert();
@@ -54,6 +59,33 @@ const RestaurantReservation = ({ user, apiUrl }) => {
       description: 'Área al aire libre con vista a la alberca y ambiente tropical', 
       icon: FaSwimmingPool,
       features: ['Vista a la alberca', 'Ambiente al aire libre', 'Perfecto para días soleados']
+    }
+  ];
+
+  const daypassTypes = [
+    {
+      id: 'simple',
+      name: 'Daypass Simple',
+      price: 250,
+      description: 'Solo uso de instalación y playa de acuerdo a disponibilidad',
+      icon: FaUmbrellaBeach,
+      features: ['Uso de instalaciones', 'Acceso a playa', 'Según disponibilidad']
+    },
+    {
+      id: 'food-250',
+      name: 'Daypass con Reembolso Alimentos',
+      price: 400,
+      description: 'Uso de instalaciones, playa y reembolso de $250 pesos en alimentos',
+      icon: FaUtensils,
+      features: ['Uso de instalaciones', 'Acceso a playa', 'Reembolso $250 en alimentos']
+    },
+    {
+      id: 'food-drinks-500',
+      name: 'Daypass con Reembolso Completo',
+      price: 500,
+      description: 'Uso de instalaciones, playa y reembolso de $500 pesos en alimentos y bebidas',
+      icon: FaCocktail,
+      features: ['Uso de instalaciones', 'Acceso a playa', 'Reembolso $500 en alimentos y bebidas']
     }
   ];
 
@@ -145,8 +177,13 @@ const RestaurantReservation = ({ user, apiUrl }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const requiredFields = ['date', 'time', 'tableType', 'locationArea', 'name', 'email'];
-    const isValid = requiredFields.every(field => formData[field]);
+    const requiredFields = ['date', 'time', 'locationArea', 'name', 'email'];
+    // Requiere daypassType O tableType
+    if (!formData.daypassType && !formData.tableType) {
+      showError('Por favor selecciona un tipo de daypass o una mesa', 'Campo requerido');
+      return;
+    }
+    const isValid = requiredFields.every(field => formData[field]) && (formData.daypassType || formData.tableType);
     
     if (isValid) {
       setShowConfirmation(true);
@@ -166,12 +203,15 @@ const RestaurantReservation = ({ user, apiUrl }) => {
         date: formData.date, 
         time: formData.time, 
         party_size: Number(formData.partySize),
-        table_type: formData.tableType, 
+        table_type: formData.tableType || null, 
         location_area: formData.locationArea, 
+        daypass_type: formData.daypassType || null,
         name: formData.name,
         email: formData.email, 
         phone: formData.phone || null, 
-        special_requests: formData.specialRequests || null
+        special_requests: formData.specialRequests || null,
+        member_number: isMember ? formData.memberNumber || null : null,
+        is_member: isMember
       };
       
       const resp = await fetch(`${apiUrl}/api/admin/restaurant`, {
@@ -200,9 +240,46 @@ const RestaurantReservation = ({ user, apiUrl }) => {
   };
 
   const calculateTotal = () => {
-    const selectedTable = tableTypes.find(table => table.id === formData.tableType);
-    const partySize = Number(formData.partySize);
-    return selectedTable ? selectedTable.price * partySize : 0;
+    let subtotal = 0;
+    
+    // Si hay daypass seleccionado, usar su precio
+    if (formData.daypassType) {
+      const selectedDaypass = daypassTypes.find(dp => dp.id === formData.daypassType);
+      if (selectedDaypass) {
+        subtotal = selectedDaypass.price * Number(formData.partySize);
+      }
+    } else if (formData.tableType) {
+      // Si hay mesa seleccionada, usar precio de mesa
+      const selectedTable = tableTypes.find(table => table.id === formData.tableType);
+      const partySize = Number(formData.partySize);
+      subtotal = selectedTable ? selectedTable.price * partySize : 0;
+    }
+    
+    // Aplicar descuento de socio (15% para alimentos/daypass)
+    if (isMember && subtotal > 0) {
+      const discount = subtotal * 0.15;
+      subtotal = subtotal - discount;
+    }
+    
+    return subtotal;
+  };
+
+  const calculateDiscount = () => {
+    if (!isMember) return 0;
+    let baseTotal = 0;
+    
+    if (formData.daypassType) {
+      const selectedDaypass = daypassTypes.find(dp => dp.id === formData.daypassType);
+      if (selectedDaypass) {
+        baseTotal = selectedDaypass.price * Number(formData.partySize);
+      }
+    } else if (formData.tableType) {
+      const selectedTable = tableTypes.find(table => table.id === formData.tableType);
+      const partySize = Number(formData.partySize);
+      baseTotal = selectedTable ? selectedTable.price * partySize : 0;
+    }
+    
+    return baseTotal * 0.15;
   };
 
   const ProgressSteps = () => (
@@ -210,6 +287,7 @@ const RestaurantReservation = ({ user, apiUrl }) => {
       <div className="steps-container">
         {[
           { id: 'datetime', label: 'Fecha y Hora', icon: FaCalendarAlt },
+          { id: 'daypass', label: 'Daypass', icon: FaUmbrellaBeach },
           { id: 'area', label: 'Área', icon: FaMapMarkerAlt },
           { id: 'table', label: 'Mesa', icon: FaChair },
           { id: 'contact', label: 'Contacto', icon: FaUser }
@@ -219,7 +297,7 @@ const RestaurantReservation = ({ user, apiUrl }) => {
               <step.icon />
             </div>
             <span className="step-label">{step.label}</span>
-            {index < 3 && <div className="step-connector"></div>}
+            {index < 4 && <div className="step-connector"></div>}
           </div>
         ))}
       </div>
@@ -291,10 +369,20 @@ const RestaurantReservation = ({ user, apiUrl }) => {
     <div className="restaurant-reservation">
       <div className="reservation-container">
         <div className="reservation-header">
-          <h1>Reserva tu Day Pass</h1>
-          <p className="reservation-subtitle">
-            Vive una experiencia gastronómica única en Mahalo Beach Club
-          </p>
+          <div className="header-content">
+            <h1>Reserva tu Day Pass</h1>
+            <p className="reservation-subtitle">
+              Vive una experiencia gastronómica única en Mahalo Beach Club
+            </p>
+          </div>
+          <button
+            type="button"
+            className={`member-toggle-button ${isMember ? 'active' : ''}`}
+            onClick={() => setIsMember(!isMember)}
+          >
+            <FaTag className="member-icon" />
+            {isMember ? 'Modo Socio Activo' : 'Cambiar a Modo Socio'}
+          </button>
         </div>
 
         <ProgressSteps />
@@ -364,13 +452,34 @@ const RestaurantReservation = ({ user, apiUrl }) => {
             )}
 
             {renderFormSection(
+              'Tipo de Daypass',
+              'Elige el tipo de daypass que mejor se adapte a tus necesidades',
+              <>
+                {renderOptionCard(daypassTypes, 'daypassType', (item) => <item.icon className="icon" />, (item) => (
+                  <>
+                    <p className="option-description">{item.description}</p>
+                    <div className="option-features">
+                      {item.features.map((feature, index) => (
+                        <span key={index} className="feature-tag">{feature}</span>
+                      ))}
+                    </div>
+                    <div className="option-price" style={{ marginTop: '1rem', fontSize: '1.2rem', fontWeight: 700 }}>
+                      ${item.price} MXN por persona
+                    </div>
+                  </>
+                ))}
+              </>,
+              'daypass'
+            )}
+
+            {renderFormSection(
               'Área del Restaurante',
               'Elige el ambiente perfecto para tu experiencia',
               renderOptionCard(reservationAreas, 'locationArea', getAreaIcon, renderAreaContent),
               'area'
             )}
 
-            {renderFormSection(
+            {!formData.daypassType && renderFormSection(
               'Tipo de Mesa',
               'Selecciona la mesa que mejor se adapte a tu grupo',
               <>
@@ -445,41 +554,81 @@ const RestaurantReservation = ({ user, apiUrl }) => {
                     />
                   </div>
                   
-                  <div className="input-group">
-                    <label htmlFor="specialRequests">
-                      <FaComment className="input-icon" />
-                      Solicitudes Especiales
-                    </label>
-                    <textarea 
-                      id="specialRequests" 
-                      name="specialRequests" 
-                      value={formData.specialRequests}
-                      onChange={handleInputChange} 
-                      rows="4"
-                      placeholder="Celebración especial, alergias alimentarias, mesa cerca de la ventana..." 
-                    />
+                  <div className="input-row">
+                    <div className="input-group">
+                      <label htmlFor="specialRequests">
+                        <FaComment className="input-icon" />
+                        Solicitudes Especiales
+                      </label>
+                      <textarea 
+                        id="specialRequests" 
+                        name="specialRequests" 
+                        value={formData.specialRequests}
+                        onChange={handleInputChange} 
+                        rows="4"
+                        placeholder="Celebración especial, alergias alimentarias, mesa cerca de la ventana..." 
+                      />
+                    </div>
+                    <div className="input-group">
+                      <label htmlFor="memberNumber">
+                        <FaIdCard className="input-icon" />
+                        Número de Socio
+                      </label>
+                      <input 
+                        type="text" 
+                        id="memberNumber" 
+                        name="memberNumber" 
+                        value={formData.memberNumber}
+                        onChange={handleInputChange}
+                        placeholder="Ingresa tu número de socio" 
+                        disabled={!isMember}
+                      />
+                    </div>
                   </div>
                 </div>
 
                 {/* Desglose de Precios movido aquí, debajo de Información de Contacto */}
-                {formData.date && formData.time && formData.tableType && (
+                {formData.date && formData.time && (formData.tableType || formData.daypassType) && (
                   <div className="pricing-section">
                     <h4 className="pricing-title">Desglose de Precios</h4>
                     <div className="pricing-breakdown">
-                      <div className="pricing-row">
-                        <span>Tipo de mesa</span>
-                        <span>
-                          {tableTypes.find(t => t.id === formData.tableType)?.name}
-                        </span>
-                      </div>
-                      <div className="pricing-row">
-                        <span>Precio por persona</span>
-                        <span>${tableTypes.find(t => t.id === formData.tableType)?.price || 0}</span>
-                      </div>
+                      {formData.daypassType ? (
+                        <>
+                          <div className="pricing-row">
+                            <span>Tipo de daypass</span>
+                            <span>
+                              {daypassTypes.find(t => t.id === formData.daypassType)?.name}
+                            </span>
+                          </div>
+                          <div className="pricing-row">
+                            <span>Precio por persona</span>
+                            <span>${daypassTypes.find(t => t.id === formData.daypassType)?.price || 0}</span>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="pricing-row">
+                            <span>Tipo de mesa</span>
+                            <span>
+                              {tableTypes.find(t => t.id === formData.tableType)?.name}
+                            </span>
+                          </div>
+                          <div className="pricing-row">
+                            <span>Precio por persona</span>
+                            <span>${tableTypes.find(t => t.id === formData.tableType)?.price || 0}</span>
+                          </div>
+                        </>
+                      )}
                       <div className="pricing-row">
                         <span>Número de personas</span>
                         <span>{formData.partySize}</span>
                       </div>
+                      {isMember && calculateDiscount() > 0 && (
+                        <div className="pricing-row discount">
+                          <span>Descuento Socio (15%)</span>
+                          <span>-${calculateDiscount().toLocaleString('es-MX')}</span>
+                        </div>
+                      )}
                       <div className="pricing-total">
                         <span>Total estimado</span>
                         <span>${calculateTotal().toLocaleString('es-MX')}</span>
@@ -504,9 +653,6 @@ const RestaurantReservation = ({ user, apiUrl }) => {
       {showConfirmation && (
         <div className="confirmation-modal-overlay">
           <div className="confirmation-modal">
-            <div className="modal-header">
-              <h3>Confirmar Reserva Day Pass</h3>
-            </div>
             <div className="modal-content">
               <div className="reservation-details">
                 <h4>Detalles de tu reserva:</h4>
@@ -527,10 +673,18 @@ const RestaurantReservation = ({ user, apiUrl }) => {
                     <strong>Área:</strong>
                     <span>{reservationAreas.find(a => a.id === formData.locationArea)?.name}</span>
                   </div>
-                  <div className="detail-item">
-                    <strong>Mesa:</strong>
-                    <span>{tableTypes.find(t => t.id === formData.tableType)?.name}</span>
-                  </div>
+                  {formData.tableType && (
+                    <div className="detail-item">
+                      <strong>Mesa:</strong>
+                      <span>{tableTypes.find(t => t.id === formData.tableType)?.name}</span>
+                    </div>
+                  )}
+                  {formData.daypassType && (
+                    <div className="detail-item">
+                      <strong>Daypass:</strong>
+                      <span>{daypassTypes.find(t => t.id === formData.daypassType)?.name}</span>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="reservation-details">
@@ -556,40 +710,64 @@ const RestaurantReservation = ({ user, apiUrl }) => {
                 <div className="price-breakdown">
                   <h4>Desglose de Precios:</h4>
                   <div className="price-details">
-                    {formData.tableType ? (
+                    {formData.daypassType ? (
+                      <>
+                        <div className="price-item">
+                          <span className="price-label">{daypassTypes.find(t => t.id === formData.daypassType)?.name}</span>
+                          <span className="price-value">${daypassTypes.find(t => t.id === formData.daypassType)?.price || 0} × {formData.partySize} persona{formData.partySize !== 1 ? 's' : ''}</span>
+                        </div>
+                        {isMember && calculateDiscount() > 0 && (
+                          <div className="price-item discount">
+                            <span className="price-label">Descuento Socio (15%)</span>
+                            <span className="price-value">-${calculateDiscount().toLocaleString('es-MX')}</span>
+                          </div>
+                        )}
+                        <div className="price-item total">
+                          <span className="price-label">Total:</span>
+                          <span className="price-value total-amount">${calculateTotal().toLocaleString('es-MX')}</span>
+                        </div>
+                      </>
+                    ) : formData.tableType ? (
                       <>
                         <div className="price-item">
                           <span className="price-label">{tableTypes.find(t => t.id === formData.tableType)?.name}</span>
                           <span className="price-value">${tableTypes.find(t => t.id === formData.tableType)?.price || 0} × {formData.partySize} persona{formData.partySize !== 1 ? 's' : ''}</span>
                         </div>
+                        {isMember && calculateDiscount() > 0 && (
+                          <div className="price-item discount">
+                            <span className="price-label">Descuento Socio (15%)</span>
+                            <span className="price-value">-${calculateDiscount().toLocaleString('es-MX')}</span>
+                          </div>
+                        )}
                         <div className="price-item total">
                           <span className="price-label">Total:</span>
-                          <span className="price-value total-amount">${calculateTotal()}</span>
+                          <span className="price-value total-amount">${calculateTotal().toLocaleString('es-MX')}</span>
                         </div>
                       </>
                     ) : (
                       <div className="price-item">
-                        <span className="price-label">Seleccione una mesa para ver el precio</span>
+                        <span className="price-label">Seleccione un daypass o mesa para ver el precio</span>
                         <span className="price-value">-</span>
                       </div>
                     )}
                   </div>
                 </div>
+
+                <div className="reservation-summary-actions">
+                  <button 
+                    onClick={() => setShowConfirmation(false)} 
+                    className="cancel-button"
+                  >
+                    Cancelar
+                  </button>
+                  <button 
+                    onClick={confirmReservation} 
+                    className="confirm-button"
+                  >
+                    Confirmar Reserva
+                  </button>
+                </div>
               </div>
-            </div>
-            <div className="modal-actions">
-              <button 
-                onClick={() => setShowConfirmation(false)} 
-                className="cancel-button"
-              >
-                Cancelar
-              </button>
-              <button 
-                onClick={confirmReservation} 
-                className="confirm-button"
-              >
-                Confirmar Reserva
-              </button>
             </div>
           </div>
         </div>

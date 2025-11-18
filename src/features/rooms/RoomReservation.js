@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { FaCamera, FaBed, FaCalendarAlt, FaUsers, FaUser, FaEnvelope, FaPhone, FaComment, FaDollarSign, FaMoon, FaCheckCircle, FaInfoCircle, FaSpinner } from 'react-icons/fa';
+import { FaCamera, FaBed, FaCalendarAlt, FaUsers, FaUser, FaEnvelope, FaPhone, FaComment, FaDollarSign, FaMoon, FaCheckCircle, FaInfoCircle, FaSpinner, FaIdCard, FaTag } from 'react-icons/fa';
 import './RoomReservation.css';
 import CustomAlert from '../../components/CustomAlert';
 import RoomModal from './RoomModal';
@@ -8,10 +8,11 @@ import useAlert from '../../hooks/useAlert';
 const RoomReservation = ({ user, apiUrl }) => {
   const initialFormData = {
     checkIn: '', checkOut: '', guests: 1, roomType: '',
-    name: '', email: '', phone: '', specialRequests: ''
+    name: '', email: '', phone: '', specialRequests: '', memberNumber: ''
   };
 
   const [formData, setFormData] = useState(initialFormData);
+  const [isMember, setIsMember] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showRoomModal, setShowRoomModal] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState(null);
@@ -172,7 +173,23 @@ const RoomReservation = ({ user, apiUrl }) => {
   const calculateTotal = () => {
     const selectedRoom = roomTypes.find(room => room.id === formData.roomType);
     const nights = calculateNights();
-    return selectedRoom ? selectedRoom.price * nights : 0;
+    let subtotal = selectedRoom ? selectedRoom.price * nights : 0;
+    
+    // Aplicar descuento de socio (10%)
+    if (isMember && subtotal > 0) {
+      const discount = subtotal * 0.10;
+      subtotal = subtotal - discount;
+    }
+    
+    return subtotal;
+  };
+
+  const calculateDiscount = () => {
+    if (!isMember) return 0;
+    const selectedRoom = roomTypes.find(room => room.id === formData.roomType);
+    const nights = calculateNights();
+    const baseTotal = selectedRoom ? selectedRoom.price * nights : 0;
+    return baseTotal * 0.10;
   };
 
   const handleSubmit = (e) => {
@@ -215,7 +232,9 @@ const RoomReservation = ({ user, apiUrl }) => {
         name: formData.name, 
         email: formData.email,
         phone: formData.phone || null, 
-        special_requests: formData.specialRequests || null
+        special_requests: formData.specialRequests || null,
+        member_number: isMember ? formData.memberNumber || null : null,
+        is_member: isMember
       };
       
       const resp = await fetch(`${apiUrl}/api/admin/room`, {
@@ -362,10 +381,20 @@ const RoomReservation = ({ user, apiUrl }) => {
     <div className="room-reservation">
       <div className="reservation-container">
         <div className="reservation-header">
-          <h1>Reserva tu Habitación</h1>
-          <p className="reservation-subtitle">
-            Encuentra el espacio perfecto para tu estancia en Mahalo Beach Club
-          </p>
+          <div className="header-content">
+            <h1>Reserva tu Habitación</h1>
+            <p className="reservation-subtitle">
+              Encuentra el espacio perfecto para tu estancia en Mahalo Beach Club
+            </p>
+          </div>
+          <button
+            type="button"
+            className={`member-toggle-button ${isMember ? 'active' : ''}`}
+            onClick={() => setIsMember(!isMember)}
+          >
+            <FaTag className="member-icon" />
+            {isMember ? 'Modo Socio Activo' : 'Cambiar a Modo Socio'}
+          </button>
         </div>
 
         <ProgressSteps />
@@ -553,19 +582,36 @@ const RoomReservation = ({ user, apiUrl }) => {
                     />
                   </div>
                   
-                  <div className="input-group">
-                    <label htmlFor="specialRequests">
-                      <FaComment className="input-icon" />
-                      Solicitudes Especiales
-                    </label>
-                    <textarea 
-                      id="specialRequests" 
-                      name="specialRequests" 
-                      value={formData.specialRequests}
-                      onChange={handleInputChange} 
-                      rows="4"
-                      placeholder="Cama extra, alergias, celebración especial, etc..." 
-                    />
+                  <div className="input-row">
+                    <div className="input-group">
+                      <label htmlFor="specialRequests">
+                        <FaComment className="input-icon" />
+                        Solicitudes Especiales
+                      </label>
+                      <textarea 
+                        id="specialRequests" 
+                        name="specialRequests" 
+                        value={formData.specialRequests}
+                        onChange={handleInputChange} 
+                        rows="4"
+                        placeholder="Cama extra, alergias, celebración especial, etc..." 
+                      />
+                    </div>
+                    <div className="input-group">
+                      <label htmlFor="memberNumber">
+                        <FaIdCard className="input-icon" />
+                        Número de Socio
+                      </label>
+                      <input 
+                        type="text" 
+                        id="memberNumber" 
+                        name="memberNumber" 
+                        value={formData.memberNumber}
+                        onChange={handleInputChange}
+                        placeholder="Ingresa tu número de socio" 
+                        disabled={!isMember}
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -588,6 +634,12 @@ const RoomReservation = ({ user, apiUrl }) => {
                         <span>Número de noches</span>
                         <span>{nights}</span>
                       </div>
+                      {isMember && calculateDiscount() > 0 && (
+                        <div className="pricing-row discount">
+                          <span>Descuento Socio (10%)</span>
+                          <span>-${calculateDiscount().toLocaleString('es-MX')}</span>
+                        </div>
+                      )}
                       <div className="pricing-total">
                         <span>Total estimado</span>
                         <span>${total.toLocaleString('es-MX')}</span>
@@ -612,9 +664,6 @@ const RoomReservation = ({ user, apiUrl }) => {
       {showConfirmation && (
         <div className="confirmation-modal-overlay">
           <div className="confirmation-modal">
-            <div className="modal-header">
-              <h3>Confirmar Reserva</h3>
-            </div>
             <div className="modal-content">
               <div className="reservation-details">
                 <h4>Detalles de tu reserva:</h4>
@@ -644,9 +693,15 @@ const RoomReservation = ({ user, apiUrl }) => {
                       <span className="price-label">{roomTypes.find(r => r.id === formData.roomType)?.name}</span>
                       <span className="price-value">${roomTypes.find(r => r.id === formData.roomType)?.price || 0} × {nights} noche{nights !== 1 ? 's' : ''}</span>
                     </div>
+                    {isMember && calculateDiscount() > 0 && (
+                      <div className="price-item discount">
+                        <span className="price-label">Descuento Socio (10%)</span>
+                        <span className="price-value">-${calculateDiscount().toLocaleString('es-MX')}</span>
+                      </div>
+                    )}
                     <div className="price-item total">
                       <span className="price-label">Total:</span>
-                      <span className="price-value total-amount">${total}</span>
+                      <span className="price-value total-amount">${total.toLocaleString('es-MX')}</span>
                     </div>
                   </div>
                 </div>
@@ -664,21 +719,22 @@ const RoomReservation = ({ user, apiUrl }) => {
                     </div>
                   </div>
                 </div>
+
+                <div className="reservation-summary-actions">
+                  <button 
+                    onClick={() => setShowConfirmation(false)} 
+                    className="cancel-button"
+                  >
+                    Cancelar
+                  </button>
+                  <button 
+                    onClick={confirmReservation} 
+                    className="confirm-button"
+                  >
+                    Confirmar Reserva
+                  </button>
+                </div>
               </div>
-            </div>
-            <div className="modal-actions">
-              <button 
-                onClick={() => setShowConfirmation(false)} 
-                className="cancel-button"
-              >
-                Cancelar
-              </button>
-              <button 
-                onClick={confirmReservation} 
-                className="confirm-button"
-              >
-                Confirmar Reserva
-              </button>
             </div>
           </div>
         </div>

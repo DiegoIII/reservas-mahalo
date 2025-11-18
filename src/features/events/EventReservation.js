@@ -25,7 +25,9 @@ import {
   FaPalette,
   FaExclamationTriangle,
   FaInfoCircle,
-  FaHourglassHalf
+  FaHourglassHalf,
+  FaIdCard,
+  FaTag
 } from 'react-icons/fa';
 import './EventReservation.css';
 import CustomAlert from '../../components/CustomAlert';
@@ -34,10 +36,11 @@ import useAlert from '../../hooks/useAlert';
 const EventReservation = ({ user, apiUrl }) => {
   const initialFormData = {
     eventType: '', date: '', startTime: '', endTime: '', guests: 50, venue: '',
-    name: '', email: '', phone: '', company: '', specialRequests: '', rentalType: '', engagementType: ''
+    name: '', email: '', phone: '', company: '', specialRequests: '', rentalType: '', engagementType: '', memberNumber: ''
   };
 
   const [formData, setFormData] = useState(initialFormData);
+  const [isMember, setIsMember] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [activeSection, setActiveSection] = useState('eventType');
   const { alertState, hideAlert, showError, showSuccess } = useAlert();
@@ -281,7 +284,9 @@ const EventReservation = ({ user, apiUrl }) => {
         email: formData.email, 
         phone: formData.phone || null,
         company: formData.company || null, 
-        special_requests: formData.specialRequests || null
+        special_requests: formData.specialRequests || null,
+        member_number: isMember ? formData.memberNumber || null : null,
+        is_member: isMember
       };
       
       const resp = await fetch(`${apiUrl}/api/admin/event`, {
@@ -349,13 +354,17 @@ const EventReservation = ({ user, apiUrl }) => {
     const extraHoursCharge = extraHours * (formData.rentalType === 'decorado' ? 5000 : 3000);
     const shortHoursApplied = duration > 0 && duration < baseHours;
     const shortHoursCharge = shortHoursApplied ? Math.round(baseRental * 0.15) : 0;
-    const subtotal = shortHoursApplied ? shortHoursCharge : baseRental + extraHoursCharge;
+    let subtotal = shortHoursApplied ? shortHoursCharge : baseRental + extraHoursCharge;
+    
+    // Aplicar descuento de socio (10%)
+    const discount = isMember ? subtotal * 0.10 : 0;
+    subtotal = subtotal - discount;
 
     return {
       duration, baseHours, extraHours, baseRental, 
       extraHourRate: formData.rentalType === 'decorado' ? 5000 : 3000, 
       extraHoursCharge, rentalCost: baseRental,
-      shortHoursApplied, shortHoursCharge, subtotal
+      shortHoursApplied, shortHoursCharge, subtotal, discount
     };
   };
 
@@ -476,10 +485,20 @@ const EventReservation = ({ user, apiUrl }) => {
     <div className="event-reservation">
       <div className="reservation-container">
         <div className="reservation-header">
-          <h1>Cotiza tu Evento Especial</h1>
-          <p className="reservation-subtitle">
-            Crea momentos inolvidables en Mahalo Beach Club
-          </p>
+          <div className="header-content">
+            <h1>Cotiza tu Evento Especial</h1>
+            <p className="reservation-subtitle">
+              Crea momentos inolvidables en Mahalo Beach Club
+            </p>
+          </div>
+          <button
+            type="button"
+            className={`member-toggle-button ${isMember ? 'active' : ''}`}
+            onClick={() => setIsMember(!isMember)}
+          >
+            <FaTag className="member-icon" />
+            {isMember ? 'Modo Socio Activo' : 'Cambiar a Modo Socio'}
+          </button>
         </div>
 
         <ProgressSteps />
@@ -690,19 +709,36 @@ const EventReservation = ({ user, apiUrl }) => {
                     </div>
                   </div>
                   
-                  <div className="input-group">
-                    <label htmlFor="specialRequests">
-                      <FaComment className="input-icon" />
-                      Solicitudes Especiales
-                    </label>
-                    <textarea 
-                      id="specialRequests" 
-                      name="specialRequests" 
-                      value={formData.specialRequests}
-                      onChange={handleInputChange} 
-                      rows="4"
-                      placeholder="Decoración especial, catering, equipo audiovisual, accesibilidad, preferencias de menú, etc..." 
-                    />
+                  <div className="input-row">
+                    <div className="input-group">
+                      <label htmlFor="specialRequests">
+                        <FaComment className="input-icon" />
+                        Solicitudes Especiales
+                      </label>
+                      <textarea 
+                        id="specialRequests" 
+                        name="specialRequests" 
+                        value={formData.specialRequests}
+                        onChange={handleInputChange} 
+                        rows="4"
+                        placeholder="Decoración especial, catering, equipo audiovisual, accesibilidad, preferencias de menú, etc..." 
+                      />
+                    </div>
+                    <div className="input-group">
+                      <label htmlFor="memberNumber">
+                        <FaIdCard className="input-icon" />
+                        Número de Socio
+                      </label>
+                      <input 
+                        type="text" 
+                        id="memberNumber" 
+                        name="memberNumber" 
+                        value={formData.memberNumber}
+                        onChange={handleInputChange}
+                        placeholder="Ingresa tu número de socio" 
+                        disabled={!isMember}
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -732,6 +768,12 @@ const EventReservation = ({ user, apiUrl }) => {
                           <span>${pricing.extraHoursCharge.toLocaleString('es-MX')}</span>
                         </div>
                       )}
+                      {isMember && pricing.discount > 0 && (
+                        <div className="pricing-row discount">
+                          <span>Descuento Socio (10%)</span>
+                          <span>-${pricing.discount.toLocaleString('es-MX')}</span>
+                        </div>
+                      )}
                       <div className="pricing-total">
                         <span>Total estimado</span>
                         <span>${pricing.subtotal.toLocaleString('es-MX')}</span>
@@ -756,9 +798,6 @@ const EventReservation = ({ user, apiUrl }) => {
       {showConfirmation && (
         <div className="confirmation-modal-overlay">
           <div className="confirmation-modal">
-            <div className="modal-header">
-              <h3>Confirmar Reserva de Evento</h3>
-            </div>
             <div className="modal-content">
               <div className="reservation-details">
                 <h4>Detalles de tu evento:</h4>
@@ -844,9 +883,15 @@ const EventReservation = ({ user, apiUrl }) => {
                               <span className="price-value">${pricing.shortHoursCharge}</span>
                             </div>
                           )}
+                          {isMember && pricing.discount > 0 && (
+                            <div className="price-item discount">
+                              <span className="price-label">Descuento Socio (10%)</span>
+                              <span className="price-value">-${pricing.discount.toLocaleString('es-MX')}</span>
+                            </div>
+                          )}
                           <div className="price-item total">
                             <span className="price-label">Total:</span>
-                            <span className="price-value total-amount">${formData.startTime && formData.endTime ? pricing.subtotal : pricing.baseRental}</span>
+                            <span className="price-value total-amount">${pricing.subtotal.toLocaleString('es-MX')}</span>
                           </div>
                         </>
                       );
@@ -858,21 +903,22 @@ const EventReservation = ({ user, apiUrl }) => {
                     )}
                   </div>
                 </div>
+
+                <div className="reservation-summary-actions">
+                  <button 
+                    onClick={() => setShowConfirmation(false)} 
+                    className="cancel-button"
+                  >
+                    Cancelar
+                  </button>
+                  <button 
+                    onClick={confirmReservation} 
+                    className="confirm-button"
+                  >
+                    Confirmar Evento
+                  </button>
+                </div>
               </div>
-            </div>
-            <div className="modal-actions">
-              <button 
-                onClick={() => setShowConfirmation(false)} 
-                className="cancel-button"
-              >
-                Cancelar
-              </button>
-              <button 
-                onClick={confirmReservation} 
-                className="confirm-button"
-              >
-                Confirmar Evento
-              </button>
             </div>
           </div>
         </div>
