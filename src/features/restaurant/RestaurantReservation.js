@@ -172,7 +172,15 @@ const RestaurantReservation = ({ user, apiUrl }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Validación especial para número de socio: solo números, máximo 10 caracteres
+    if (name === 'memberNumber') {
+      const numericValue = value.replace(/\D/g, ''); // Remover todo lo que no sea número
+      const limitedValue = numericValue.slice(0, 10); // Limitar a 10 caracteres
+      setFormData(prev => ({ ...prev, [name]: limitedValue }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = (e) => {
@@ -203,14 +211,14 @@ const RestaurantReservation = ({ user, apiUrl }) => {
         date: formData.date, 
         time: formData.time, 
         party_size: Number(formData.partySize),
-        table_type: formData.tableType || null, 
+        table_type: formData.tableType || formData.daypassType || 'daypass', 
         location_area: formData.locationArea, 
         daypass_type: formData.daypassType || null,
         name: formData.name,
         email: formData.email, 
         phone: formData.phone || null, 
         special_requests: formData.specialRequests || null,
-        member_number: isMember ? formData.memberNumber || null : null,
+        member_number: formData.memberNumber || null,
         is_member: isMember
       };
       
@@ -314,7 +322,9 @@ const RestaurantReservation = ({ user, apiUrl }) => {
         <h3>{title}</h3>
         <p className="section-description">{description}</p>
       </div>
-      {children}
+      <div className="section-content">
+        {children}
+      </div>
     </div>
   );
 
@@ -554,21 +564,21 @@ const RestaurantReservation = ({ user, apiUrl }) => {
                     />
                   </div>
                   
-                  <div className="input-row">
-                    <div className="input-group">
-                      <label htmlFor="specialRequests">
-                        <FaComment className="input-icon" />
-                        Solicitudes Especiales
-                      </label>
-                      <textarea 
-                        id="specialRequests" 
-                        name="specialRequests" 
-                        value={formData.specialRequests}
-                        onChange={handleInputChange} 
-                        rows="4"
-                        placeholder="Celebración especial, alergias alimentarias, mesa cerca de la ventana..." 
-                      />
-                    </div>
+                  <div className="input-group">
+                    <label htmlFor="specialRequests">
+                      <FaComment className="input-icon" />
+                      Solicitudes Especiales
+                    </label>
+                    <textarea 
+                      id="specialRequests" 
+                      name="specialRequests" 
+                      value={formData.specialRequests}
+                      onChange={handleInputChange} 
+                      rows="4"
+                      placeholder="Celebración especial, alergias alimentarias, mesa cerca de la ventana..." 
+                    />
+                  </div>
+                  {isMember && (
                     <div className="input-group">
                       <label htmlFor="memberNumber">
                         <FaIdCard className="input-icon" />
@@ -580,11 +590,13 @@ const RestaurantReservation = ({ user, apiUrl }) => {
                         name="memberNumber" 
                         value={formData.memberNumber}
                         onChange={handleInputChange}
-                        placeholder="Ingresa tu número de socio" 
-                        disabled={!isMember}
+                        placeholder="Ingresa tu número de socio (máx. 10 dígitos)" 
+                        maxLength={10}
+                        inputMode="numeric"
+                        pattern="[0-9]*"
                       />
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Desglose de Precios movido aquí, debajo de Información de Contacto */}

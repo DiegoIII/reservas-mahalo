@@ -229,7 +229,12 @@ const EventReservation = ({ user, apiUrl }) => {
     setFormData(prev => {
       const newData = { ...prev, [name]: value };
       
-      if (name === 'startTime' && value) {
+      // Validación especial para número de socio: solo números, máximo 10 caracteres
+      if (name === 'memberNumber') {
+        const numericValue = value.replace(/\D/g, ''); // Remover todo lo que no sea número
+        const limitedValue = numericValue.slice(0, 10); // Limitar a 10 caracteres
+        newData[name] = limitedValue;
+      } else if (name === 'startTime' && value) {
         const startTime = new Date(`2000-01-01T${value}`);
         const endTime = new Date(startTime.getTime() + 5 * 60 * 60 * 1000);
         newData.endTime = endTime.toTimeString().slice(0, 5);
@@ -285,7 +290,7 @@ const EventReservation = ({ user, apiUrl }) => {
         phone: formData.phone || null,
         company: formData.company || null, 
         special_requests: formData.specialRequests || null,
-        member_number: isMember ? formData.memberNumber || null : null,
+        member_number: formData.memberNumber || null,
         is_member: isMember
       };
       
@@ -400,7 +405,9 @@ const EventReservation = ({ user, apiUrl }) => {
         <h3>{title}</h3>
         <p className="section-description">{description}</p>
       </div>
-      {children}
+      <div className="section-content">
+        {children}
+      </div>
     </div>
   );
 
@@ -709,21 +716,21 @@ const EventReservation = ({ user, apiUrl }) => {
                     </div>
                   </div>
                   
-                  <div className="input-row">
-                    <div className="input-group">
-                      <label htmlFor="specialRequests">
-                        <FaComment className="input-icon" />
-                        Solicitudes Especiales
-                      </label>
-                      <textarea 
-                        id="specialRequests" 
-                        name="specialRequests" 
-                        value={formData.specialRequests}
-                        onChange={handleInputChange} 
-                        rows="4"
-                        placeholder="Decoración especial, catering, equipo audiovisual, accesibilidad, preferencias de menú, etc..." 
-                      />
-                    </div>
+                  <div className="input-group">
+                    <label htmlFor="specialRequests">
+                      <FaComment className="input-icon" />
+                      Solicitudes Especiales
+                    </label>
+                    <textarea 
+                      id="specialRequests" 
+                      name="specialRequests" 
+                      value={formData.specialRequests}
+                      onChange={handleInputChange} 
+                      rows="4"
+                      placeholder="Decoración especial, catering, equipo audiovisual, accesibilidad, preferencias de menú, etc..." 
+                    />
+                  </div>
+                  {isMember && (
                     <div className="input-group">
                       <label htmlFor="memberNumber">
                         <FaIdCard className="input-icon" />
@@ -735,11 +742,13 @@ const EventReservation = ({ user, apiUrl }) => {
                         name="memberNumber" 
                         value={formData.memberNumber}
                         onChange={handleInputChange}
-                        placeholder="Ingresa tu número de socio" 
-                        disabled={!isMember}
+                        placeholder="Ingresa tu número de socio (máx. 10 dígitos)" 
+                        maxLength={10}
+                        inputMode="numeric"
+                        pattern="[0-9]*"
                       />
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Desglose de Precios movido aquí, debajo de Información de Contacto */}

@@ -38,6 +38,21 @@ async function ensureAdminAndSchema() {
     console.log('Column is_admin might already exist:', err.message);
   }
   
+  // Add is_member and member_number columns to reservation tables if missing
+  const reservationTables = ['restaurant_reservation', 'room_reservation', 'event_reservation'];
+  for (const table of reservationTables) {
+    try {
+      await pool.query(`ALTER TABLE ${table} ADD COLUMN is_member TINYINT(1) NOT NULL DEFAULT 0`);
+    } catch (err) {
+      console.log(`Column is_member might already exist in ${table}:`, err.message);
+    }
+    try {
+      await pool.query(`ALTER TABLE ${table} ADD COLUMN member_number VARCHAR(100) NULL`);
+    } catch (err) {
+      console.log(`Column member_number might already exist in ${table}:`, err.message);
+    }
+  }
+  
   // Provision admin from environment variables if provided
   const adminEmail = process.env.ADMIN_EMAIL;
   const adminPassword = process.env.ADMIN_PASSWORD;
@@ -132,19 +147,35 @@ app.post('/api/login', async (req, res) => {
 app.get('/api/admin/reservations', async (_req, res) => {
   try {
     const [restaurant] = await pool.query(
-      `SELECT 'restaurant' AS type, id, date, time AS start_time, NULL AS end_time, party_size AS guests, location_area AS location, name, email, phone, created_at
+      `SELECT 'restaurant' AS type, id, date, time AS start_time, NULL AS end_time, party_size AS guests, location_area AS location, name, email, phone, 
+       COALESCE(is_member, 0) AS is_member, member_number, created_at
        FROM restaurant_reservation WHERE date >= CURDATE() ORDER BY date, time`
     );
     const [rooms] = await pool.query(
-      `SELECT 'room' AS type, id, check_in AS date, check_out, NULL AS start_time, NULL AS end_time, guests, room_type AS location, name, email, phone, checked_out, checkout_time, created_at
+      `SELECT 'room' AS type, id, check_in AS date, check_out, NULL AS start_time, NULL AS end_time, guests, room_type AS location, name, email, phone, checked_out, checkout_time, 
+       COALESCE(is_member, 0) AS is_member, member_number, created_at
        FROM room_reservation WHERE check_in >= CURDATE() ORDER BY check_in`
     );
     const [events] = await pool.query(
-      `SELECT 'event' AS type, id, date, start_time, end_time, guests, venue AS location, name, email, phone, created_at
+      `SELECT 'event' AS type, id, date, start_time, end_time, guests, venue AS location, name, email, phone, 
+       COALESCE(is_member, 0) AS is_member, member_number, created_at
        FROM event_reservation WHERE date >= CURDATE() ORDER BY date, start_time`
     );
+    
+    // Debug: log sample data to verify member_number is included
+    if (restaurant.length > 0) {
+      console.log('Sample restaurant reservation:', JSON.stringify(restaurant[0], null, 2));
+    }
+    if (rooms.length > 0) {
+      console.log('Sample room reservation:', JSON.stringify(rooms[0], null, 2));
+    }
+    if (events.length > 0) {
+      console.log('Sample event reservation:', JSON.stringify(events[0], null, 2));
+    }
+    
     res.json([ ...restaurant, ...rooms, ...events ]);
   } catch (err) {
+    console.error('Error fetching reservations:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -153,7 +184,7 @@ app.get('/api/admin/reservations', async (_req, res) => {
 app.get('/api/admin/events', async (_req, res) => {
   try {
     const [events] = await pool.query(
-      `SELECT id, event_type, date, start_time, end_time, guests, venue, name, email, phone, company, special_requests, created_at
+      `SELECT id, event_type, date, start_time, end_time, guests, venue, name, email, phone, company, special_requests, COALESCE(is_member, 0) AS is_member, member_number, created_at
        FROM event_reservation
        WHERE date >= CURDATE()
        ORDER BY date, start_time`
@@ -165,13 +196,14 @@ app.get('/api/admin/events', async (_req, res) => {
 });
 
 app.post('/api/admin/restaurant', async (req, res) => {
-  const { date, time, party_size, table_type, location_area, name, email, phone, special_requests } = req.body || {};
+  const { date, time, party_size, table_type, location_area, name, email, phone, special_requests, is_member, member_number, daypass_type } = req.body || {};
   try {
-    console.log('[POST] /api/admin/restaurant', { date, time, party_size, table_type, location_area, name, email });
+    console.log('[POST] /api/admin/restaurant', { date, time, party_size, table_type, location_area, name, email, is_member, member_number });
+    const finalTableType = table_type || daypass_type || 'daypass';
     await pool.query(
-      `INSERT INTO restaurant_reservation (id, date, time, party_size, table_type, location_area, name, email, phone, special_requests)
-       VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [date, time, party_size, table_type, location_area, name, email, phone || null, special_requests || null]
+      `INSERT INTO restaurant_reservation (id, date, time, party_size, table_type, location_area, name, email, phone, special_requests, is_member, member_number)
+       VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [date, time, party_size, finalTableType, location_area, name, email, phone || null, special_requests || null, is_member ? 1 : 0, member_number || null]
     );
     res.status(201).json({ ok: true });
   } catch (err) {
@@ -248,9 +280,9 @@ app.get('/api/admin/room-availability', async (req, res) => {
 });
 
 app.post('/api/admin/room', async (req, res) => {
-  const { check_in, check_out, guests, room_type, name, email, phone, special_requests } = req.body || {};
+  const { check_in, check_out, guests, room_type, name, email, phone, special_requests, is_member, member_number } = req.body || {};
   try {
-    console.log('[POST] /api/admin/room', { check_in, check_out, guests, room_type, name, email });
+    console.log('[POST] /api/admin/room', { check_in, check_out, guests, room_type, name, email, is_member, member_number });
     
     // Enforce guest capacity per room and global rules
     const roomCapacities = {
@@ -292,9 +324,9 @@ app.post('/api/admin/room', async (req, res) => {
     }
     
     await pool.query(
-      `INSERT INTO room_reservation (id, check_in, check_out, guests, room_type, name, email, phone, special_requests)
-       VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [check_in, check_out, guests, room_type, name, email, phone || null, special_requests || null]
+      `INSERT INTO room_reservation (id, check_in, check_out, guests, room_type, name, email, phone, special_requests, is_member, member_number)
+       VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [check_in, check_out, guests, room_type, name, email, phone || null, special_requests || null, is_member ? 1 : 0, member_number || null]
     );
     res.status(201).json({ ok: true });
   } catch (err) {
@@ -304,13 +336,13 @@ app.post('/api/admin/room', async (req, res) => {
 });
 
 app.post('/api/admin/event', async (req, res) => {
-  const { event_type, date, start_time, end_time, guests, venue, name, email, phone, company, special_requests } = req.body || {};
+  const { event_type, date, start_time, end_time, guests, venue, name, email, phone, company, special_requests, is_member, member_number } = req.body || {};
   try {
-    console.log('[POST] /api/admin/event', { event_type, date, start_time, end_time, guests, venue, name, email });
+    console.log('[POST] /api/admin/event', { event_type, date, start_time, end_time, guests, venue, name, email, is_member, member_number });
     await pool.query(
-      `INSERT INTO event_reservation (id, event_type, date, start_time, end_time, guests, venue, name, email, phone, company, special_requests)
-       VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [event_type, date, start_time, end_time, guests, venue, name, email, phone || null, company || null, special_requests || null]
+      `INSERT INTO event_reservation (id, event_type, date, start_time, end_time, guests, venue, name, email, phone, company, special_requests, is_member, member_number)
+       VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [event_type, date, start_time, end_time, guests, venue, name, email, phone || null, company || null, special_requests || null, is_member ? 1 : 0, member_number || null]
     );
     res.status(201).json({ ok: true });
   } catch (err) {
@@ -345,6 +377,24 @@ app.post('/api/admin/room-checkout', async (req, res) => {
   } catch (err) {
     console.error('room checkout error:', err.message);
     res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete room reservation by id (hard checkout)
+app.delete('/api/admin/room-reservation/:id', async (req, res) => {
+  const { id } = req.params || {};
+  if (!id) {
+    return res.status(400).json({ error: 'id is required' });
+  }
+  try {
+    const [result] = await pool.query('DELETE FROM room_reservation WHERE id = ?', [id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Reservation not found' });
+    }
+    return res.status(200).json({ ok: true, message: 'Reservation deleted' });
+  } catch (err) {
+    console.error('room reservation delete error:', err.message);
+    return res.status(500).json({ error: err.message });
   }
 });
 

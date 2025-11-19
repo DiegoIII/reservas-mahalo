@@ -38,6 +38,8 @@ CREATE TABLE IF NOT EXISTS restaurant_reservation (
   email VARCHAR(255) NOT NULL,
   phone VARCHAR(50) NULL,
   special_requests TEXT NULL,
+  is_member TINYINT(1) NOT NULL DEFAULT 0,
+  member_number VARCHAR(100) NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   INDEX (user_id)
@@ -55,6 +57,8 @@ CREATE TABLE IF NOT EXISTS room_reservation (
   email VARCHAR(255) NOT NULL,
   phone VARCHAR(50) NULL,
   special_requests TEXT NULL,
+  is_member TINYINT(1) NOT NULL DEFAULT 0,
+  member_number VARCHAR(100) NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   INDEX (user_id)
@@ -75,6 +79,8 @@ CREATE TABLE IF NOT EXISTS event_reservation (
   phone VARCHAR(50) NULL,
   company VARCHAR(255) NULL,
   special_requests TEXT NULL,
+  is_member TINYINT(1) NOT NULL DEFAULT 0,
+  member_number VARCHAR(100) NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   INDEX (user_id)

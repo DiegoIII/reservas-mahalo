@@ -31,6 +31,12 @@ const AdminDashboard = ({ apiUrl }) => {
       try {
         const resp = await fetch(`${apiUrl}/api/admin/reservations`);
         const data = await resp.json();
+        // Debug: log first reservation to check member data
+        if (data && data.length > 0) {
+          console.log('Sample reservation data:', data[0]);
+          console.log('Member number in sample:', data[0].member_number);
+          console.log('All keys in sample:', Object.keys(data[0]));
+        }
         setReservations(Array.isArray(data) ? data : []);
       } catch (e) {
         setError(e.message);
@@ -59,6 +65,12 @@ const AdminDashboard = ({ apiUrl }) => {
       return `cuarto${match[1]}`;
     }
     return location;
+  };
+
+  // Helper to get member number from reservation object (handles case variations)
+  const getMemberNumber = (reservation) => {
+    if (!reservation) return null;
+    return reservation.member_number || reservation.memberNumber || reservation.MEMBER_NUMBER || null;
   };
 
   // Provide details and images for a given room code
@@ -118,15 +130,14 @@ const AdminDashboard = ({ apiUrl }) => {
       
       if (!resp.ok) {
         const err = await resp.json().catch(() => ({}));
-        throw new Error(err.error || 'Error al hacer checkout');
+        throw new Error(err.error || 'Error al realizar checkout');
       }
       
-      // Refresh data
       const resp2 = await fetch(`${apiUrl}/api/admin/reservations`);
       const data = await resp2.json();
       setReservations(Array.isArray(data) ? data : []);
       
-      showSuccess('Checkout realizado exitosamente', 'Checkout exitoso');
+      showSuccess('Habitación marcada como checkout y liberada', 'Checkout exitoso');
     } catch (e) {
       showError(e.message, 'Error al realizar checkout');
     } finally {
@@ -288,6 +299,15 @@ const AdminDashboard = ({ apiUrl }) => {
                         Teléfono
                       </div>
                     </th>
+                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="currentColor" strokeWidth="2" fill="none"/>
+                          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="currentColor" strokeWidth="2" fill="none"/>
+                        </svg>
+                        Número de Socio
+                      </div>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -307,6 +327,23 @@ const AdminDashboard = ({ apiUrl }) => {
                       <td style={{ padding: '1rem', fontWeight: '500' }}>{r.name || '--'}</td>
                       <td style={{ padding: '1rem', color: '#64748b' }}>{r.email || '--'}</td>
                       <td style={{ padding: '1rem', color: '#64748b' }}>{r.phone || '--'}</td>
+                      <td style={{ padding: '1rem', textAlign: 'center' }}>
+                        {getMemberNumber(r) ? (
+                          <span style={{ 
+                            background: 'linear-gradient(135deg, #F25C05 0%, #F27E93 100%)', 
+                            color: 'white', 
+                            borderRadius: '20px', 
+                            padding: '0.25rem 0.75rem', 
+                            fontSize: 12, 
+                            fontWeight: 600,
+                            display: 'inline-block'
+                          }}>
+                            {getMemberNumber(r)}
+                          </span>
+                        ) : (
+                          <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>—</span>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -413,6 +450,15 @@ const AdminDashboard = ({ apiUrl }) => {
                     <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="currentColor" strokeWidth="2" fill="none"/>
+                          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="currentColor" strokeWidth="2" fill="none"/>
+                        </svg>
+                        Número de Socio
+                      </div>
+                    </th>
+                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
                           <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" fill="none"/>
                           <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1" stroke="currentColor" strokeWidth="2" fill="none"/>
                         </svg>
@@ -448,6 +494,23 @@ const AdminDashboard = ({ apiUrl }) => {
                       <td style={{ padding: '1rem', fontWeight: '500' }}>{r.name || '--'}</td>
                       <td style={{ padding: '1rem', color: '#64748b' }}>{r.email || '--'}</td>
                       <td style={{ padding: '1rem', color: '#64748b' }}>{r.phone || '--'}</td>
+                      <td style={{ padding: '1rem', textAlign: 'center' }}>
+                        {getMemberNumber(r) ? (
+                          <span style={{ 
+                            background: 'linear-gradient(135deg, #0785F2 0%, #0369a1 100%)', 
+                            color: 'white', 
+                            borderRadius: '20px', 
+                            padding: '0.25rem 0.75rem', 
+                            fontSize: 12, 
+                            fontWeight: 600,
+                            display: 'inline-block'
+                          }}>
+                            {getMemberNumber(r)}
+                          </span>
+                        ) : (
+                          <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>—</span>
+                        )}
+                      </td>
                       <td style={{ padding: '1rem', textAlign: 'center' }}>
                         <span style={{ 
                           background: r.checked_out ? '#dcfce7' : '#fef3c7', 
@@ -647,6 +710,15 @@ const AdminDashboard = ({ apiUrl }) => {
                         <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                             <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="currentColor" strokeWidth="2" fill="none"/>
+                              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="currentColor" strokeWidth="2" fill="none"/>
+                            </svg>
+                            Número de Socio
+                          </div>
+                        </th>
+                        <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
                               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" strokeWidth="2" fill="none"/>
                               <polyline points="14,2 14,8 20,8" stroke="currentColor" strokeWidth="2" fill="none"/>
                               <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" strokeWidth="2" fill="none"/>
@@ -696,6 +768,23 @@ const AdminDashboard = ({ apiUrl }) => {
                           <td style={{ padding: '1rem', fontWeight: '500' }}>{ev.name || '--'}</td>
                           <td style={{ padding: '1rem', color: '#64748b' }}>{ev.email || '--'}</td>
                           <td style={{ padding: '1rem', color: '#64748b' }}>{ev.phone || '--'}</td>
+                          <td style={{ padding: '1rem', textAlign: 'center' }}>
+                            {getMemberNumber(ev) ? (
+                              <span style={{ 
+                                background: 'linear-gradient(135deg, #8C8303 0%, #6B5B00 100%)', 
+                                color: 'white', 
+                                borderRadius: '20px', 
+                                padding: '0.25rem 0.75rem', 
+                                fontSize: 12, 
+                                fontWeight: 600,
+                                display: 'inline-block'
+                              }}>
+                                {getMemberNumber(ev)}
+                              </span>
+                            ) : (
+                              <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>—</span>
+                            )}
+                          </td>
                           <td style={{ 
                             padding: '1rem', 
                             maxWidth: 280, 
@@ -796,6 +885,11 @@ const AdminDashboard = ({ apiUrl }) => {
                         <div style={{ color: '#111827' }}>Contacto: <span style={{ fontWeight: 600 }}>{selectedRoom.name || '--'}</span></div>
                         <div style={{ color: '#111827' }}>Teléfono: <span style={{ fontWeight: 600 }}>{selectedRoom.phone || '--'}</span></div>
                         <div style={{ color: '#111827' }}>Email: <span style={{ fontWeight: 600 }}>{selectedRoom.email || '--'}</span></div>
+                        {getMemberNumber(selectedRoom) && (
+                          <div style={{ color: '#111827', marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid #e5e7eb' }}>
+                            <div style={{ color: '#111827' }}>Número de Socio: <span style={{ fontWeight: 600, color: '#0369a1' }}>{getMemberNumber(selectedRoom)}</span></div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

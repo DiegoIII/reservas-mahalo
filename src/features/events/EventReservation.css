@@ -137,19 +137,24 @@
 
 .section-header {
   margin-bottom: 2rem;
-  text-align: center;
+  text-align: left;
 }
 
 .section-header h3 {
   font-size: 1.5rem;
   font-weight: 600;
   color: #F25C05;
-  margin-bottom: 0.5rem;
+  margin: 0 0 0.5rem 0;
 }
 
 .section-description {
   color: #6c757d;
   font-size: 1rem;
+  margin: 0;
+}
+
+.section-content {
+  margin-top: 1.5rem;
 }
 
 /* Input Groups */
@@ -519,7 +524,7 @@
 /* Form Actions */
 .form-actions {
   text-align: center;
-  padding: 2rem 0 0 0;
+  padding: 2rem 0 3rem 0;
 }
 
 .submit-button {
