@@ -37,6 +37,16 @@ async function ensureAdminAndSchema() {
     // Column might already exist, ignore error
     console.log('Column is_admin might already exist:', err.message);
   }
+  try {
+    await pool.query("ALTER TABLE app_user ADD COLUMN is_member TINYINT(1) NOT NULL DEFAULT 0");
+  } catch (err) {
+    console.log('Column is_member might already exist:', err.message);
+  }
+  try {
+    await pool.query("ALTER TABLE app_user ADD COLUMN member_number VARCHAR(100) NULL");
+  } catch (err) {
+    console.log('Column member_number might already exist:', err.message);
+  }
   
   // Add is_member and member_number columns to reservation tables if missing
   const reservationTables = ['restaurant_reservation', 'room_reservation', 'event_reservation'];
@@ -96,7 +106,7 @@ app.post('/api/users', async (req, res) => {
       [name, email, phone || null, passwordHash]
     );
     const [rows] = await pool.query(
-      'SELECT id, name, email, phone, created_at FROM app_user WHERE email = ?',
+      'SELECT id, name, email, phone, COALESCE(is_member, 0) AS is_member, member_number, created_at FROM app_user WHERE email = ?',
       [email]
     );
     res.status(201).json(rows[0]);
@@ -109,9 +119,37 @@ app.post('/api/users', async (req, res) => {
 app.get('/api/users', async (_req, res) => {
   try {
     const [rows] = await pool.query(
-      'SELECT id, name, email, phone, is_admin, created_at FROM app_user ORDER BY created_at DESC'
+      'SELECT id, name, email, phone, is_admin, COALESCE(is_member, 0) AS is_member, member_number, created_at FROM app_user ORDER BY created_at DESC'
     );
     res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update membership info for a user
+app.put('/api/admin/users/:id/membership', async (req, res) => {
+  const { id } = req.params;
+  const { member_number } = req.body || {};
+  const finalNumber = member_number != null ? String(member_number).trim() : '';
+
+  if (!finalNumber) {
+    return res.status(400).json({ error: 'member_number is required' });
+  }
+
+  try {
+    const [result] = await pool.query(
+      'UPDATE app_user SET is_member = 1, member_number = ? WHERE id = ?',
+      [finalNumber, id]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+    const [rows] = await pool.query(
+      'SELECT id, name, email, phone, is_admin, COALESCE(is_member, 0) AS is_member, member_number, created_at FROM app_user WHERE id = ?',
+      [id]
+    );
+    res.json(rows[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -124,7 +162,7 @@ app.post('/api/login', async (req, res) => {
     return res.status(400).json({ error: 'email and password are required' });
   }
   try {
-    const [rows] = await pool.query('SELECT id, name, email, phone, password_hash, is_admin, created_at FROM app_user WHERE email = ?', [email]);
+    const [rows] = await pool.query('SELECT id, name, email, phone, password_hash, is_admin, COALESCE(is_member, 0) AS is_member, member_number, created_at FROM app_user WHERE email = ?', [email]);
     const row = rows[0];
     if (!row || !row.password_hash) {
       return res.status(401).json({ error: 'Credenciales inválidas' });

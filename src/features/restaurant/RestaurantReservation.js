@@ -142,12 +142,18 @@ const RestaurantReservation = ({ user, apiUrl }) => {
   // Autofill from user profile and validate table selection
   useEffect(() => {
     if (user) {
+      const isUserMember = user.is_member === 1 || user.is_member === true;
       setFormData(prev => ({
         ...prev,
         name: user.name || prev.name,
         email: user.email || prev.email,
-        phone: user.phone || prev.phone
+        phone: user.phone || prev.phone,
+        memberNumber: user.member_number || prev.memberNumber
       }));
+      // Activar modo socio automáticamente si el usuario es socio
+      if (isUserMember) {
+        setIsMember(true);
+      }
     }
   }, [user]);
 

@@ -14,6 +14,12 @@ const AdminDashboard = ({ apiUrl }) => {
   const [checkingOut, setCheckingOut] = useState(new Set());
   const [selectedRoom, setSelectedRoom] = useState(null); // reservation object
   const [isRoomModalOpen, setIsRoomModalOpen] = useState(false);
+  const [userBuckets, setUserBuckets] = useState({ members: [], visitors: [] });
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [hasLoadedUsers, setHasLoadedUsers] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [memberNumberInput, setMemberNumberInput] = useState('');
+  const [savingMembership, setSavingMembership] = useState(false);
   const [activeSection, setActiveSection] = useState('reservas');
 
   // Lock body scroll when room modal is open
@@ -199,6 +205,95 @@ const AdminDashboard = ({ apiUrl }) => {
   const showReservations = activeSection === 'reservas';
   const showPrices = activeSection === 'precios';
   const showMembers = activeSection === 'socios';
+
+  const fetchUsers = useCallback(async () => {
+    setLoadingUsers(true);
+    try {
+      const resp = await fetch(`${apiUrl}/api/users`);
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error || 'No se pudieron obtener los usuarios');
+      }
+      const data = await resp.json();
+      const members = [];
+      const visitors = [];
+      data.forEach((user) => {
+        if (user.is_member) {
+          members.push(user);
+        } else {
+          visitors.push(user);
+        }
+      });
+      setUserBuckets({ members, visitors });
+    } catch (e) {
+      showError(e.message, 'Error al cargar usuarios');
+    } finally {
+      setLoadingUsers(false);
+    }
+  }, [apiUrl, showError]);
+
+  useEffect(() => {
+    if (showMembers && !hasLoadedUsers && !loadingUsers) {
+      setHasLoadedUsers(true);
+      fetchUsers();
+    }
+  }, [showMembers, hasLoadedUsers, loadingUsers, fetchUsers]);
+
+  const handleUserSelect = useCallback((user) => {
+    setSelectedUser(user);
+    setMemberNumberInput(user.member_number || '');
+  }, []);
+
+  const resetSelectedUser = useCallback(() => {
+    setSelectedUser(null);
+    setMemberNumberInput('');
+  }, []);
+
+  const handleMembershipSave = useCallback(async () => {
+    if (!selectedUser) return;
+    const trimmedNumber = memberNumberInput.trim();
+    if (!trimmedNumber) {
+      showError('Debes asignar un número de socio', 'Número requerido');
+      return;
+    }
+    setSavingMembership(true);
+    try {
+      const resp = await fetch(`${apiUrl}/api/admin/users/${selectedUser.id}/membership`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ member_number: trimmedNumber })
+      });
+      const rawText = await resp.text();
+      let data = null;
+      if (rawText) {
+        try {
+          data = JSON.parse(rawText);
+        } catch (parseError) {
+          console.error('[membership] Respuesta no JSON:', parseError, rawText);
+        }
+      }
+      if (!resp.ok) {
+        const serverMessage = data?.error || rawText?.trim() || `Error ${resp.status}`;
+        throw new Error(serverMessage);
+      }
+      console.info('[membership] Usuario actualizado', data);
+      showSuccess('Usuario convertido en socio', 'Membresía guardada');
+      resetSelectedUser();
+      await fetchUsers();
+    } catch (e) {
+      console.error('[membership] Error al guardar membresía', e);
+      showError(e.message || 'No se pudo guardar la membresía', 'No se pudo guardar la membresía');
+    } finally {
+      setSavingMembership(false);
+    }
+  }, [apiUrl, selectedUser, memberNumberInput, fetchUsers, resetSelectedUser, showError, showSuccess]);
+
+  useEffect(() => {
+    if (!showMembers) {
+      resetSelectedUser();
+    }
+  }, [showMembers, resetSelectedUser]);
+
 
   if (loading) return <div>Cargando...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -860,90 +955,6 @@ const AdminDashboard = ({ apiUrl }) => {
           </div>
         )}
       </div>
-
-          <CustomAlert
-            isOpen={alertState.isOpen}
-            onClose={hideAlert}
-            title={alertState.title}
-            message={alertState.message}
-            type={alertState.type}
-            autoClose={alertState.autoClose}
-            autoCloseDelay={alertState.autoCloseDelay}
-          />
-          {isRoomModalOpen && selectedRoom && (
-            <div 
-              role="dialog" 
-              aria-modal="true" 
-              onClick={closeRoomModal}
-              style={{
-                position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
-                display: 'flex', justifyContent: 'center', alignItems: 'center',
-                zIndex: 2000,
-              }}
-            >
-              <div 
-                onClick={(e) => e.stopPropagation()}
-                style={{
-                  background: 'white', borderRadius: 12, width: 'min(920px, 95vw)',
-                  maxHeight: '90vh', overflow: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
-                }}
-              >
-                {(() => {
-                  const details = getRoomDetails(selectedRoom.location);
-                  return (
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 1.25rem', borderBottom: '1px solid #e5e7eb' }}>
-                        <div>
-                          <h3 style={{ margin: 0 }}>{details.title}</h3>
-                          <div style={{ color: '#64748b', fontSize: 14 }}>{formatRoomName(selectedRoom.location)} · {selectedRoom.guests ?? 1} huésped(es)</div>
-                        </div>
-                        <button onClick={closeRoomModal} style={{ background: 'transparent', border: 'none', fontSize: 18, cursor: 'pointer' }}>✕</button>
-                      </div>
-
-                      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '0.75rem', padding: '1rem 1.25rem' }}>
-                        <div>
-                          <img src={details.images[0]} alt={details.title} style={{ width: '100%', height: 320, objectFit: 'cover', borderRadius: 8 }} />
-                        </div>
-                        <div style={{ display: 'grid', gridTemplateRows: '1fr 1fr', gap: '0.75rem' }}>
-                          <img src={details.images[1]} alt={`${details.title} 2`} style={{ width: '100%', height: 155, objectFit: 'cover', borderRadius: 8 }} />
-                          <img src={details.images[2]} alt={`${details.title} 3`} style={{ width: '100%', height: 155, objectFit: 'cover', borderRadius: 8 }} />
-                        </div>
-                      </div>
-
-                      <div style={{ padding: '0 1.25rem 1.25rem' }}>
-                        <p style={{ marginTop: 0 }}>{details.description}</p>
-
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
-                          <div style={{ background: '#f8fafc', borderRadius: 8, padding: '0.75rem 1rem' }}>
-                            <div style={{ fontWeight: 600, marginBottom: 6 }}>Servicios</div>
-                            <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
-                              {details.amenities.map((a) => (
-                                <li key={a} style={{ margin: '0.25rem 0' }}>{a}</li>
-                              ))}
-                            </ul>
-                          </div>
-                          <div style={{ background: '#f8fafc', borderRadius: 8, padding: '0.75rem 1rem' }}>
-                            <div style={{ fontWeight: 600, marginBottom: 6 }}>Reserva</div>
-                            <div style={{ color: '#111827' }}>Check‑in: <span style={{ fontWeight: 600 }}>{formatDate(selectedRoom.date)}</span></div>
-                            <div style={{ color: '#111827' }}>Check‑out: <span style={{ fontWeight: 600 }}>{formatDate(selectedRoom.check_out)}</span></div>
-                            <div style={{ color: '#111827' }}>Huéspedes: <span style={{ fontWeight: 600 }}>{selectedRoom.guests ?? '--'}</span></div>
-                            <div style={{ color: '#111827' }}>Contacto: <span style={{ fontWeight: 600 }}>{selectedRoom.name || '--'}</span></div>
-                            <div style={{ color: '#111827' }}>Teléfono: <span style={{ fontWeight: 600 }}>{selectedRoom.phone || '--'}</span></div>
-                            <div style={{ color: '#111827' }}>Email: <span style={{ fontWeight: 600 }}>{selectedRoom.email || '--'}</span></div>
-                            {getMemberNumber(selectedRoom) && (
-                              <div style={{ color: '#111827', marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid #e5e7eb' }}>
-                                <div style={{ color: '#111827' }}>Número de Socio: <span style={{ fontWeight: 600, color: '#0369a1' }}>{getMemberNumber(selectedRoom)}</span></div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
-            </div>
-          )}
         </>
       )}
 
@@ -959,15 +970,202 @@ const AdminDashboard = ({ apiUrl }) => {
 
       {showMembers && (
         <div className="admin-section admin-members-section">
-          <div className="coming-soon-card">
-            <span className="coming-soon-pill">Muy pronto</span>
-            <h3>Gestión de Socios</h3>
-            <p>Estamos preparando una experiencia para consultar, editar y dar de alta nuevos socios del club.</p>
-            <ul>
-              <li>Visualiza información de contacto y membresía</li>
-              <li>Actualiza estatus y beneficios</li>
-              <li>Descarga reportes rápidos</li>
-            </ul>
+          <div className="members-grid">
+            <section className="members-panel">
+              <div className="members-panel-header">
+                <div>
+                  <h3>Usuarios sin membresía</h3>
+                  <p>Selecciona a quién convertir en socio.</p>
+                </div>
+                <span className="members-counter">{userBuckets.visitors.length}</span>
+              </div>
+              {loadingUsers && !hasLoadedUsers ? (
+                <div className="members-empty">
+                  <p>Cargando usuarios...</p>
+                </div>
+              ) : userBuckets.visitors.length === 0 ? (
+                <div className="members-empty">
+                  <p>Todos los usuarios cuentan con membresía.</p>
+                </div>
+              ) : (
+                <ul className="members-list">
+                  {userBuckets.visitors.map((user) => (
+                    <li key={user.id}>
+                      <button
+                        type="button"
+                        className={`member-item ${selectedUser?.id === user.id ? 'active' : ''}`}
+                        onClick={() => handleUserSelect(user)}
+                      >
+                        <div className="member-info">
+                          <span className="member-name">{user.name || user.email}</span>
+                          <span className="member-email">{user.email}</span>
+                          {user.phone && <span className="member-phone">{user.phone}</span>}
+                        </div>
+                        <span className="member-action">Configurar</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+
+            <section className="members-panel">
+              <div className="members-panel-header">
+                <div>
+                  <h3>Socios activos</h3>
+                  <p>Usuarios con número de socio asignado.</p>
+                </div>
+                <span className="members-counter">{userBuckets.members.length}</span>
+              </div>
+              {loadingUsers && !hasLoadedUsers ? (
+                <div className="members-empty">
+                  <p>Cargando usuarios...</p>
+                </div>
+              ) : userBuckets.members.length === 0 ? (
+                <div className="members-empty">
+                  <p>Aún no hay socios registrados.</p>
+                </div>
+              ) : (
+                <ul className="members-list members-list--static">
+                  {userBuckets.members.map((user) => (
+                    <li key={user.id} className="member-item static">
+                      <div className="member-info">
+                        <span className="member-name">{user.name || user.email}</span>
+                        <span className="member-email">{user.email}</span>
+                        {user.phone && <span className="member-phone">{user.phone}</span>}
+                      </div>
+                      <span className="member-number">#{user.member_number}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          </div>
+
+          <div className="member-config-card">
+            {selectedUser ? (
+              <>
+                <div className="member-config-header">
+                  <div>
+                    <p className="member-config-label">Asignar número de socio</p>
+                    <h4>{selectedUser.name || selectedUser.email}</h4>
+                    {selectedUser.email && <span className="member-email">{selectedUser.email}</span>}
+                  </div>
+                  <button type="button" className="link-button" onClick={resetSelectedUser}>
+                    Cancelar
+                  </button>
+                </div>
+                <label className="member-config-field">
+                  Número de socio
+                  <input
+                    type="text"
+                    placeholder="Ej. 1204"
+                    value={memberNumberInput}
+                    onChange={(e) => setMemberNumberInput(e.target.value)}
+                  />
+                </label>
+                <p className="member-config-hint">
+                  Este número aparecerá en todas las reservas futuras del socio.
+                </p>
+                <button
+                  type="button"
+                  className="primary-button"
+                  onClick={handleMembershipSave}
+                  disabled={savingMembership}
+                >
+                  {savingMembership ? 'Guardando...' : 'Guardar y convertir en socio'}
+                </button>
+              </>
+            ) : (
+              <div className="members-empty">
+                <p>Selecciona un usuario sin membresía para comenzar.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      <CustomAlert
+        isOpen={alertState.isOpen}
+        onClose={hideAlert}
+        title={alertState.title}
+        message={alertState.message}
+        type={alertState.type}
+        autoClose={alertState.autoClose}
+        autoCloseDelay={alertState.autoCloseDelay}
+      />
+
+      {isRoomModalOpen && selectedRoom && (
+        <div 
+          role="dialog" 
+          aria-modal="true" 
+          onClick={closeRoomModal}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
+            display: 'flex', justifyContent: 'center', alignItems: 'center',
+            zIndex: 2000,
+          }}
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: 'white', borderRadius: 12, width: 'min(920px, 95vw)',
+              maxHeight: '90vh', overflow: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
+            }}
+          >
+            {(() => {
+              const details = getRoomDetails(selectedRoom.location);
+              return (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 1.25rem', borderBottom: '1px solid #e5e7eb' }}>
+                    <div>
+                      <h3 style={{ margin: 0 }}>{details.title}</h3>
+                      <div style={{ color: '#64748b', fontSize: 14 }}>{formatRoomName(selectedRoom.location)} · {selectedRoom.guests ?? 1} huésped(es)</div>
+                    </div>
+                    <button onClick={closeRoomModal} style={{ background: 'transparent', border: 'none', fontSize: 18, cursor: 'pointer' }}>✕</button>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '0.75rem', padding: '1rem 1.25rem' }}>
+                    <div>
+                      <img src={details.images[0]} alt={details.title} style={{ width: '100%', height: 320, objectFit: 'cover', borderRadius: 8 }} />
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateRows: '1fr 1fr', gap: '0.75rem' }}>
+                      <img src={details.images[1]} alt={`${details.title} 2`} style={{ width: '100%', height: 155, objectFit: 'cover', borderRadius: 8 }} />
+                      <img src={details.images[2]} alt={`${details.title} 3`} style={{ width: '100%', height: 155, objectFit: 'cover', borderRadius: 8 }} />
+                    </div>
+                  </div>
+
+                  <div style={{ padding: '0 1.25rem 1.25rem' }}>
+                    <p style={{ marginTop: 0 }}>{details.description}</p>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
+                      <div style={{ background: '#f8fafc', borderRadius: 8, padding: '0.75rem 1rem' }}>
+                        <div style={{ fontWeight: 600, marginBottom: 6 }}>Servicios</div>
+                        <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
+                          {details.amenities.map((a) => (
+                            <li key={a} style={{ margin: '0.25rem 0' }}>{a}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div style={{ background: '#f8fafc', borderRadius: 8, padding: '0.75rem 1rem' }}>
+                        <div style={{ fontWeight: 600, marginBottom: 6 }}>Reserva</div>
+                        <div style={{ color: '#111827' }}>Check‑in: <span style={{ fontWeight: 600 }}>{formatDate(selectedRoom.date)}</span></div>
+                        <div style={{ color: '#111827' }}>Check‑out: <span style={{ fontWeight: 600 }}>{formatDate(selectedRoom.check_out)}</span></div>
+                        <div style={{ color: '#111827' }}>Huéspedes: <span style={{ fontWeight: 600 }}>{selectedRoom.guests ?? '--'}</span></div>
+                        <div style={{ color: '#111827' }}>Contacto: <span style={{ fontWeight: 600 }}>{selectedRoom.name || '--'}</span></div>
+                        <div style={{ color: '#111827' }}>Teléfono: <span style={{ fontWeight: 600 }}>{selectedRoom.phone || '--'}</span></div>
+                        <div style={{ color: '#111827' }}>Email: <span style={{ fontWeight: 600 }}>{selectedRoom.email || '--'}</span></div>
+                        {getMemberNumber(selectedRoom) && (
+                          <div style={{ color: '#111827', marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid #e5e7eb' }}>
+                            <div style={{ color: '#111827' }}>Número de Socio: <span style={{ fontWeight: 600, color: '#0369a1' }}>{getMemberNumber(selectedRoom)}</span></div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </div>
       )}

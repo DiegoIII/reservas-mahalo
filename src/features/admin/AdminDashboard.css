@@ -436,43 +436,207 @@
   padding: 0 1rem 2rem;
 }
 
-.coming-soon-card {
+.members-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.members-panel {
   background: white;
-  border-radius: 20px;
-  padding: 2rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 24px rgba(3, 37, 140, 0.08);
   border: 1px solid #e5e7eb;
-  max-width: 720px;
-  margin: 0 auto;
 }
 
-.coming-soon-pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  background: rgba(8, 133, 242, 0.1);
-  color: #0369a1;
-  margin-bottom: 0.75rem;
+.members-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
-.coming-soon-card h3 {
-  margin: 0 0 0.5rem;
+.members-panel-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
   color: #03258C;
 }
 
-.coming-soon-card p {
-  margin: 0 0 1rem;
+.members-panel-header p {
+  margin: 0.15rem 0 0;
+  color: #475569;
+  font-size: 0.9rem;
+}
+
+.members-counter {
+  background: #f1f5f9;
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  font-weight: 600;
+  color: #03258C;
+}
+
+.members-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.member-item {
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  background: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.member-item:hover {
+  border-color: #0369a1;
+  box-shadow: 0 4px 12px rgba(3, 105, 161, 0.12);
+}
+
+.member-item.active {
+  border-color: #0369a1;
+  box-shadow: 0 6px 16px rgba(3, 105, 161, 0.18);
+}
+
+.member-item.static,
+.members-list--static .member-item {
+  cursor: default;
+}
+
+.member-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  text-align: left;
+}
+
+.member-name {
+  font-weight: 600;
+  color: #111827;
+}
+
+.member-email,
+.member-phone {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.member-action {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0369a1;
+}
+
+.member-number {
+  font-weight: 700;
+  color: #8C8303;
+}
+
+.members-empty {
+  text-align: center;
+  padding: 1.5rem;
+  border: 1px dashed #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
   color: #475569;
 }
 
-.coming-soon-card ul {
+.member-config-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e5e7eb;
+}
+
+.member-config-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.member-config-header h4 {
   margin: 0;
-  padding-left: 1.25rem;
+  color: #03258C;
+}
+
+.member-config-label {
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+  margin: 0 0 0.25rem;
+}
+
+.member-config-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-weight: 600;
   color: #475569;
-  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.member-config-field input {
+  border: 1px solid #cbd5f5;
+  border-radius: 10px;
+  padding: 0.65rem 0.85rem;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.member-config-field input:focus {
+  border-color: #0369a1;
+  box-shadow: 0 0 0 3px rgba(3, 105, 161, 0.15);
+}
+
+.member-config-hint {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.link-button {
+  border: none;
+  background: none;
+  color: #0369a1;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.primary-button {
+  border: none;
+  border-radius: 10px;
+  padding: 0.85rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: white;
+  background: linear-gradient(135deg, #03258C 0%, #0785F2 100%);
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.primary-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Responsive Design */
@@ -497,6 +661,10 @@
   }
   
   .summary-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .members-grid {
     grid-template-columns: 1fr;
   }
   
