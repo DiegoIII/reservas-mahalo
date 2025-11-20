@@ -1,0 +1,26 @@
+/* PriceConfiguration.css */
+
+.price-configuration {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 2rem;
+}
+
+.price-configuration > h2 {
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #8C8303;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+  .price-configuration {
+    padding: 1rem;
+  }
+  
+  .price-configuration > h2 {
+    font-size: 2rem;
+  }
+}
+

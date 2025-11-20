@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import poolImg from '../../assets/images/alberca.jpg';
 import restaurantImg from '../../assets/images/restaurant.jpg';
 import CustomAlert from '../../components/CustomAlert';
 import useAlert from '../../hooks/useAlert';
+import PriceConfiguration from './PriceConfiguration';
 import './AdminDashboard.css';
 
 const AdminDashboard = ({ apiUrl }) => {
@@ -13,6 +14,7 @@ const AdminDashboard = ({ apiUrl }) => {
   const [checkingOut, setCheckingOut] = useState(new Set());
   const [selectedRoom, setSelectedRoom] = useState(null); // reservation object
   const [isRoomModalOpen, setIsRoomModalOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState('reservas');
 
   // Lock body scroll when room modal is open
   useEffect(() => {
@@ -172,6 +174,32 @@ const AdminDashboard = ({ apiUrl }) => {
     return { restaurantList: restaurant, roomList: room, eventList: events, eventsByDate: groupedEvents };
   }, [reservations]);
 
+  const adminSections = useMemo(() => ([
+    {
+      id: 'reservas',
+      label: 'Reservas',
+      description: 'Gestión de habitaciones, daypass y eventos'
+    },
+    {
+      id: 'precios',
+      label: 'Precios',
+      description: 'Lista editable de tarifas'
+    },
+    {
+      id: 'socios',
+      label: 'Socios',
+      description: 'Control de membresías'
+    }
+  ]), []);
+
+  const handleSectionChange = useCallback((sectionId) => {
+    setActiveSection(sectionId);
+  }, []);
+
+  const showReservations = activeSection === 'reservas';
+  const showPrices = activeSection === 'precios';
+  const showMembers = activeSection === 'socios';
+
   if (loading) return <div>Cargando...</div>;
   if (error) return <div>Error: {error}</div>;
 
@@ -179,38 +207,55 @@ const AdminDashboard = ({ apiUrl }) => {
     <div className="event-reservation admin-dashboard">
       <h2>Panel de Administración</h2>
 
-      {/* Summary Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
-        <div style={{ background: 'linear-gradient(135deg, #F25C05 0%, #F27E93 100%)', color: 'white', padding: '1.5rem', borderRadius: '12px', textAlign: 'center', boxShadow: '0 4px 15px rgba(242, 92, 5, 0.3)' }}>
-          <div style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
-              <path d="M12 6a6 6 0 0 0-6 6h12a6 6 0 0 0-6-6z"/>
-              <rect x="4" y="14" width="16" height="3" rx="1" fill="currentColor"/>
-            </svg>
-          </div>
-          <div style={{ fontSize: '1.2rem', fontWeight: '600' }}>{restaurantList.length}</div>
-          <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>Daypass</div>
-        </div>
-        <div style={{ background: 'linear-gradient(135deg, #0785F2 0%, #0369a1 100%)', color: 'white', padding: '1.5rem', borderRadius: '12px', textAlign: 'center', boxShadow: '0 4px 15px rgba(7, 133, 242, 0.3)' }}>
-          <div style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
-              <path d="M4 12V7a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v5M4 12h16M4 12v5M20 12v5M20 12V9a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-            </svg>
-          </div>
-          <div style={{ fontSize: '1.2rem', fontWeight: '600' }}>{roomList.length}</div>
-          <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>Cuartos</div>
-        </div>
-        <div style={{ background: 'linear-gradient(135deg, #8C8303 0%, #6B5B00 100%)', color: 'white', padding: '1.5rem', borderRadius: '12px', textAlign: 'center', boxShadow: '0 4px 15px rgba(140, 131, 3, 0.3)' }}>
-          <div style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
-              <rect x="3" y="4" width="18" height="16" rx="2" ry="2" stroke="currentColor" strokeWidth="2" fill="none"/>
-              <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-            </svg>
-          </div>
-          <div style={{ fontSize: '1.2rem', fontWeight: '600' }}>{eventList.length}</div>
-          <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>Eventos</div>
-        </div>
+      <div className="admin-dashboard-nav" role="tablist" aria-label="Secciones del panel">
+        {adminSections.map((section) => (
+          <button
+            key={section.id}
+            type="button"
+            className={`admin-nav-button ${activeSection === section.id ? 'active' : ''}`}
+            onClick={() => handleSectionChange(section.id)}
+            aria-pressed={activeSection === section.id}
+          >
+            <span className="admin-nav-title">{section.label}</span>
+            <span className="admin-nav-description">{section.description}</span>
+          </button>
+        ))}
       </div>
+
+      {showReservations && (
+        <>
+          {/* Summary Cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+            <div style={{ background: 'linear-gradient(135deg, #F25C05 0%, #F27E93 100%)', color: 'white', padding: '1.5rem', borderRadius: '12px', textAlign: 'center', boxShadow: '0 4px 15px rgba(242, 92, 5, 0.3)' }}>
+              <div style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
+                  <path d="M12 6a6 6 0 0 0-6 6h12a6 6 0 0 0-6-6z"/>
+                  <rect x="4" y="14" width="16" height="3" rx="1" fill="currentColor"/>
+                </svg>
+              </div>
+              <div style={{ fontSize: '1.2rem', fontWeight: '600' }}>{restaurantList.length}</div>
+              <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>Daypass</div>
+            </div>
+            <div style={{ background: 'linear-gradient(135deg, #0785F2 0%, #0369a1 100%)', color: 'white', padding: '1.5rem', borderRadius: '12px', textAlign: 'center', boxShadow: '0 4px 15px rgba(7, 133, 242, 0.3)' }}>
+              <div style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
+                  <path d="M4 12V7a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v5M4 12h16M4 12v5M20 12v5M20 12V9a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                </svg>
+              </div>
+              <div style={{ fontSize: '1.2rem', fontWeight: '600' }}>{roomList.length}</div>
+              <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>Cuartos</div>
+            </div>
+            <div style={{ background: 'linear-gradient(135deg, #8C8303 0%, #6B5B00 100%)', color: 'white', padding: '1.5rem', borderRadius: '12px', textAlign: 'center', boxShadow: '0 4px 15px rgba(140, 131, 3, 0.3)' }}>
+              <div style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
+                  <rect x="3" y="4" width="18" height="16" rx="2" ry="2" stroke="currentColor" strokeWidth="2" fill="none"/>
+                  <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              </div>
+              <div style={{ fontSize: '1.2rem', fontWeight: '600' }}>{eventList.length}</div>
+              <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>Eventos</div>
+            </div>
+          </div>
 
       <div className="form-section" style={{ marginBottom: '1.5rem' }}>
         <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -816,86 +861,113 @@ const AdminDashboard = ({ apiUrl }) => {
         )}
       </div>
 
-      <CustomAlert
-        isOpen={alertState.isOpen}
-        onClose={hideAlert}
-        title={alertState.title}
-        message={alertState.message}
-        type={alertState.type}
-        autoClose={alertState.autoClose}
-        autoCloseDelay={alertState.autoCloseDelay}
-      />
-      {isRoomModalOpen && selectedRoom && (
-        <div 
-          role="dialog" 
-          aria-modal="true" 
-          onClick={closeRoomModal}
-          style={{
-            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
-            display: 'flex', justifyContent: 'center', alignItems: 'center',
-            zIndex: 2000,
-          }}
-        >
-          <div 
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: 'white', borderRadius: 12, width: 'min(920px, 95vw)',
-              maxHeight: '90vh', overflow: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
-            }}
-          >
-            {(() => {
-              const details = getRoomDetails(selectedRoom.location);
-              return (
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 1.25rem', borderBottom: '1px solid #e5e7eb' }}>
+          <CustomAlert
+            isOpen={alertState.isOpen}
+            onClose={hideAlert}
+            title={alertState.title}
+            message={alertState.message}
+            type={alertState.type}
+            autoClose={alertState.autoClose}
+            autoCloseDelay={alertState.autoCloseDelay}
+          />
+          {isRoomModalOpen && selectedRoom && (
+            <div 
+              role="dialog" 
+              aria-modal="true" 
+              onClick={closeRoomModal}
+              style={{
+                position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
+                display: 'flex', justifyContent: 'center', alignItems: 'center',
+                zIndex: 2000,
+              }}
+            >
+              <div 
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  background: 'white', borderRadius: 12, width: 'min(920px, 95vw)',
+                  maxHeight: '90vh', overflow: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
+                }}
+              >
+                {(() => {
+                  const details = getRoomDetails(selectedRoom.location);
+                  return (
                     <div>
-                      <h3 style={{ margin: 0 }}>{details.title}</h3>
-                      <div style={{ color: '#64748b', fontSize: 14 }}>{formatRoomName(selectedRoom.location)} · {selectedRoom.guests ?? 1} huésped(es)</div>
-                    </div>
-                    <button onClick={closeRoomModal} style={{ background: 'transparent', border: 'none', fontSize: 18, cursor: 'pointer' }}>✕</button>
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '0.75rem', padding: '1rem 1.25rem' }}>
-                    <div>
-                      <img src={details.images[0]} alt={details.title} style={{ width: '100%', height: 320, objectFit: 'cover', borderRadius: 8 }} />
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateRows: '1fr 1fr', gap: '0.75rem' }}>
-                      <img src={details.images[1]} alt={`${details.title} 2`} style={{ width: '100%', height: 155, objectFit: 'cover', borderRadius: 8 }} />
-                      <img src={details.images[2]} alt={`${details.title} 3`} style={{ width: '100%', height: 155, objectFit: 'cover', borderRadius: 8 }} />
-                    </div>
-                  </div>
-
-                  <div style={{ padding: '0 1.25rem 1.25rem' }}>
-                    <p style={{ marginTop: 0 }}>{details.description}</p>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
-                      <div style={{ background: '#f8fafc', borderRadius: 8, padding: '0.75rem 1rem' }}>
-                        <div style={{ fontWeight: 600, marginBottom: 6 }}>Servicios</div>
-                        <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
-                          {details.amenities.map((a) => (
-                            <li key={a} style={{ margin: '0.25rem 0' }}>{a}</li>
-                          ))}
-                        </ul>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 1.25rem', borderBottom: '1px solid #e5e7eb' }}>
+                        <div>
+                          <h3 style={{ margin: 0 }}>{details.title}</h3>
+                          <div style={{ color: '#64748b', fontSize: 14 }}>{formatRoomName(selectedRoom.location)} · {selectedRoom.guests ?? 1} huésped(es)</div>
+                        </div>
+                        <button onClick={closeRoomModal} style={{ background: 'transparent', border: 'none', fontSize: 18, cursor: 'pointer' }}>✕</button>
                       </div>
-                      <div style={{ background: '#f8fafc', borderRadius: 8, padding: '0.75rem 1rem' }}>
-                        <div style={{ fontWeight: 600, marginBottom: 6 }}>Reserva</div>
-                        <div style={{ color: '#111827' }}>Check‑in: <span style={{ fontWeight: 600 }}>{formatDate(selectedRoom.date)}</span></div>
-                        <div style={{ color: '#111827' }}>Check‑out: <span style={{ fontWeight: 600 }}>{formatDate(selectedRoom.check_out)}</span></div>
-                        <div style={{ color: '#111827' }}>Huéspedes: <span style={{ fontWeight: 600 }}>{selectedRoom.guests ?? '--'}</span></div>
-                        <div style={{ color: '#111827' }}>Contacto: <span style={{ fontWeight: 600 }}>{selectedRoom.name || '--'}</span></div>
-                        <div style={{ color: '#111827' }}>Teléfono: <span style={{ fontWeight: 600 }}>{selectedRoom.phone || '--'}</span></div>
-                        <div style={{ color: '#111827' }}>Email: <span style={{ fontWeight: 600 }}>{selectedRoom.email || '--'}</span></div>
-                        {getMemberNumber(selectedRoom) && (
-                          <div style={{ color: '#111827', marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid #e5e7eb' }}>
-                            <div style={{ color: '#111827' }}>Número de Socio: <span style={{ fontWeight: 600, color: '#0369a1' }}>{getMemberNumber(selectedRoom)}</span></div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '0.75rem', padding: '1rem 1.25rem' }}>
+                        <div>
+                          <img src={details.images[0]} alt={details.title} style={{ width: '100%', height: 320, objectFit: 'cover', borderRadius: 8 }} />
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateRows: '1fr 1fr', gap: '0.75rem' }}>
+                          <img src={details.images[1]} alt={`${details.title} 2`} style={{ width: '100%', height: 155, objectFit: 'cover', borderRadius: 8 }} />
+                          <img src={details.images[2]} alt={`${details.title} 3`} style={{ width: '100%', height: 155, objectFit: 'cover', borderRadius: 8 }} />
+                        </div>
+                      </div>
+
+                      <div style={{ padding: '0 1.25rem 1.25rem' }}>
+                        <p style={{ marginTop: 0 }}>{details.description}</p>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
+                          <div style={{ background: '#f8fafc', borderRadius: 8, padding: '0.75rem 1rem' }}>
+                            <div style={{ fontWeight: 600, marginBottom: 6 }}>Servicios</div>
+                            <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
+                              {details.amenities.map((a) => (
+                                <li key={a} style={{ margin: '0.25rem 0' }}>{a}</li>
+                              ))}
+                            </ul>
                           </div>
-                        )}
+                          <div style={{ background: '#f8fafc', borderRadius: 8, padding: '0.75rem 1rem' }}>
+                            <div style={{ fontWeight: 600, marginBottom: 6 }}>Reserva</div>
+                            <div style={{ color: '#111827' }}>Check‑in: <span style={{ fontWeight: 600 }}>{formatDate(selectedRoom.date)}</span></div>
+                            <div style={{ color: '#111827' }}>Check‑out: <span style={{ fontWeight: 600 }}>{formatDate(selectedRoom.check_out)}</span></div>
+                            <div style={{ color: '#111827' }}>Huéspedes: <span style={{ fontWeight: 600 }}>{selectedRoom.guests ?? '--'}</span></div>
+                            <div style={{ color: '#111827' }}>Contacto: <span style={{ fontWeight: 600 }}>{selectedRoom.name || '--'}</span></div>
+                            <div style={{ color: '#111827' }}>Teléfono: <span style={{ fontWeight: 600 }}>{selectedRoom.phone || '--'}</span></div>
+                            <div style={{ color: '#111827' }}>Email: <span style={{ fontWeight: 600 }}>{selectedRoom.email || '--'}</span></div>
+                            {getMemberNumber(selectedRoom) && (
+                              <div style={{ color: '#111827', marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid #e5e7eb' }}>
+                                <div style={{ color: '#111827' }}>Número de Socio: <span style={{ fontWeight: 600, color: '#0369a1' }}>{getMemberNumber(selectedRoom)}</span></div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              );
-            })()}
+                  );
+                })()}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {showPrices && (
+        <div className="admin-section admin-prices-section">
+          <PriceConfiguration 
+            apiUrl={apiUrl} 
+            onExit={() => setActiveSection('reservas')} 
+            exitLabel="Volver a Reservas"
+          />
+        </div>
+      )}
+
+      {showMembers && (
+        <div className="admin-section admin-members-section">
+          <div className="coming-soon-card">
+            <span className="coming-soon-pill">Muy pronto</span>
+            <h3>Gestión de Socios</h3>
+            <p>Estamos preparando una experiencia para consultar, editar y dar de alta nuevos socios del club.</p>
+            <ul>
+              <li>Visualiza información de contacto y membresía</li>
+              <li>Actualiza estatus y beneficios</li>
+              <li>Descarga reportes rápidos</li>
+            </ul>
           </div>
         </div>
       )}

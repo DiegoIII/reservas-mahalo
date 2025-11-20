@@ -15,6 +15,52 @@
   padding: 0 1rem;
 }
 
+.admin-dashboard-nav {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin: 0 1rem 2rem;
+}
+
+.admin-nav-button {
+  border: 1px solid transparent;
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.admin-nav-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.admin-nav-button.active {
+  background: linear-gradient(135deg, #F25C05 0%, #F27E93 100%);
+  color: white;
+  border-color: transparent;
+}
+
+.admin-nav-button.active .admin-nav-description {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.admin-nav-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.admin-nav-description {
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
 /* Summary Cards */
 .summary-cards {
   display: grid;
@@ -382,6 +428,53 @@
   color: #495057;
 }
 
+.admin-prices-section {
+  padding: 0 1rem 2rem;
+}
+
+.admin-members-section {
+  padding: 0 1rem 2rem;
+}
+
+.coming-soon-card {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e5e7eb;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.coming-soon-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: rgba(8, 133, 242, 0.1);
+  color: #0369a1;
+  margin-bottom: 0.75rem;
+}
+
+.coming-soon-card h3 {
+  margin: 0 0 0.5rem;
+  color: #03258C;
+}
+
+.coming-soon-card p {
+  margin: 0 0 1rem;
+  color: #475569;
+}
+
+.coming-soon-card ul {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: #475569;
+  line-height: 1.6;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .admin-table {
@@ -397,6 +490,10 @@
 @media (max-width: 768px) {
   .admin-dashboard > h2 {
     font-size: 2rem;
+  }
+  
+  .admin-dashboard-nav {
+    grid-template-columns: 1fr;
   }
   
   .summary-cards {
