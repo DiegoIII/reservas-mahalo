@@ -24,6 +24,7 @@ import {
 import './RestaurantReservation.css';
 import CustomAlert from '../../components/CustomAlert';
 import useAlert from '../../hooks/useAlert';
+import { ESTABLISHMENT_TZ, nowInTimeZone, isPastSameDayReservation } from '../../utils/time';
 
 const RestaurantReservation = ({ user, apiUrl }) => {
   const initialFormData = {
@@ -198,6 +199,10 @@ const RestaurantReservation = ({ user, apiUrl }) => {
       return;
     }
     const isValid = requiredFields.every(field => formData[field]) && (formData.daypassType || formData.tableType);
+    if (isValid && isPastSameDayReservation(formData.date, formData.time, ESTABLISHMENT_TZ)) {
+      showError('No se pueden hacer reservas para horarios pasados. Por favor seleccione una hora futura', 'Horario inválido');
+      return;
+    }
     
     if (isValid) {
       setShowConfirmation(true);
@@ -438,9 +443,14 @@ const RestaurantReservation = ({ user, apiUrl }) => {
                       required
                     >
                       <option value="">Selecciona una hora</option>
-                      {timeSlots.map(time => (
-                        <option key={time} value={time}>{time} hrs</option>
-                      ))}
+                      {timeSlots.map(time => {
+                        const { date, time: currentTime } = nowInTimeZone(ESTABLISHMENT_TZ);
+                        const isToday = formData.date === date;
+                        const disabled = isToday && String(time).padStart(5, '0') < String(currentTime).padStart(5, '0');
+                        return (
+                          <option key={time} value={time} disabled={disabled}>{time} hrs</option>
+                        );
+                      })}
                     </select>
                   </div>
                 </div>

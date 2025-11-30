@@ -9,6 +9,34 @@ const app = express();
 app.use(cors({ origin: '*'}));
 app.use(express.json());
 
+// Establishment timezone (default: America/Mexico_City)
+const ESTABLISHMENT_TZ = process.env.ESTABLISHMENT_TZ || 'America/Mexico_City';
+
+function nowInTimeZone(tz) {
+  const now = new Date();
+  const fmt = new Intl.DateTimeFormat('en-CA', {
+    timeZone: tz,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23'
+  });
+  const parts = fmt.formatToParts(now);
+  const map = Object.fromEntries(parts.map(p => [p.type, p.value]));
+  const date = `${map.year}-${map.month}-${map.day}`;
+  const time = `${map.hour}:${map.minute}`;
+  return { date, time };
+}
+
+function isPastSameDayReservation(dateStr, timeStr, tz) {
+  if (!dateStr || !timeStr) return false;
+  const { date, time } = nowInTimeZone(tz);
+  if (dateStr !== date) return false;
+  return String(timeStr).padStart(5, '0') < String(time).padStart(5, '0');
+}
+
 // Admin email whitelist (comma-separated emails in ADMIN_EMAILS)
 const adminEmailWhitelist = new Set(
   (process.env.ADMIN_EMAILS || '')
@@ -237,6 +265,10 @@ app.post('/api/admin/restaurant', async (req, res) => {
   const { date, time, party_size, table_type, location_area, name, email, phone, special_requests, is_member, member_number, daypass_type } = req.body || {};
   try {
     console.log('[POST] /api/admin/restaurant', { date, time, party_size, table_type, location_area, name, email, is_member, member_number });
+    // Validate that requested time is not in the past for the current day (establishment timezone)
+    if (isPastSameDayReservation(date, time, ESTABLISHMENT_TZ)) {
+      return res.status(400).json({ error: 'No se pueden hacer reservas para horarios pasados. Por favor seleccione una hora futura' });
+    }
     const finalTableType = table_type || daypass_type || 'daypass';
     await pool.query(
       `INSERT INTO restaurant_reservation (id, date, time, party_size, table_type, location_area, name, email, phone, special_requests, is_member, member_number)

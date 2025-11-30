@@ -277,7 +277,13 @@ const AdminDashboard = ({ apiUrl }) => {
         throw new Error(serverMessage);
       }
       console.info('[membership] Usuario actualizado', data);
-      showSuccess('Usuario convertido en socio', 'Membresía guardada');
+      const isUpdate = selectedUser.is_member;
+      showSuccess(
+        isUpdate 
+          ? 'Número de socio actualizado correctamente' 
+          : 'Usuario convertido en socio',
+        isUpdate ? 'Actualización exitosa' : 'Membresía guardada'
+      );
       resetSelectedUser();
       await fetchUsers();
     } catch (e) {
@@ -1026,15 +1032,24 @@ const AdminDashboard = ({ apiUrl }) => {
                   <p>Aún no hay socios registrados.</p>
                 </div>
               ) : (
-                <ul className="members-list members-list--static">
+                <ul className="members-list">
                   {userBuckets.members.map((user) => (
-                    <li key={user.id} className="member-item static">
-                      <div className="member-info">
-                        <span className="member-name">{user.name || user.email}</span>
-                        <span className="member-email">{user.email}</span>
-                        {user.phone && <span className="member-phone">{user.phone}</span>}
-                      </div>
-                      <span className="member-number">#{user.member_number}</span>
+                    <li key={user.id}>
+                      <button
+                        type="button"
+                        className={`member-item ${selectedUser?.id === user.id ? 'active' : ''}`}
+                        onClick={() => handleUserSelect(user)}
+                      >
+                        <div className="member-info">
+                          <span className="member-name">{user.name || user.email}</span>
+                          <span className="member-email">{user.email}</span>
+                          {user.phone && <span className="member-phone">{user.phone}</span>}
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <span className="member-number">#{user.member_number}</span>
+                          <span className="member-action">Editar</span>
+                        </div>
+                      </button>
                     </li>
                   ))}
                 </ul>
@@ -1047,7 +1062,9 @@ const AdminDashboard = ({ apiUrl }) => {
               <>
                 <div className="member-config-header">
                   <div>
-                    <p className="member-config-label">Asignar número de socio</p>
+                    <p className="member-config-label">
+                      {selectedUser.is_member ? 'Actualizar número de socio' : 'Asignar número de socio'}
+                    </p>
                     <h4>{selectedUser.name || selectedUser.email}</h4>
                     {selectedUser.email && <span className="member-email">{selectedUser.email}</span>}
                   </div>
@@ -1065,7 +1082,9 @@ const AdminDashboard = ({ apiUrl }) => {
                   />
                 </label>
                 <p className="member-config-hint">
-                  Este número aparecerá en todas las reservas futuras del socio.
+                  {selectedUser.is_member 
+                    ? 'Este número aparecerá en todas las reservas futuras del socio. Puedes actualizarlo en cualquier momento.'
+                    : 'Este número aparecerá en todas las reservas futuras del socio.'}
                 </p>
                 <button
                   type="button"
@@ -1073,12 +1092,16 @@ const AdminDashboard = ({ apiUrl }) => {
                   onClick={handleMembershipSave}
                   disabled={savingMembership}
                 >
-                  {savingMembership ? 'Guardando...' : 'Guardar y convertir en socio'}
+                  {savingMembership 
+                    ? 'Guardando...' 
+                    : selectedUser.is_member 
+                      ? 'Actualizar número de socio' 
+                      : 'Guardar y convertir en socio'}
                 </button>
               </>
             ) : (
               <div className="members-empty">
-                <p>Selecciona un usuario sin membresía para comenzar.</p>
+                <p>Selecciona un usuario para configurar o actualizar su número de socio.</p>
               </div>
             )}
           </div>
