@@ -5,6 +5,7 @@ import './FoodGallery.css';
 const FoodGallery = ({ onBack }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeCategory, setActiveCategory] = useState('Todos');
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -33,26 +34,39 @@ const FoodGallery = ({ onBack }) => {
   ];
 
   const foodDescriptions = [
-    "Ceviche de camarón fresco con aguacate y cilantro",
-    "Pescado a la plancha con vegetales de temporada",
-    "Camarones al ajillo con arroz blanco",
-    "Pulpo a la parrilla con ensalada mediterránea",
-    "Langosta termidor con puré de papa",
-    "Tacos de pescado con salsa de mango",
-    "Ensalada de mariscos con vinagreta de limón",
-    "Cóctel de camarón estilo Mahalo"
+    "Ceviche de camarón fresco con aguacate y cilantro, marinado en jugo de limón y acompañado de camote y maíz.",
+    "Pescado fresco a la plancha con vegetales de temporada, aderezado con hierbas aromáticas y aceite de oliva.",
+    "Camarones salteados al ajillo con vino blanco, perejil fresco y servidos con arroz blanco premium.",
+    "Pulpo tierno a la parrilla con ensalada mediterránea, aceitunas kalamata y vinagreta de limón.",
+    "Langosta premium en salsa termidor con champiñones, gratinada con queso parmesano y puré de papa trufado.",
+    "Tacos de pescado fresco con salsa de mango y habanero, repollo morado y crema de aguacate.",
+    "Ensalada fresca de mariscos con vinagreta de limón, aguacate, tomate cherry y hierbas frescas.",
+    "Cóctel de camarón signature estilo Mahalo con salsa especial, aguacate y toque de cilantro."
   ];
 
   const foodDetails = [
-    { time: "15 min", category: "Entrada" },
-    { time: "25 min", category: "Plato Principal" },
-    { time: "20 min", category: "Plato Principal" },
-    { time: "30 min", category: "Especialidad" },
-    { time: "35 min", category: "Premium" },
-    { time: "15 min", category: "Especialidad" },
-    { time: "10 min", category: "Entrada" },
-    { time: "12 min", category: "Entrada" }
+    { time: "15 min", category: "Entrada", type: "Mariscos" },
+    { time: "25 min", category: "Plato Principal", type: "Pescados" },
+    { time: "20 min", category: "Plato Principal", type: "Mariscos" },
+    { time: "30 min", category: "Especialidad", type: "Mariscos" },
+    { time: "35 min", category: "Premium", type: "Mariscos" },
+    { time: "15 min", category: "Especialidad", type: "Pescados" },
+    { time: "10 min", category: "Entrada", type: "Ensaladas" },
+    { time: "12 min", category: "Entrada", type: "Mariscos" }
   ];
+
+  // Categorías disponibles
+  const categories = ['Todos', 'Mariscos', 'Pescados', 'Ensaladas', 'Postres', 'Bebidas'];
+
+  // Filtrar platillos por categoría
+  const filteredFoods = activeCategory === 'Todos' 
+    ? foodImages.map((_, index) => index)
+    : foodImages.map((_, index) => index).filter(index => 
+        foodDetails[index].type === activeCategory
+      );
+
+  // Platillos estrella (primeros 5)
+  const starDishes = foodImages.slice(0, 5);
 
   const nextImage = () => {
     setCurrentImageIndex((prev) => (prev + 1) % foodImages.length);
@@ -90,52 +104,62 @@ const FoodGallery = ({ onBack }) => {
       </div>
 
       <div className="food-gallery-content">
-        <div className="gallery-intro">
-          <div className="intro-card">
-            <div className="intro-header">
+        {/* Sección de Platillos Estrella con fondo blanco */}
+        <div className="star-dishes-section">
+          <div className="star-dishes-container">
+            <div className="section-header">
               <h2>Nuestros Platillos Estrella</h2>
               <div className="title-underline"></div>
             </div>
-            <p>
-              En Mahalo Beach Club, cada platillo es una obra de arte culinaria. 
-              Nuestro chef ejecutivo utiliza ingredientes frescos del mar y productos 
-              locales para crear experiencias gastronómicas únicas que complementan 
-              perfectamente tu estancia en el paraíso.
-            </p>
-            <div className="intro-features">
-              <div className="feature-item">
-                <div className="feature-icon-wrapper">
-                  <FaStar className="feature-icon" />
+            <div className="star-dishes-grid">
+              {starDishes.map((image, index) => (
+                <div 
+                  key={index} 
+                  className="star-dish-item"
+                  onClick={() => openModal(index)}
+                >
+                  <div className="star-dish-image-container">
+                    <img 
+                      src={image} 
+                      alt={`Platillo estrella ${index + 1}`}
+                      className="star-dish-image"
+                    />
+                    <div className="star-dish-overlay">
+                      <div className="star-dish-content">
+                        <FaStar className="star-icon" />
+                        <span className="star-dish-title">{foodTitles[index]}</span>
+                        <span className="star-dish-category">{foodDetails[index].category}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="feature-text">
-                  <span className="feature-title">Ingredientes Premium</span>
-                  <span>Mariscos frescos del día</span>
-                </div>
-              </div>
-              <div className="feature-item">
-                <div className="feature-icon-wrapper">
-                  <FaUtensils className="feature-icon" />
-                </div>
-                <div className="feature-text">
-                  <span className="feature-title">Chef Certificado</span>
-                  <span>Ejecutivo internacional</span>
-                </div>
-              </div>
-              <div className="feature-item">
-                <div className="feature-icon-wrapper">
-                  <FaLeaf className="feature-icon" />
-                </div>
-                <div className="feature-text">
-                  <span className="feature-title">Ambiente Único</span>
-                  <span>Vista panorámica al mar</span>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
 
+        {/* Filtros de Categorías */}
+        <div className="category-filters">
+          <div className="filters-header">
+            <h3>Explora por Categoría</h3>
+            <p>Descubre nuestros platillos organizados por tipo</p>
+          </div>
+          <div className="category-buttons">
+            {categories.map(category => (
+              <button
+                key={category}
+                className={`category-btn ${activeCategory === category ? 'active' : ''}`}
+                onClick={() => setActiveCategory(category)}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Grid de Comidas Filtrado */}
         <div className="food-grid">
-          {foodImages.map((image, index) => (
+          {filteredFoods.map((index) => (
             <div 
               key={index} 
               className="food-item"
@@ -143,12 +167,15 @@ const FoodGallery = ({ onBack }) => {
             >
               <div className="food-image-container">
                 <img 
-                  src={image} 
+                  src={foodImages[index]} 
                   alt={`Platillo ${index + 1}`}
                   className="food-image"
                 />
                 <div className="food-badge">
                   <span>{foodDetails[index].category}</span>
+                </div>
+                <div className="type-badge">
+                  <span>{foodDetails[index].type}</span>
                 </div>
                 <div className="food-overlay">
                   <div className="overlay-content">
@@ -160,10 +187,6 @@ const FoodGallery = ({ onBack }) => {
               <div className="food-info">
                 <div className="food-header">
                   <h3>{foodTitles[index]}</h3>
-                  <div className="food-time">
-                    <FaClock className="time-icon" />
-                    <span>{foodDetails[index].time}</span>
-                  </div>
                 </div>
                 <p>{foodDescriptions[index]}</p>
                 <div className="food-cta">
@@ -175,7 +198,7 @@ const FoodGallery = ({ onBack }) => {
         </div>
       </div>
 
-      {/* Modal para vista ampliada */}
+      {/* Modal mejorado para vista ampliada */}
       {isModalOpen && (
         <div className="food-modal-overlay" onClick={closeModal}>
           <div className="food-modal-content" onClick={(e) => e.stopPropagation()}>
@@ -183,44 +206,72 @@ const FoodGallery = ({ onBack }) => {
               <FaTimes />
             </button>
             
-            <div className="modal-image-container">
-              <img 
-                src={foodImages[currentImageIndex]} 
-                alt={`Platillo ${currentImageIndex + 1}`}
-                className="modal-image"
-              />
-              
-              {foodImages.length > 1 && (
-                <>
-                  <button className="modal-nav prev" onClick={prevImage}>
-                    <FaChevronLeft />
-                  </button>
-                  <button className="modal-nav next" onClick={nextImage}>
-                    <FaChevronRight />
-                  </button>
-                </>
-              )}
-              
-              <div className="image-counter">
-                {currentImageIndex + 1} / {foodImages.length}
-              </div>
-            </div>
-            
-            <div className="modal-info">
-              <div className="modal-header">
-                <h3>{foodTitles[currentImageIndex]}</h3>
-                <div className="modal-details">
-                  <div className="detail-item">
-                    <FaClock className="detail-icon" />
-                    <span>{foodDetails[currentImageIndex].time}</span>
+            <div className="modal-image-section">
+              <div className="modal-image-container">
+                <img 
+                  src={foodImages[currentImageIndex]} 
+                  alt={`Platillo ${currentImageIndex + 1}`}
+                  className="modal-image"
+                />
+                
+                {foodImages.length > 1 && (
+                  <>
+                    <button className="modal-nav prev" onClick={prevImage}>
+                      <FaChevronLeft />
+                    </button>
+                    <button className="modal-nav next" onClick={nextImage}>
+                      <FaChevronRight />
+                    </button>
+                  </>
+                )}
+                
+                <div className="image-counter">
+                  {currentImageIndex + 1} / {foodImages.length}
+                </div>
+
+                <div className="modal-badges">
+                  <div className="modal-badge category">
+                    {foodDetails[currentImageIndex].category}
                   </div>
-                  <div className="detail-item">
-                    <FaUtensils className="detail-icon" />
-                    <span>{foodDetails[currentImageIndex].category}</span>
+                  <div className="modal-badge type">
+                    {foodDetails[currentImageIndex].type}
                   </div>
                 </div>
               </div>
-              <p>{foodDescriptions[currentImageIndex]}</p>
+            </div>
+            
+            <div className="modal-info-section">
+              <div className="modal-header">
+                <h2>{foodTitles[currentImageIndex]}</h2>
+                <div className="modal-time">
+                  <FaClock className="time-icon" />
+                  <span>{foodDetails[currentImageIndex].time}</span>
+                </div>
+              </div>
+              
+              <div className="modal-description">
+                <p>{foodDescriptions[currentImageIndex]}</p>
+              </div>
+
+              <div className="modal-features">
+                <div className="feature-highlight">
+                  <FaStar className="feature-highlight-icon" />
+                  <span>Ingredientes frescos del día</span>
+                </div>
+                <div className="feature-highlight">
+                  <FaLeaf className="feature-highlight-icon" />
+                  <span>Preparación artesanal</span>
+                </div>
+              </div>
+
+              <div className="modal-actions">
+                <button className="modal-reserve-btn">
+                  Reservar este platillo
+                </button>
+                <button className="modal-close-btn" onClick={closeModal}>
+                  Cerrar
+                </button>
+              </div>
             </div>
           </div>
         </div>
