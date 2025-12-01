@@ -24,9 +24,9 @@ import useLocalStorage from './hooks/useLocalStorage';
 import { mahaloLogo } from './assets/images';
 
 // Constantes
-const API_RAW = process.env.REACT_APP_API_URL;
-const API_BASE = API_RAW ? API_RAW.replace(/\/+$/, '') : (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:4000');
-const API_URL = API_BASE.endsWith('/api') ? API_BASE.slice(0, -4) : API_BASE;
+const API_URL = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'production' 
+  ? ''
+  : 'http://localhost:4000');
 const ADMIN_EMAIL = 'clubdeplaya@mahaloclubofficial.com';
 
 function App() {
@@ -172,12 +172,21 @@ function App() {
       const resp = await fetch(`${API_URL}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(payload)
       });
 
       if (!resp.ok) {
-        const err = await resp.json().catch(() => ({}));
-        throw new Error(err.error || (isSignup ? 'Error al crear el usuario' : 'Credenciales inválidas'));
+        let errData = {};
+        try {
+          errData = await resp.json();
+        } catch (_) {
+          const txt = await resp.text().catch(() => '');
+          errData = txt ? { error: txt } : {};
+        }
+        const baseMsg = isSignup ? 'Error al crear el usuario' : 'Credenciales inválidas';
+        const detail = errData.error ? `: ${errData.error}` : ` (HTTP ${resp.status})`;
+        throw new Error(`${baseMsg}${detail}`);
       }
 
       const userData = await resp.json();
