@@ -190,7 +190,6 @@ app.put('/api/admin/users/:id/membership', async (req, res) => {
   }
 });
 
-// Login: verify email + password
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body || {};
   if (!email || !password) {
