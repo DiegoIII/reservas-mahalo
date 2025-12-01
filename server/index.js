@@ -3,7 +3,11 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import mysql from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
-app.use(cors({ origin: '*'}));
+
+dotenv.config();
+
+const app = express();
+app.use(cors({ origin: '*' }));
 app.use(express.json());
 
 // Establishment timezone (default: America/Mexico_City)
@@ -82,6 +86,30 @@ async function ensureAdminAndSchema() {
       console.log(`Column is_member might already exist in ${table}:`, err.message);
     }
     try {
+      await pool.query(`ALTER TABLE ${table} ADD COLUMN member_number VARCHAR(100) NULL`);
+    } catch (err) {
+      console.log(`Column member_number might already exist in ${table}:`, err.message);
+    }
+  }
+
+  // Auto-provision admin user if env vars provided
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  if (adminEmail && adminPassword) {
+    try {
+      const emailClean = String(adminEmail).trim().toLowerCase();
+      const passwordHash = await bcrypt.hash(String(adminPassword), 10);
+      const name = emailClean.split('@')[0] || 'admin';
+      await pool.query(
+        `INSERT INTO app_user (id, name, email, password_hash, is_admin)
+         VALUES (UUID(), ?, ?, ?, 1)
+         ON DUPLICATE KEY UPDATE name = VALUES(name), password_hash = VALUES(password_hash), is_admin = 1`,
+        [name, emailClean, passwordHash]
+      );
+      console.log('Admin user ensured for', adminEmail);
+    } catch (err) {
+      console.log('Failed to ensure admin user:', err.message);
+    }
   } else {
     console.log('Admin auto-provision skipped: ADMIN_EMAIL/ADMIN_PASSWORD not set');
   }
@@ -388,6 +416,25 @@ app.post('/api/admin/event', async (req, res) => {
   const { event_type, date, start_time, end_time, guests, venue, name, email, phone, company, special_requests, is_member, member_number } = req.body || {};
   try {
     console.log('[POST] /api/admin/event', { event_type, date, start_time, end_time, guests, venue, name, email, is_member, member_number });
+    // Validate same-day time not in past
+    if (isPastSameDayReservation(date, start_time, ESTABLISHMENT_TZ)) {
+      return res.status(400).json({ error: 'No se pueden crear eventos en horarios pasados para el día actual' });
+    }
     await pool.query(
+      `INSERT INTO event_reservation (id, event_type, date, start_time, end_time, guests, venue, name, email, phone, company, special_requests, is_member, member_number)
+       VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [event_type || null, date, start_time || null, end_time || null, guests || null, venue || null, name || null, email || null, phone || null, company || null, special_requests || null, is_member ? 1 : 0, member_number || null]
+    );
+    res.status(201).json({ ok: true });
+  } catch (err) {
+    console.error('event insert error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+const PORT = Number(process.env.PORT || 3000);
+app.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
+});
 
 

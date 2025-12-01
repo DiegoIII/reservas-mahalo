@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import './ModalStyles.css';
 
 const AuthModal = ({ isOpen, onClose, mode, form, onInputChange, onSubmit }) => {
+  const [showPassword, setShowPassword] = useState(false);
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -13,9 +14,8 @@ const AuthModal = ({ isOpen, onClose, mode, form, onInputChange, onSubmit }) => 
     };
   }, [isOpen]);
 
-  if (!isOpen) return null;
-
   const isSignup = mode === 'signup';
+  if (!isOpen) return null;
 
   return (
     <div className="confirmation-modal" onClick={(e) => {
@@ -91,16 +91,46 @@ const AuthModal = ({ isOpen, onClose, mode, form, onInputChange, onSubmit }) => 
               </svg>
               Contraseña
             </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={form.password}
-              onChange={onInputChange}
-              placeholder="Mínimo 6 caracteres"
-              required
-              minLength="6"
-            />
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                id="password"
+                name="password"
+                value={form.password}
+                onChange={onInputChange}
+                placeholder="Mínimo 6 caracteres"
+                required
+                minLength="6"
+              />
+              <button
+                type="button"
+                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                onClick={() => setShowPassword(prev => !prev)}
+                style={{
+                  position: 'absolute',
+                  right: '0.75rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#6c757d',
+                  padding: 0
+                }}
+              >
+                {showPassword ? (
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                    <path d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/>
+                    <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/>
+                  </svg>
+                ) : (
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                    <path d="M2 12C3.73 8.11 8 5 13 5c2.05 0 3.99.5 5.67 1.39l-1.46 1.46C15.93 7.29 14.52 7 13 7 8.58 7 4.79 9.58 3.22 13c.44.99 1.06 1.89 1.81 2.68l-1.41 1.41C2.39 15.96 1.62 14.56 1 13c.38-.91.88-1.77 1.5-2.57z"/>
+                    <path d="M21.19 21.19L2.81 2.81 4.22 1.4 22.6 19.78 21.19 21.19z"/>
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
 
           <div className="modal-buttons">

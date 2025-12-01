@@ -14,6 +14,7 @@ import Navbar from './components/Navbar';
 import HomePage from './components/HomePage';
 import AuthModal from './components/AuthModal';
 import LogoutModal from './components/LogoutModal';
+import MyReservations from './components/MyReservations';
 
 // Hooks
 import useAlert from './hooks/useAlert';
@@ -87,7 +88,8 @@ function App() {
       'rooms': '/habitaciones',
       'restaurant': '/restaurante',
       'events': '/eventos',
-      'food': '/comida'
+      'food': '/comida',
+      'my_reservations': '/mis-reservas'
     };
     const route = routeMap[newView] || '/';
     navigate(route);
@@ -321,6 +323,27 @@ function App() {
               </>
             } 
           />
+
+          {/* Ruta Mis Reservas */}
+          <Route 
+            path="/mis-reservas" 
+            element={
+              <>
+                {!userWithAdmin?.is_admin && <Navbar onViewChange={handleViewChange} currentView={currentView} />}
+                <main className="main-content">
+                  <div className="back-navigation">
+                    <button className="back-button" onClick={() => handleViewChange('home')}>
+                      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"/>
+                      </svg>
+                      Volver al Inicio
+                    </button>
+                  </div>
+                  <MyReservations user={userWithAdmin} apiUrl={API_URL} />
+                </main>
+              </>
+            } 
+          />
           
           {/* Redirects para rutas en inglés */}
           <Route path="/rooms" element={<Navigate to="/habitaciones" replace />} />
@@ -407,33 +430,40 @@ const Header = React.memo(({ user, onOpenAuth, onLogoutClick }) => {
 });
 
 // Componente AuthSection separado
-const AuthSection = React.memo(({ user, greeting, onOpenAuth, onLogoutClick }) => (
-  <div className="auth-buttons">
-    {user ? (
-      <div className="user-welcome">
-        <div className="user-avatar">
-          <UserIcon />
+const AuthSection = React.memo(({ user, greeting, onOpenAuth, onLogoutClick }) => {
+  const navigate = useNavigate();
+  return (
+    <div className="auth-buttons">
+      {user ? (
+        <div className="user-welcome">
+          <div className="user-avatar">
+            <UserIcon />
+          </div>
+          <span className="greeting">{greeting}, {user.name || user.email}</span>
+          <button onClick={() => navigate('/mis-reservas')} className="auth-button" title="Mis Reservas">
+            <ReservationsIcon />
+            Mis Reservas
+          </button>
+          <button onClick={onLogoutClick} className="auth-button logout" title="Cerrar sesión">
+            <LogoutIcon />
+            Cerrar sesión
+          </button>
         </div>
-        <span className="greeting">{greeting}, {user.name || user.email}</span>
-        <button onClick={onLogoutClick} className="auth-button logout" title="Cerrar sesión">
-          <LogoutIcon />
-          Cerrar sesión
-        </button>
-      </div>
-    ) : (
-      <div className="auth-options">
-        <button onClick={() => onOpenAuth('login')} className="auth-button login" title="Iniciar sesión">
-          <LoginIcon />
-          Iniciar sesión
-        </button>
-        <button onClick={() => onOpenAuth('signup')} className="auth-button signup" title="Crear cuenta">
-          <SignupIcon />
-          Crear cuenta
-        </button>
-      </div>
-    )}
-  </div>
-));
+      ) : (
+        <div className="auth-options">
+          <button onClick={() => onOpenAuth('login')} className="auth-button login" title="Iniciar sesión">
+            <LoginIcon />
+            Iniciar sesión
+          </button>
+          <button onClick={() => onOpenAuth('signup')} className="auth-button signup" title="Crear cuenta">
+            <SignupIcon />
+            Crear cuenta
+          </button>
+        </div>
+      )}
+    </div>
+  );
+});
 
 // Componente SocialLinks separado
 const SocialLinks = React.memo(() => (
@@ -536,6 +566,14 @@ const InstagramIcon = () => (
 const TikTokIcon = () => (
   <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
     <path d="M16.6 5.82s.51.5 0 0A4.278 4.278 0 0 1 15.54 3h-3.09v12.4a2.592 2.592 0 0 1-2.59 2.5c-1.42 0-2.6-1.16-2.6-2.6c0-1.72 1.66-3.01 3.37-2.48V9.66c-3.45-.46-6.47 2.22-6.47 5.64c0 3.33 2.76 5.7 5.69 5.7c3.14 0 5.69-2.55 5.69-5.7V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3s-1.88.09-3.24-1.48z"/>
+  </svg>
+);
+
+const ReservationsIcon = () => (
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+    <rect x="3" y="4" width="18" height="16" rx="2" ry="2" stroke="currentColor" strokeWidth="2" fill="none"/>
+    <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M7 14h5M7 17h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
   </svg>
 );
 
