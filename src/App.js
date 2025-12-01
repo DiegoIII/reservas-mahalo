@@ -25,7 +25,7 @@ import { mahaloLogo } from './assets/images';
 
 // Constantes
 const API_URL = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'production' 
-  ? 'https://mahalo-oficial.vercel.app'
+  ? ''
   : 'http://localhost:4000');
 const ADMIN_EMAIL = 'clubdeplaya@mahaloclubofficial.com';
 
