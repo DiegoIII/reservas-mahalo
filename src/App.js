@@ -60,6 +60,11 @@ function App() {
 
   // Efectos
   useEffect(() => {
+    if (userWithAdmin?.is_admin && location.pathname === '/') {
+      navigate('/mahalo-panel-de-administracion', { replace: true });
+    }
+  }, [userWithAdmin, location.pathname, navigate]);
+  useEffect(() => {
     const handleBeforeUnload = (e) => {
       if (user) {
         e.preventDefault();
