@@ -23,6 +23,34 @@ const RoomReservation = ({ user, apiUrl }) => {
   const { alertState, hideAlert, showError, showSuccess } = useAlert();
   const roomCardRefs = useRef({});
   const sectionRefs = useRef({});
+  const [seasons, setSeasons] = useState([]);
+
+  useEffect(() => {
+    const fetchSeasons = async () => {
+      try {
+        const resp = await fetch(`${apiUrl}/api/admin/seasonal-prices`);
+        if (!resp.ok) return;
+        const data = await resp.json();
+        setSeasons(Array.isArray(data) ? data : (data?.seasons || []));
+      } catch (e) {
+        console.error('Error fetching seasonal prices:', e);
+        setSeasons([]);
+      }
+    };
+    fetchSeasons();
+  }, [apiUrl]);
+
+  const isDateInRange = (dateStr, start, end) => {
+    if (!dateStr || !start || !end) return false;
+    const d = new Date(dateStr);
+    const s = new Date(start);
+    const e = new Date(end);
+    return d >= s && d <= e;
+  };
+
+  const getSeasonForDate = (dateStr, type) => {
+    return seasons.find(s => Array.isArray(s.types) && s.types.includes(type) && isDateInRange(dateStr, s.start_date, s.end_date));
+  };
 
   const roomTypes = [
     { 
@@ -187,7 +215,19 @@ const RoomReservation = ({ user, apiUrl }) => {
   const calculateTotal = () => {
     const selectedRoom = roomTypes.find(room => room.id === formData.roomType);
     const nights = calculateNights();
-    let subtotal = selectedRoom ? selectedRoom.price * nights : 0;
+    if (!selectedRoom || nights <= 0) return 0;
+    let subtotal = 0;
+    if (formData.checkIn && formData.checkOut) {
+      const start = new Date(formData.checkIn);
+      for (let i = 0; i < nights; i++) {
+        const day = new Date(start);
+        day.setDate(start.getDate() + i);
+        const dateStr = day.toISOString().split('T')[0];
+        const season = getSeasonForDate(dateStr, 'rooms');
+        const override = season?.prices?.rooms?.[selectedRoom.id];
+        subtotal += Number(override ?? selectedRoom.price);
+      }
+    }
     
     // Aplicar descuento de socio (10%)
     if (isMember && subtotal > 0) {
@@ -196,6 +236,14 @@ const RoomReservation = ({ user, apiUrl }) => {
     }
     
     return subtotal;
+  };
+
+  const getRoomPriceForDate = (roomId, dateStr) => {
+    const selectedRoom = roomTypes.find(room => room.id === roomId);
+    if (!selectedRoom) return 0;
+    const season = dateStr ? getSeasonForDate(dateStr, 'rooms') : null;
+    const override = season?.prices?.rooms?.[roomId];
+    return Number(override ?? selectedRoom.price);
   };
 
   const calculateDiscount = () => {
@@ -646,7 +694,7 @@ const RoomReservation = ({ user, apiUrl }) => {
                       </div>
                       <div className="pricing-row">
                         <span>Precio por noche</span>
-                        <span>${roomTypes.find(r => r.id === formData.roomType)?.price || 0}</span>
+                        <span>${getRoomPriceForDate(formData.roomType, formData.checkIn) || 0}</span>
                       </div>
                       <div className="pricing-row">
                         <span>Número de noches</span>
@@ -709,7 +757,7 @@ const RoomReservation = ({ user, apiUrl }) => {
                   <div className="price-details">
                     <div className="price-item">
                       <span className="price-label">{roomTypes.find(r => r.id === formData.roomType)?.name}</span>
-                      <span className="price-value">${roomTypes.find(r => r.id === formData.roomType)?.price || 0} × {nights} noche{nights !== 1 ? 's' : ''}</span>
+                      <span className="price-value">${getRoomPriceForDate(formData.roomType, formData.checkIn) || 0} × {nights} noche{nights !== 1 ? 's' : ''}</span>
                     </div>
                     {isMember && calculateDiscount() > 0 && (
                       <div className="price-item discount">

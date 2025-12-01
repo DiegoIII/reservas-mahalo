@@ -45,6 +45,34 @@ const EventReservation = ({ user, apiUrl }) => {
   const [activeSection, setActiveSection] = useState('eventType');
   const { alertState, hideAlert, showError, showSuccess } = useAlert();
   const sectionRefs = useRef({});
+  const [seasons, setSeasons] = useState([]);
+
+  useEffect(() => {
+    const fetchSeasons = async () => {
+      try {
+        const resp = await fetch(`${apiUrl}/api/admin/seasonal-prices`);
+        if (!resp.ok) return;
+        const data = await resp.json();
+        setSeasons(Array.isArray(data) ? data : (data?.seasons || []));
+      } catch (e) {
+        console.error('Error fetching seasonal prices:', e);
+        setSeasons([]);
+      }
+    };
+    fetchSeasons();
+  }, [apiUrl]);
+
+  const isDateInRange = (dateStr, start, end) => {
+    if (!dateStr || !start || !end) return false;
+    const d = new Date(dateStr);
+    const s = new Date(start);
+    const e = new Date(end);
+    return d >= s && d <= e;
+  };
+
+  const getSeasonForDate = (dateStr, type) => {
+    return seasons.find(s => Array.isArray(s.types) && s.types.includes(type) && isDateInRange(dateStr, s.start_date, s.end_date));
+  };
 
   const eventTypes = [
     { 
@@ -345,8 +373,20 @@ const EventReservation = ({ user, apiUrl }) => {
     const baseHours = 5;
     const extraHours = Math.max(0, duration - baseHours);
     const guests = Number(formData.guests);
+    const season = getSeasonForDate(formData.date, 'events');
+
+    const getTierPrice = (tiers, guestCount) => {
+      const t = (tiers || []).find(r => guestCount >= Number(r.min) && guestCount <= Number(r.max));
+      if (t) return Number(t.price || 0);
+      const last = (tiers || []).slice(-1)[0];
+      return last ? Number(last.price || 0) : 0;
+    };
 
     const getBasePrice = (rentalType, guestCount) => {
+      if (season && season.prices && season.prices.events) {
+        if (rentalType === 'decorado') return getTierPrice(season.prices.events.decorated, guestCount);
+        return getTierPrice(season.prices.events.withoutDecoration, guestCount);
+      }
       if (rentalType === 'decorado') {
         if (guestCount >= 1 && guestCount <= 50) return 20000;
         if (guestCount >= 51 && guestCount <= 100) return 28000;
@@ -362,7 +402,11 @@ const EventReservation = ({ user, apiUrl }) => {
     };
 
     const baseRental = getBasePrice(formData.rentalType, guests);
-    const extraHoursCharge = extraHours * (formData.rentalType === 'decorado' ? 5000 : 3000);
+    const seasonExtraRates = season?.prices?.events?.extraHourRates;
+    const extraRate = formData.rentalType === 'decorado' 
+      ? (seasonExtraRates?.decorated ?? 5000)
+      : (seasonExtraRates?.withoutDecoration ?? 3000);
+    const extraHoursCharge = extraHours * extraRate;
     const shortHoursApplied = duration > 0 && duration < baseHours;
     const shortHoursCharge = shortHoursApplied ? Math.round(baseRental * 0.15) : 0;
     let subtotal = shortHoursApplied ? shortHoursCharge : baseRental + extraHoursCharge;
@@ -373,7 +417,7 @@ const EventReservation = ({ user, apiUrl }) => {
 
     return {
       duration, baseHours, extraHours, baseRental, 
-      extraHourRate: formData.rentalType === 'decorado' ? 5000 : 3000, 
+      extraHourRate: extraRate, 
       extraHoursCharge, rentalCost: baseRental,
       shortHoursApplied, shortHoursCharge, subtotal, discount
     };

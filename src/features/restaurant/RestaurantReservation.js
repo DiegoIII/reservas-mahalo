@@ -38,6 +38,7 @@ const RestaurantReservation = ({ user, apiUrl }) => {
   const [activeSection, setActiveSection] = useState('datetime');
   const { alertState, hideAlert, showError, showSuccess } = useAlert();
   const sectionRefs = useRef({});
+  const [seasons, setSeasons] = useState([]);
 
   const reservationAreas = [
     { 
@@ -216,6 +217,47 @@ const RestaurantReservation = ({ user, apiUrl }) => {
     }
   };
 
+  useEffect(() => {
+    const fetchSeasons = async () => {
+      try {
+        const resp = await fetch(`${apiUrl}/api/admin/seasonal-prices`);
+        if (!resp.ok) return;
+        const data = await resp.json();
+        setSeasons(Array.isArray(data) ? data : (data?.seasons || []));
+      } catch (e) {
+        console.error('Error fetching seasonal prices:', e);
+        setSeasons([]);
+      }
+    };
+    fetchSeasons();
+  }, [apiUrl]);
+
+  const isDateInRange = (dateStr, start, end) => {
+    if (!dateStr || !start || !end) return false;
+    const d = new Date(dateStr);
+    const s = new Date(start);
+    const e = new Date(end);
+    return d >= s && d <= e;
+  };
+
+  const getSeasonForDate = (dateStr, type) => {
+    return seasons.find(s => Array.isArray(s.types) && s.types.includes(type) && isDateInRange(dateStr, s.start_date, s.end_date));
+  };
+
+  const getDaypassPrice = (id) => {
+    const dp = daypassTypes.find(d => d.id === id);
+    const season = getSeasonForDate(formData.date, 'restaurant');
+    const override = season?.prices?.restaurant?.daypass?.[id];
+    return Number(override ?? dp?.price ?? 0);
+  };
+
+  const getTablePrice = (id) => {
+    const tb = tableTypes.find(t => t.id === id);
+    const season = getSeasonForDate(formData.date, 'restaurant');
+    const override = season?.prices?.restaurant?.tables?.[id];
+    return Number(override ?? tb?.price ?? 0);
+  };
+
   const confirmReservation = async () => {
     try {
       const payload = {
@@ -263,15 +305,13 @@ const RestaurantReservation = ({ user, apiUrl }) => {
     
     // Si hay daypass seleccionado, usar su precio
     if (formData.daypassType) {
-      const selectedDaypass = daypassTypes.find(dp => dp.id === formData.daypassType);
-      if (selectedDaypass) {
-        subtotal = selectedDaypass.price * Number(formData.partySize);
-      }
+      const price = getDaypassPrice(formData.daypassType);
+      subtotal = price * Number(formData.partySize);
     } else if (formData.tableType) {
       // Si hay mesa seleccionada, usar precio de mesa
-      const selectedTable = tableTypes.find(table => table.id === formData.tableType);
       const partySize = Number(formData.partySize);
-      subtotal = selectedTable ? selectedTable.price * partySize : 0;
+      const price = getTablePrice(formData.tableType);
+      subtotal = price * partySize;
     }
     
     // Aplicar descuento de socio (15% para alimentos/daypass)
@@ -288,14 +328,12 @@ const RestaurantReservation = ({ user, apiUrl }) => {
     let baseTotal = 0;
     
     if (formData.daypassType) {
-      const selectedDaypass = daypassTypes.find(dp => dp.id === formData.daypassType);
-      if (selectedDaypass) {
-        baseTotal = selectedDaypass.price * Number(formData.partySize);
-      }
+      const price = getDaypassPrice(formData.daypassType);
+      baseTotal = price * Number(formData.partySize);
     } else if (formData.tableType) {
-      const selectedTable = tableTypes.find(table => table.id === formData.tableType);
       const partySize = Number(formData.partySize);
-      baseTotal = selectedTable ? selectedTable.price * partySize : 0;
+      const price = getTablePrice(formData.tableType);
+      baseTotal = price * partySize;
     }
     
     return baseTotal * 0.15;
@@ -341,24 +379,34 @@ const RestaurantReservation = ({ user, apiUrl }) => {
 
   const renderOptionCard = (items, selectedKey, getIcon, renderContent) => (
     <div className="options-grid">
-      {items.map(item => (
-        <div
-          key={item.id}
-          className={`option-card ${formData[selectedKey] === item.id ? 'selected' : ''}`}
-          onClick={() => setFormData(prev => ({ ...prev, [selectedKey]: item.id }))}
-        >
-          <div className="option-card-header">
-            <div className="option-icon">
-              {getIcon(item)}
+          {items.map(item => (
+            <div
+              key={item.id}
+              className={`option-card ${formData[selectedKey] === item.id ? 'selected' : ''}`}
+              onClick={() => setFormData(prev => ({ ...prev, [selectedKey]: item.id }))}
+            >
+              <div className="option-card-header">
+                <div className="option-icon">
+                  {getIcon(item)}
+                </div>
+                <div className="option-title">
+                  <h4>{item.name}</h4>
+                  {item.capacity && <span className="option-capacity">{item.capacity} personas</span>}
+                  {selectedKey === 'daypassType' && (
+                    <div className="option-price" style={{ marginTop: '0.5rem', fontSize: '1rem', fontWeight: 600 }}>
+                      ${getDaypassPrice(item.id)} MXN por persona
+                    </div>
+                  )}
+                  {selectedKey === 'tableType' && (
+                    <div className="option-price" style={{ marginTop: '0.5rem', fontSize: '1rem', fontWeight: 600 }}>
+                      ${getTablePrice(item.id)} MXN por persona
+                    </div>
+                  )}
+                </div>
+              </div>
+              {renderContent(item)}
             </div>
-            <div className="option-title">
-              <h4>{item.name}</h4>
-              {item.capacity && <span className="option-capacity">{item.capacity} personas</span>}
-            </div>
-          </div>
-          {renderContent(item)}
-        </div>
-      ))}
+          ))}
     </div>
   );
 
@@ -630,7 +678,7 @@ const RestaurantReservation = ({ user, apiUrl }) => {
                           </div>
                           <div className="pricing-row">
                             <span>Precio por persona</span>
-                            <span>${daypassTypes.find(t => t.id === formData.daypassType)?.price || 0}</span>
+                            <span>${getDaypassPrice(formData.daypassType) || 0}</span>
                           </div>
                         </>
                       ) : (
@@ -643,7 +691,7 @@ const RestaurantReservation = ({ user, apiUrl }) => {
                           </div>
                           <div className="pricing-row">
                             <span>Precio por persona</span>
-                            <span>${tableTypes.find(t => t.id === formData.tableType)?.price || 0}</span>
+                            <span>${getTablePrice(formData.tableType) || 0}</span>
                           </div>
                         </>
                       )}
@@ -742,7 +790,7 @@ const RestaurantReservation = ({ user, apiUrl }) => {
                       <>
                         <div className="price-item">
                           <span className="price-label">{daypassTypes.find(t => t.id === formData.daypassType)?.name}</span>
-                          <span className="price-value">${daypassTypes.find(t => t.id === formData.daypassType)?.price || 0} × {formData.partySize} persona{formData.partySize !== 1 ? 's' : ''}</span>
+                          <span className="price-value">${getDaypassPrice(formData.daypassType) || 0} × {formData.partySize} persona{formData.partySize !== 1 ? 's' : ''}</span>
                         </div>
                         {isMember && calculateDiscount() > 0 && (
                           <div className="price-item discount">
@@ -759,7 +807,7 @@ const RestaurantReservation = ({ user, apiUrl }) => {
                       <>
                         <div className="price-item">
                           <span className="price-label">{tableTypes.find(t => t.id === formData.tableType)?.name}</span>
-                          <span className="price-value">${tableTypes.find(t => t.id === formData.tableType)?.price || 0} × {formData.partySize} persona{formData.partySize !== 1 ? 's' : ''}</span>
+                          <span className="price-value">${getTablePrice(formData.tableType) || 0} × {formData.partySize} persona{formData.partySize !== 1 ? 's' : ''}</span>
                         </div>
                         {isMember && calculateDiscount() > 0 && (
                           <div className="price-item discount">

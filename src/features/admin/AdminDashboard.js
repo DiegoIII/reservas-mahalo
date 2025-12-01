@@ -969,7 +969,6 @@ const AdminDashboard = ({ apiUrl }) => {
           <PriceConfiguration 
             apiUrl={apiUrl} 
             onExit={() => setActiveSection('reservas')} 
-            exitLabel="Volver a Reservas"
           />
         </div>
       )}
@@ -1197,5 +1196,4 @@ const AdminDashboard = ({ apiUrl }) => {
 };
 
 export default AdminDashboard;
-
 
