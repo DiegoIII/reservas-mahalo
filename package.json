@@ -24,6 +24,9 @@
     "eject": "react-scripts eject",
     "postinstall": "patch-package"
   },
+  "engines": {
+    "node": "20.x"
+  },
   "devDependencies": {
     "patch-package": "^8.0.0"
   },
