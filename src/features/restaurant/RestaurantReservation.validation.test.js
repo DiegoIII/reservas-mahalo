@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import RestaurantReservation from './RestaurantReservation';
+import useAlert from '../../hooks/useAlert';
 
 jest.mock('../../hooks/useAlert', () => {
   const showError = jest.fn();
@@ -67,7 +68,7 @@ describe('RestaurantReservation time validation', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /Confirmar Reserva/i }));
 
-    const alertHook = require('../../hooks/useAlert').default();
+    const alertHook = useAlert();
     expect(alertHook.showError).toHaveBeenCalledWith(
       'No se pueden hacer reservas para horarios pasados. Por favor seleccione una hora futura',
       'Horario inválido'

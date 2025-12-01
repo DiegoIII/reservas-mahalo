@@ -45,6 +45,6 @@ describe('time utils', () => {
     mockNowParts({ year: '2025', month: '11', day: '20', hour: '00', minute: '05' });
     expect(isPastSameDayReservation('2025-11-20', '00:00')).toBe(true);
     expect(isPastSameDayReservation('2025-11-20', '08:30')).toBe(false);
-    expect(isPastSameDayReservation('2025-11-20', '8:00')).toBe(true);
+    expect(isPastSameDayReservation('2025-11-20', '8:00')).toBe(false);
   });
 });

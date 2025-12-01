@@ -1,8 +1,17 @@
+import React from 'react';
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
-test('renders learn react link', () => {
+jest.mock('react-router-dom', () => ({
+  BrowserRouter: ({ children }) => <div>{children}</div>,
+  Routes: ({ children }) => <div>{children}</div>,
+  Route: () => null,
+  Navigate: () => null,
+  useNavigate: () => () => {},
+  useLocation: () => ({ pathname: '/' })
+}), { virtual: true });
+
+test('renderiza el título principal', () => {
   render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: /Mahalo Beach Club/i, level: 1 })).toBeInTheDocument();
 });

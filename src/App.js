@@ -1,27 +1,23 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom';
 import './App.css';
-
-// Componentes
-import RoomReservation from './features/rooms/RoomReservation';
-import RestaurantReservation from './features/restaurant/RestaurantReservation';
-import EventReservation from './features/events/EventReservation';
-import FoodGallery from './features/food/FoodGallery';
-import AdminDashboard from './features/admin/AdminDashboard';
 import CustomAlert from './components/CustomAlert';
 import HeroVideo from './components/HeroVideo';
 import Navbar from './components/Navbar';
 import HomePage from './components/HomePage';
 import AuthModal from './components/AuthModal';
 import LogoutModal from './components/LogoutModal';
-import MyReservations from './components/MyReservations';
-
-// Hooks
 import useAlert from './hooks/useAlert';
 import useLocalStorage from './hooks/useLocalStorage';
-
-// Assets
 import { mahaloLogo } from './assets/images';
+
+// Componentes (lazy)
+const RoomReservation = React.lazy(() => import('./features/rooms/RoomReservation'));
+const RestaurantReservation = React.lazy(() => import('./features/restaurant/RestaurantReservation'));
+const EventReservation = React.lazy(() => import('./features/events/EventReservation'));
+const FoodGallery = React.lazy(() => import('./features/food/FoodGallery'));
+const AdminDashboard = React.lazy(() => import('./features/admin/AdminDashboard'));
+const MyReservations = React.lazy(() => import('./components/MyReservations'));
 
 // Constantes
 const API_URL = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'production' 
@@ -220,6 +216,7 @@ function App() {
       />
       
       <div className="app-body">
+        <React.Suspense fallback={<div>Cargando...</div>}>
         <Routes>
           {/* Ruta del panel de administración */}
           <Route 
@@ -364,6 +361,7 @@ function App() {
           <Route path="/events" element={<Navigate to="/eventos" replace />} />
           <Route path="/food" element={<Navigate to="/comida" replace />} />
         </Routes>
+        </React.Suspense>
       </div>
 
       <Footer />
