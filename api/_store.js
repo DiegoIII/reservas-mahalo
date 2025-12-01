@@ -85,6 +85,23 @@ const prices = {
 
 let seasons = [];
 
+function getPrices() {
+  return prices;
+}
+
+function setPrices(newPrices) {
+  if (!newPrices || typeof newPrices !== 'object') return;
+  if (newPrices.events && typeof newPrices.events === 'object') {
+    prices.events = newPrices.events;
+  }
+  if (newPrices.rooms && typeof newPrices.rooms === 'object') {
+    prices.rooms = newPrices.rooms;
+  }
+  if (newPrices.restaurant && typeof newPrices.restaurant === 'object') {
+    prices.restaurant = newPrices.restaurant;
+  }
+}
+
 function addUser(user) {
   const id = nextUserId++;
   const u = { id, is_member: false, ...user };
@@ -118,6 +135,8 @@ module.exports = {
   users,
   reservations,
   prices,
+  getPrices,
+  setPrices,
   getSeasons: () => seasons,
   setSeasons: (s) => { seasons = Array.isArray(s) ? s : []; },
   addUser,
@@ -125,4 +144,3 @@ module.exports = {
   addReservation,
   checkoutRoom
 };
-

@@ -64,7 +64,7 @@ const RestaurantReservation = ({ user, apiUrl }) => {
     }
   ];
 
-  const daypassTypes = [
+  const [daypassTypes, setDaypassTypes] = useState([
     {
       id: 'simple',
       name: 'Daypass Simple',
@@ -89,9 +89,9 @@ const RestaurantReservation = ({ user, apiUrl }) => {
       icon: FaCocktail,
       features: ['Uso de instalaciones', 'Acceso a playa', 'Reembolso $500 en alimentos y bebidas']
     }
-  ];
+  ]);
 
-  const tableTypes = [
+  const [tableTypes, setTableTypes] = useState([
     { 
       id: 'standard', 
       name: 'Mesa Estándar', 
@@ -132,7 +132,22 @@ const RestaurantReservation = ({ user, apiUrl }) => {
       max: 6,
       price: 30
     }
-  ];
+  ]);
+
+  const [basePrices, setBasePrices] = useState(null);
+  useEffect(() => {
+    const fetchBase = async () => {
+      try {
+        const resp = await fetch(`${apiUrl}/api/admin/prices`);
+        if (!resp.ok) return;
+        const data = await resp.json();
+        setBasePrices(data);
+        setDaypassTypes(prev => prev.map(d => ({ ...d, price: Number((data?.restaurant?.daypass || {})[d.id] ?? d.price) })));
+        setTableTypes(prev => prev.map(t => ({ ...t, price: Number((data?.restaurant?.tables || {})[t.id] ?? t.price) })));
+      } catch (_) {}
+    };
+    fetchBase();
+  }, [apiUrl]);
 
   const timeSlots = [
     '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30',
@@ -245,17 +260,23 @@ const RestaurantReservation = ({ user, apiUrl }) => {
   };
 
   const getDaypassPrice = (id) => {
-    const dp = daypassTypes.find(d => d.id === id);
     const season = getSeasonForDate(formData.date, 'restaurant');
     const override = season?.prices?.restaurant?.daypass?.[id];
-    return Number(override ?? dp?.price ?? 0);
+    if (override != null) return Number(override);
+    const base = basePrices?.restaurant?.daypass?.[id];
+    if (base != null) return Number(base);
+    const dp = daypassTypes.find(d => d.id === id);
+    return Number(dp?.price ?? 0);
   };
 
   const getTablePrice = (id) => {
-    const tb = tableTypes.find(t => t.id === id);
     const season = getSeasonForDate(formData.date, 'restaurant');
     const override = season?.prices?.restaurant?.tables?.[id];
-    return Number(override ?? tb?.price ?? 0);
+    if (override != null) return Number(override);
+    const base = basePrices?.restaurant?.tables?.[id];
+    if (base != null) return Number(base);
+    const tb = tableTypes.find(t => t.id === id);
+    return Number(tb?.price ?? 0);
   };
 
   const confirmReservation = async () => {

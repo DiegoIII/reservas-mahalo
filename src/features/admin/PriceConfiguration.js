@@ -200,6 +200,8 @@ const PriceConfiguration = ({ apiUrl, onExit }) => {
         const err = await resp.json().catch(() => ({}));
         throw new Error(err.error || 'Error al guardar precios');
       }
+      const updated = await resp.json();
+      setPrices(updated);
       showSuccess('Precios actualizados correctamente', 'Configuración guardada');
     } catch (e) {
       showError(e.message, 'Error al guardar precios');

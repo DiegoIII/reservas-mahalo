@@ -52,7 +52,7 @@ const RoomReservation = ({ user, apiUrl }) => {
     return seasons.find(s => Array.isArray(s.types) && s.types.includes(type) && isDateInRange(dateStr, s.start_date, s.end_date));
   };
 
-  const roomTypes = [
+  const [roomTypes, setRoomTypes] = useState([
     { 
       id: 'room1', 
       name: 'Habitación Vista Premium', 
@@ -103,7 +103,21 @@ const RoomReservation = ({ user, apiUrl }) => {
       hasView: false, 
       roomNumber: 5 
     }
-  ];
+  ]);
+
+  const [basePrices, setBasePrices] = useState(null);
+  useEffect(() => {
+    const fetchBase = async () => {
+      try {
+        const resp = await fetch(`${apiUrl}/api/admin/prices`);
+        if (!resp.ok) return;
+        const data = await resp.json();
+        setBasePrices(data);
+        setRoomTypes(prev => prev.map(r => ({ ...r, price: Number((data?.rooms || {})[r.id] ?? r.price) })));
+      } catch (_) {}
+    };
+    fetchBase();
+  }, [apiUrl]);
 
   const roomCapacityRules = {
     room1: 6,
@@ -225,7 +239,9 @@ const RoomReservation = ({ user, apiUrl }) => {
         const dateStr = day.toISOString().split('T')[0];
         const season = getSeasonForDate(dateStr, 'rooms');
         const override = season?.prices?.rooms?.[selectedRoom.id];
-        subtotal += Number(override ?? selectedRoom.price);
+        if (override != null) subtotal += Number(override);
+        else if (basePrices?.rooms?.[selectedRoom.id] != null) subtotal += Number(basePrices.rooms[selectedRoom.id]);
+        else subtotal += Number(selectedRoom.price);
       }
     }
     
@@ -243,7 +259,10 @@ const RoomReservation = ({ user, apiUrl }) => {
     if (!selectedRoom) return 0;
     const season = dateStr ? getSeasonForDate(dateStr, 'rooms') : null;
     const override = season?.prices?.rooms?.[roomId];
-    return Number(override ?? selectedRoom.price);
+    if (override != null) return Number(override);
+    const base = basePrices?.rooms?.[roomId];
+    if (base != null) return Number(base);
+    return Number(selectedRoom.price);
   };
 
   const calculateDiscount = () => {

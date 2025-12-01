@@ -47,6 +47,19 @@ const EventReservation = ({ user, apiUrl }) => {
   const sectionRefs = useRef({});
   const [seasons, setSeasons] = useState([]);
 
+  const [basePrices, setBasePrices] = useState(null);
+  useEffect(() => {
+    const fetchBase = async () => {
+      try {
+        const resp = await fetch(`${apiUrl}/api/admin/prices`);
+        if (!resp.ok) return;
+        const data = await resp.json();
+        setBasePrices(data);
+      } catch (_) {}
+    };
+    fetchBase();
+  }, [apiUrl]);
+
   useEffect(() => {
     const fetchSeasons = async () => {
       try {
@@ -382,30 +395,26 @@ const EventReservation = ({ user, apiUrl }) => {
       return last ? Number(last.price || 0) : 0;
     };
 
-    const getBasePrice = (rentalType, guestCount) => {
-      if (season && season.prices && season.prices.events) {
-        if (rentalType === 'decorado') return getTierPrice(season.prices.events.decorated, guestCount);
-        return getTierPrice(season.prices.events.withoutDecoration, guestCount);
-      }
-      if (rentalType === 'decorado') {
-        if (guestCount >= 1 && guestCount <= 50) return 20000;
-        if (guestCount >= 51 && guestCount <= 100) return 28000;
-        if (guestCount >= 101 && guestCount <= 150) return 35000;
-        if (guestCount >= 151 && guestCount <= 200) return 40000;
-        return 40000;
-      } else {
-        if (guestCount >= 1 && guestCount <= 50) return 15000;
-        if (guestCount >= 51 && guestCount <= 100) return 18000;
-        if (guestCount >= 101 && guestCount <= 300) return 25000;
-        return 25000;
-      }
-    };
+  
+
+  const getBasePrice = (rentalType, guestCount) => {
+    if (season && season.prices && season.prices.events) {
+      if (rentalType === 'decorado') return getTierPrice(season.prices.events.decorated, guestCount);
+      return getTierPrice(season.prices.events.withoutDecoration, guestCount);
+    }
+    const tiers = rentalType === 'decorado'
+      ? basePrices?.events?.decorated
+      : basePrices?.events?.withoutDecoration;
+    const val = getTierPrice(tiers || [], guestCount);
+    if (val) return val;
+    return 0;
+  };
 
     const baseRental = getBasePrice(formData.rentalType, guests);
     const seasonExtraRates = season?.prices?.events?.extraHourRates;
     const extraRate = formData.rentalType === 'decorado' 
-      ? (seasonExtraRates?.decorated ?? 5000)
-      : (seasonExtraRates?.withoutDecoration ?? 3000);
+      ? (seasonExtraRates?.decorated ?? basePrices?.events?.extraHourRates?.decorated ?? 5000)
+      : (seasonExtraRates?.withoutDecoration ?? basePrices?.events?.extraHourRates?.withoutDecoration ?? 3000);
     const extraHoursCharge = extraHours * extraRate;
     const shortHoursApplied = duration > 0 && duration < baseHours;
     const shortHoursCharge = shortHoursApplied ? Math.round(baseRental * 0.15) : 0;

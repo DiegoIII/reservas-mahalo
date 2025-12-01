@@ -1,4 +1,4 @@
-const { prices } = require('../_store');
+const { getPrices, setPrices } = require('../_store');
 
 const allowed = new Set(['http://localhost:3000', 'https://mahalo-oficial.vercel.app']);
 
@@ -20,13 +20,14 @@ module.exports = (req, res) => {
     return;
   }
   if (req.method === 'GET') {
-    res.status(200).json(prices);
+    res.status(200).json(getPrices());
     return;
   }
   if (req.method === 'PUT') {
-    res.status(200).json({ ok: true });
+    const body = req.body || {};
+    setPrices(body);
+    res.status(200).json(getPrices());
     return;
   }
   res.status(405).json({ error: 'Method Not Allowed' });
 };
-
