@@ -3,9 +3,6 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import mysql from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
-
-dotenv.config();
-const app = express();
 app.use(cors({ origin: '*'}));
 app.use(express.json());
 
@@ -85,24 +82,6 @@ async function ensureAdminAndSchema() {
       console.log(`Column is_member might already exist in ${table}:`, err.message);
     }
     try {
-      await pool.query(`ALTER TABLE ${table} ADD COLUMN member_number VARCHAR(100) NULL`);
-    } catch (err) {
-      console.log(`Column member_number might already exist in ${table}:`, err.message);
-    }
-  }
-  
-  // Provision admin from environment variables if provided
-  const adminEmail = process.env.ADMIN_EMAIL;
-  const adminPassword = process.env.ADMIN_PASSWORD;
-  if (adminEmail && adminPassword) {
-    const passwordHash = await bcrypt.hash(adminPassword, 10);
-    // Only create admin if it doesn't exist; do not overwrite password on each boot
-    await pool.query(
-      `INSERT INTO app_user (id, name, email, phone, password_hash, is_admin)
-       VALUES (UUID(), 'Admin', ?, NULL, ?, 1)
-       ON DUPLICATE KEY UPDATE name = VALUES(name), is_admin = 1`,
-      [adminEmail, passwordHash]
-    );
   } else {
     console.log('Admin auto-provision skipped: ADMIN_EMAIL/ADMIN_PASSWORD not set');
   }
@@ -410,67 +389,5 @@ app.post('/api/admin/event', async (req, res) => {
   try {
     console.log('[POST] /api/admin/event', { event_type, date, start_time, end_time, guests, venue, name, email, is_member, member_number });
     await pool.query(
-      `INSERT INTO event_reservation (id, event_type, date, start_time, end_time, guests, venue, name, email, phone, company, special_requests, is_member, member_number)
-       VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [event_type, date, start_time, end_time, guests, venue, name, email, phone || null, company || null, special_requests || null, is_member ? 1 : 0, member_number || null]
-    );
-    res.status(201).json({ ok: true });
-  } catch (err) {
-    console.error('event insert error:', err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Checkout room reservation
-app.post('/api/admin/room-checkout', async (req, res) => {
-  const { reservation_id } = req.body || {};
-  if (!reservation_id) {
-    return res.status(400).json({ error: 'reservation_id is required' });
-  }
-  
-  try {
-    console.log('[POST] /api/admin/room-checkout', { reservation_id });
-    
-    // Update the reservation to mark as checked out
-    const [result] = await pool.query(
-      `UPDATE room_reservation 
-       SET checked_out = 1, checkout_time = NOW() 
-       WHERE id = ? AND checked_out = 0`,
-      [reservation_id]
-    );
-    
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: 'Reservation not found or already checked out' });
-    }
-    
-    res.status(200).json({ ok: true, message: 'Checkout successful' });
-  } catch (err) {
-    console.error('room checkout error:', err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Delete room reservation by id (hard checkout)
-app.delete('/api/admin/room-reservation/:id', async (req, res) => {
-  const { id } = req.params || {};
-  if (!id) {
-    return res.status(400).json({ error: 'id is required' });
-  }
-  try {
-    const [result] = await pool.query('DELETE FROM room_reservation WHERE id = ?', [id]);
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: 'Reservation not found' });
-    }
-    return res.status(200).json({ ok: true, message: 'Reservation deleted' });
-  } catch (err) {
-    console.error('room reservation delete error:', err.message);
-    return res.status(500).json({ error: err.message });
-  }
-});
-
-const port = Number(process.env.PORT || 4000);
-app.listen(port, () => {
-  console.log(`API listening on port ${port}`);
-});
 
 
