@@ -27,6 +27,8 @@ import { mahaloLogo } from './assets/images';
 const API_URL = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'production' 
   ? ''
   : 'http://localhost:4000');
+const LOGIN_ENDPOINT = process.env.REACT_APP_LOGIN_ENDPOINT || '/api/login';
+const SIGNUP_ENDPOINT = process.env.REACT_APP_SIGNUP_ENDPOINT || '/api/users';
 const ADMIN_EMAIL = 'clubdeplaya@mahaloclubofficial.com';
 
 function App() {
@@ -164,7 +166,7 @@ function App() {
     }
 
     try {
-      const endpoint = isSignup ? '/api/users' : '/api/login';
+      const endpoint = isSignup ? SIGNUP_ENDPOINT : LOGIN_ENDPOINT;
       const payload = isSignup 
         ? { name: authForm.name, email: authForm.email, phone: authForm.phone || '', password: authForm.password }
         : { email: authForm.email, password: authForm.password };
