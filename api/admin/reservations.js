@@ -12,7 +12,6 @@ function cors(req, res) {
   }
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Cache-Control', 'no-store');
 }
 
 module.exports = async (req, res) => {
@@ -27,5 +26,6 @@ module.exports = async (req, res) => {
   }
   const kvReservations = await getArray('mahalo_reservations');
   const merged = Array.isArray(kvReservations) && kvReservations.length > 0 ? kvReservations : reservations;
+  try { console.log('reservations:list', { count: merged.length }); } catch (_) {}
   res.status(200).json(merged);
 };

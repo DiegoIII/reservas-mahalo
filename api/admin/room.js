@@ -5,7 +5,7 @@ const allowed = new Set(['http://localhost:3000', 'https://mahalo-oficial.vercel
 
 function cors(req, res) {
   const origin = req.headers.origin || '';
-  if (allowed.has(origin)) {
+  if (allowed.has(origin) || (origin && origin.endsWith('.vercel.app'))) {
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Vary', 'Origin');
@@ -48,5 +48,6 @@ module.exports = async (req, res) => {
     await setArray('mahalo_reservations', next);
   } catch (_) {}
   try { reservations.push(r); } catch (_) {}
+  try { console.log('reservations:create:room', { id: r.id, email: r.email, check_in: r.date, check_out: r.check_out }); } catch (_) {}
   res.status(201).json(r);
 };
