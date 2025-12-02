@@ -34,11 +34,10 @@ module.exports = async (req, res) => {
   if (!requireCsrf(req, res)) return;
 
   const key = email;
-  if (await isBlocked(key)) { res.status(429).json({ error: 'Demasiados intentos. Intenta más tarde.' }); return; }
-
   try {
     const ok = await verifyPassword(email, password);
     if (!ok) {
+      if (await isBlocked(key)) { res.status(429).json({ error: 'Demasiados intentos. Intenta más tarde.' }); return; }
       await recordFailedAttempt(key);
       res.status(401).json({ error: 'Credenciales inválidas' });
       return;
@@ -53,4 +52,3 @@ module.exports = async (req, res) => {
     res.status(500).json({ error: 'Error de autenticación' });
   }
 };
-
