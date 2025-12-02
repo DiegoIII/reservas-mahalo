@@ -574,7 +574,7 @@ const RestaurantReservation = ({ user, apiUrl }) => {
               'area'
             )}
 
-            {!formData.daypassType && renderFormSection(
+            {renderFormSection(
               'Tipo de Mesa',
               'Selecciona la mesa que mejor se adapte a tu grupo',
               <>
