@@ -31,11 +31,13 @@ module.exports = async (req, res) => {
       res.setHeader('X-Total-Count', String(result.total));
       res.setHeader('X-Page', String(page || 1));
       res.setHeader('X-Page-Size', String(pageSize || 20));
+      res.setHeader('X-KV-Enabled', String(require('../_kv').hasKv));
       console.log('reservations:list', { count: result.items.length, total: result.total, page, pageSize });
       res.status(200).json(result.items);
       return;
     }
     const items = await getReservations();
+    res.setHeader('X-KV-Enabled', String(require('../_kv').hasKv));
     console.log('reservations:list', { count: Array.isArray(items) ? items.length : 0 });
     res.status(200).json(items);
   } catch (e) {

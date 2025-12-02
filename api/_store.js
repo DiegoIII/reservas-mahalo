@@ -130,6 +130,7 @@ async function addReservation(res) {
   reservations.push(r);
   if (hasKv) {
     const ok = await kvAddReservation(r);
+    r.storage = ok ? 'kv' : 'memory';
     if (!ok) console.error('kv:add:error', { id: r.id, email: r.email, type: r.type });
   }
   return r;
