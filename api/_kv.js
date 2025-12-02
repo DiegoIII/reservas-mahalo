@@ -51,6 +51,53 @@ module.exports = {
   kvAddReservation,
   kvGetReservations,
   kvUpdateReservation,
+  async kvGetUserByEmail(email) {
+    if (!client) return null;
+    try {
+      const list = await client.lrange('users', 0, -1);
+      const lower = String(email || '').toLowerCase();
+      for (const raw of list) {
+        try {
+          const u = JSON.parse(raw);
+          if (String(u.email || '').toLowerCase() === lower) return u;
+        } catch (_) {}
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  },
+  async kvUpsertUser(user) {
+    if (!client) return false;
+    try {
+      const list = await client.lrange('users', 0, -1);
+      const lower = String(user.email || '').toLowerCase();
+      let items = [];
+      for (const raw of list) {
+        try {
+          const u = JSON.parse(raw);
+          if (String(u.email || '').toLowerCase() === lower) continue;
+          items.push(u);
+        } catch (_) {}
+      }
+      items.push(user);
+      await client.del('users');
+      if (items.length > 0) {
+        await client.rpush('users', ...items.map(x => JSON.stringify(x)));
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
+  },
+  async kvListUsers() {
+    if (!client) return [];
+    try {
+      const list = await client.lrange('users', 0, -1);
+      return list.map(raw => { try { return JSON.parse(raw); } catch (_) { return null; } }).filter(Boolean);
+    } catch (_) {
+      return [];
+    }
+  },
   hasKv: !!client
 };
-

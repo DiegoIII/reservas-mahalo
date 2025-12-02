@@ -9,6 +9,7 @@ import AuthModal from './components/AuthModal';
 import LogoutModal from './components/LogoutModal';
 import useAlert from './hooks/useAlert';
 import useLocalStorage from './hooks/useLocalStorage';
+import { formatUserDisplayName } from './utils/userDisplay';
 import { mahaloLogo } from './assets/images';
 
 // Componentes (lazy)
@@ -455,7 +456,7 @@ const AuthSection = React.memo(({ user, greeting, onOpenAuth, onLogoutClick }) =
           <div className="user-avatar">
             <UserIcon />
           </div>
-          <span className="greeting">{greeting}, {user.name || user.email}</span>
+          <span className="greeting">{greeting}, {formatUserDisplayName(user)}</span>
           <button onClick={() => navigate('/mis-reservas')} className="auth-button" title="Mis Reservas">
             <ReservationsIcon />
             Mis Reservas
