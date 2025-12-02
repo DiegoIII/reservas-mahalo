@@ -1,4 +1,5 @@
 const { users, addUser } = require('./_store');
+const bcrypt = require('bcryptjs');
 
 const allowed = new Set(['http://localhost:3000', 'https://mahalo-oficial.vercel.app']);
 
@@ -28,14 +29,19 @@ module.exports = (req, res) => {
     const email = String(body.email || '').trim().toLowerCase();
     const name = String(body.name || '').trim() || email.split('@')[0];
     const phone = String(body.phone || '').trim();
+    const password = String(body.password || '').trim();
     if (!email) {
       res.status(400).json({ error: 'email requerido' });
       return;
     }
-    const created = addUser({ email, name, phone });
+    if (!password) {
+      res.status(400).json({ error: 'password requerido' });
+      return;
+    }
+    const password_hash = bcrypt.hashSync(password, 10);
+    const created = addUser({ email, name, phone, password_hash });
     res.status(201).json(created);
     return;
   }
   res.status(405).json({ error: 'Method Not Allowed' });
 };
-

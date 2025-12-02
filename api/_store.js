@@ -4,9 +4,13 @@ const { kvAddReservation, kvGetReservations, kvUpdateReservation, hasKv } = requ
 
 const ADMIN_EMAIL = 'clubdeplaya@mahaloclubofficial.com';
 
+const bcrypt = require('bcryptjs');
+const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || bcrypt.hashSync('admin123', 10);
+const GUEST_PASSWORD_HASH = process.env.GUEST_PASSWORD_HASH || bcrypt.hashSync('guest123', 10);
+
 const users = [
-  { id: 1, email: ADMIN_EMAIL, name: 'Administrador', phone: '7444813854', is_member: true, member_number: 'A0001' },
-  { id: 2, email: 'invitado@example.com', name: 'Invitado', phone: '0000000000', is_member: false }
+  { id: 1, email: ADMIN_EMAIL, name: 'Administrador', phone: '7444813854', is_member: true, member_number: 'A0001', password_hash: ADMIN_PASSWORD_HASH },
+  { id: 2, email: 'invitado@example.com', name: 'Invitado', phone: '0000000000', is_member: false, password_hash: GUEST_PASSWORD_HASH }
 ];
 
 const reservations = [
@@ -105,7 +109,7 @@ function setPrices(newPrices) {
 
 function addUser(user) {
   const id = nextUserId++;
-  const u = { id, is_member: false, ...user };
+  const u = { id, is_member: false, password_hash: user.password_hash || bcrypt.hashSync(String(user.password || 'changeme'), 10), ...user };
   users.push(u);
   return u;
 }
@@ -149,6 +153,7 @@ async function getReservations() {
 module.exports = {
   ADMIN_EMAIL,
   users,
+  getUserByEmail: (email) => users.find(u => String(u.email).toLowerCase() === String(email).toLowerCase()) || null,
   reservations,
   prices,
   getPrices,

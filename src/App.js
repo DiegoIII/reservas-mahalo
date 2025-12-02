@@ -172,9 +172,17 @@ function App() {
         ? { name: authForm.name, email: authForm.email, phone: authForm.phone || '', password: authForm.password }
         : { email: authForm.email, password: authForm.password };
 
-      const resp = await fetch(`${API_URL}${endpoint}`, {
+      let headers = { 'Content-Type': 'application/json' };
+      let url = `${API_URL}${endpoint}`;
+      if (!isSignup) {
+        const csrfResp = await fetch(`${API_URL}${LOGIN_ENDPOINT}`, { method: 'GET', credentials: 'include' });
+        const csrfData = await csrfResp.json().catch(() => ({}));
+        if (csrfData?.csrf_token) headers['X-CSRF-Token'] = csrfData.csrf_token;
+      }
+
+      const resp = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         credentials: 'include',
         body: JSON.stringify(payload)
       });

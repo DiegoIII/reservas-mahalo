@@ -1,7 +1,7 @@
-const { ADMIN_EMAIL, addUser, users } = require('./_store');
+const { users, ADMIN_EMAIL, getUserByEmail } = require('./_store');
+const { isBlocked, recordFailedAttempt, resetAttempts, issueCsrf, requireCsrf, verifyPassword } = require('./_auth');
 
 const allowed = new Set(['http://localhost:3000', 'https://mahalo-oficial.vercel.app']);
-
 function cors(req, res) {
   const origin = req.headers.origin || '';
   if (allowed.has(origin)) {
@@ -9,30 +9,48 @@ function cors(req, res) {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Vary', 'Origin');
   }
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-CSRF-Token');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
 }
 
-module.exports = (req, res) => {
+module.exports = async (req, res) => {
   cors(req, res);
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
+  res.setHeader('Cache-Control', 'no-store');
+  if (req.method === 'OPTIONS') { res.status(200).end(); return; }
+
+  if (req.method === 'GET') {
+    const token = issueCsrf(res);
+    res.status(200).json({ csrf_token: token });
     return;
   }
-  if (req.method !== 'POST') {
-    res.status(405).json({ error: 'Method Not Allowed' });
-    return;
-  }
+
+  if (req.method !== 'POST') { res.status(405).json({ error: 'Method Not Allowed' }); return; }
+
   const body = req.body || {};
   const email = String(body.email || '').trim().toLowerCase();
-  const password = String(body.password || '').trim();
-  if (!email || !password) {
-    res.status(400).json({ error: 'email y password requeridos' });
-    return;
+  const password = String(body.password || '');
+
+  if (!email || !password) { res.status(400).json({ error: 'Credenciales inválidas' }); return; }
+  if (!requireCsrf(req, res)) return;
+
+  const key = email;
+  if (await isBlocked(key)) { res.status(429).json({ error: 'Demasiados intentos. Intenta más tarde.' }); return; }
+
+  try {
+    const ok = await verifyPassword(email, password);
+    if (!ok) {
+      await recordFailedAttempt(key);
+      res.status(401).json({ error: 'Credenciales inválidas' });
+      return;
+    }
+    await resetAttempts(key);
+    const user = getUserByEmail(email);
+    const finalUser = user.email === ADMIN_EMAIL ? { ...user, is_admin: 1 } : user;
+    const { password_hash, ...safe } = finalUser;
+    res.status(200).json(safe);
+  } catch (e) {
+    console.error('login:error', e);
+    res.status(500).json({ error: 'Error de autenticación' });
   }
-  const existing = users.find(u => String(u.email).toLowerCase() === email);
-  const base = existing || addUser({ email, name: body.name || email.split('@')[0] });
-  const user = email === ADMIN_EMAIL ? { ...base, is_admin: 1 } : base;
-  res.status(200).json(user);
 };
 
