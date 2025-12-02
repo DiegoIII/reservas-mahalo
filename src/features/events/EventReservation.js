@@ -32,6 +32,7 @@ import {
 import './EventReservation.css';
 import CustomAlert from '../../components/CustomAlert';
 import useAlert from '../../hooks/useAlert';
+import { fetchWithRetry } from '../../utils/fetchWithRetry';
 
 const EventReservation = ({ user, apiUrl }) => {
   const initialFormData = {
@@ -341,11 +342,11 @@ const EventReservation = ({ user, apiUrl }) => {
         is_member: isMember
       };
       
-      const resp = await fetch(`${apiUrl}/api/admin/event`, {
+      const resp = await fetchWithRetry(`${apiUrl}/api/admin/event`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
-      });
+      }, 3, 200);
       
       if (!resp.ok) {
         const err = await resp.json().catch(() => ({}));

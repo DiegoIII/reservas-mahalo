@@ -1,4 +1,5 @@
 const { getReservations } = require('../_store');
+const { hasKv } = require('../_kv');
 
 const allowed = new Set(['http://localhost:3000', 'https://mahalo-oficial.vercel.app']);
 
@@ -26,6 +27,7 @@ module.exports = async (req, res) => {
   }
   try {
     const items = await getReservations();
+    res.setHeader('X-Store', hasKv ? 'redis' : 'memory');
     console.log('reservations:list', { count: Array.isArray(items) ? items.length : 0 });
     res.status(200).json(items);
   } catch (e) {

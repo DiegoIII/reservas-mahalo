@@ -25,6 +25,7 @@ import './RestaurantReservation.css';
 import CustomAlert from '../../components/CustomAlert';
 import useAlert from '../../hooks/useAlert';
 import { ESTABLISHMENT_TZ, nowInTimeZone, isPastSameDayReservation } from '../../utils/time';
+import { fetchWithRetry } from '../../utils/fetchWithRetry';
 
 const RestaurantReservation = ({ user, apiUrl }) => {
   const initialFormData = {
@@ -296,11 +297,11 @@ const RestaurantReservation = ({ user, apiUrl }) => {
         is_member: isMember
       };
       
-      const resp = await fetch(`${apiUrl}/api/admin/restaurant`, {
+      const resp = await fetchWithRetry(`${apiUrl}/api/admin/restaurant`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
-      });
+      }, 3, 200);
       
       if (!resp.ok) {
         const err = await resp.json().catch(() => ({}));

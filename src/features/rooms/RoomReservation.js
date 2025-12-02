@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { FaCamera, FaBed, FaCalendarAlt, FaUsers, FaUser, FaEnvelope, FaPhone, FaComment, FaDollarSign, FaMoon, FaCheckCircle, FaInfoCircle, FaSpinner, FaIdCard, FaTag } from 'react-icons/fa';
 import './RoomReservation.css';
+import { fetchWithRetry } from '../../utils/fetchWithRetry';
 import CustomAlert from '../../components/CustomAlert';
 import RoomModal from './RoomModal';
 import useAlert from '../../hooks/useAlert';
@@ -318,11 +319,11 @@ const RoomReservation = ({ user, apiUrl }) => {
         is_member: isMember
       };
       
-      const resp = await fetch(`${apiUrl}/api/admin/room`, {
+      const resp = await fetchWithRetry(`${apiUrl}/api/admin/room`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
-      });
+      }, 3, 200);
       
       if (!resp.ok) {
         const err = await resp.json().catch(() => ({}));

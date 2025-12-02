@@ -121,7 +121,17 @@ async function addReservation(res) {
   const id = nextReservationId++;
   const r = { id, ...res };
   reservations.push(r);
-  if (hasKv) await kvAddReservation(r);
+  if (hasKv) {
+    let ok = false;
+    for (let i = 0; i < 3 && !ok; i++) {
+      try {
+        await kvAddReservation(r);
+        ok = true;
+      } catch (_) {
+        await new Promise(resolve => setTimeout(resolve, 200 * Math.pow(2, i)));
+      }
+    }
+  }
   return r;
 }
 
@@ -129,12 +139,28 @@ async function checkoutRoom(reservation_id) {
   const idx = reservations.findIndex(r => r.type === 'room' && Number(r.id) === Number(reservation_id));
   if (idx === -1) {
     if (hasKv) {
-      await kvUpdateReservation(reservation_id, { checked_out: true });
+      for (let i = 0; i < 3; i++) {
+        try {
+          await kvUpdateReservation(reservation_id, { checked_out: true });
+          break;
+        } catch (_) {
+          await new Promise(resolve => setTimeout(resolve, 200 * Math.pow(2, i)));
+        }
+      }
     }
     return null;
   }
   reservations[idx] = { ...reservations[idx], checked_out: true };
-  if (hasKv) await kvUpdateReservation(reservation_id, { checked_out: true });
+  if (hasKv) {
+    for (let i = 0; i < 3; i++) {
+      try {
+        await kvUpdateReservation(reservation_id, { checked_out: true });
+        break;
+      } catch (_) {
+        await new Promise(resolve => setTimeout(resolve, 200 * Math.pow(2, i)));
+      }
+    }
+  }
   return reservations[idx];
 }
 
