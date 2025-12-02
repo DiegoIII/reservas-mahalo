@@ -39,6 +39,7 @@ module.exports = async (req, res) => {
     if (!ok) {
       if (await isBlocked(key)) { res.status(429).json({ error: 'Demasiados intentos. Intenta más tarde.' }); return; }
       await recordFailedAttempt(key);
+      console.warn('login:invalid', { email });
       res.status(401).json({ error: 'Credenciales inválidas' });
       return;
     }
@@ -46,6 +47,7 @@ module.exports = async (req, res) => {
     const user = getUserByEmail(email);
     const finalUser = user.email === ADMIN_EMAIL ? { ...user, is_admin: 1 } : user;
     const { password_hash, ...safe } = finalUser;
+    console.info('login:success', { email: safe.email, is_admin: safe.is_admin ? 1 : 0 });
     res.status(200).json(safe);
   } catch (e) {
     console.error('login:error', e);
