@@ -41,13 +41,16 @@ const AdminDashboard = ({ apiUrl }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log('admin:reservations:fetch:start', { page, pageSize });
         const resp = await fetch(`${apiUrl}/api/admin/reservations?page=${page}&pageSize=${pageSize}`);
         const data = await resp.json();
         const total = Number(resp.headers.get('X-Total-Count') || 0);
         setTotalCount(total);
         setReservations(Array.isArray(data) ? data : []);
+        console.log('admin:reservations:fetch:ok', { count: Array.isArray(data) ? data.length : 0, total });
       } catch (e) {
-        setError(e.message);
+        console.error('admin:reservations:fetch:error', e);
+        setError(e.message || 'No se pudieron cargar reservas');
       } finally {
         setLoading(false);
       }

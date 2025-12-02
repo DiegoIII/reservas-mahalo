@@ -13,14 +13,17 @@ const MyReservations = ({ user, apiUrl }) => {
       setLoading(true);
       setError('');
       try {
+        console.log('myreservations:fetch:start', { email });
         const params = new URLSearchParams({ email });
         const resp = await fetch(`${apiUrl}/api/admin/reservations?${params.toString()}`);
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const data = await resp.json();
         const mine = Array.isArray(data) ? data : [];
         if (alive) setItems(mine);
+        console.log('myreservations:fetch:ok', { count: mine.length });
       } catch (e) {
-        if (alive) setError('No se pudieron cargar tus reservas');
+        console.error('myreservations:fetch:error', e);
+        if (alive) setError(`No se pudieron cargar tus reservas (${e.message})`);
       } finally {
         if (alive) setLoading(false);
       }
