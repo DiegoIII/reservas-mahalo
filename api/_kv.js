@@ -5,6 +5,9 @@ try {
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (url && token) {
     client = new Redis({ url, token });
+    console.log('kv:init:enabled');
+  } else {
+    console.warn('kv:init:disabled');
   }
 } catch (_) {}
 
@@ -34,7 +37,8 @@ async function kvGetReservations() {
     return arr.map(x => {
       try { return JSON.parse(x); } catch (_) { return null; }
     }).filter(Boolean);
-  } catch (_) {
+  } catch (e) {
+    console.error('kv:lrange:error', e);
     return [];
   }
 }
@@ -56,8 +60,20 @@ async function kvGetReservationsRange(start, stop) {
     return arr.map(x => {
       try { return JSON.parse(x); } catch (_) { return null; }
     }).filter(Boolean);
-  } catch (_) {
+  } catch (e) {
+    console.error('kv:lrange:error', e);
     return [];
+  }
+}
+
+async function kvStatus() {
+  if (!client) return { enabled: false, count: 0 };
+  try {
+    const count = await client.llen('reservations');
+    return { enabled: true, count: Number(count || 0) };
+  } catch (e) {
+    console.error('kv:status:error', e);
+    return { enabled: true, count: 0 };
   }
 }
 
@@ -104,5 +120,6 @@ module.exports = {
   kvGetReservationsRange,
   kvAddNotification,
   kvUpdateReservation,
+  kvStatus,
   hasKv: !!client
 };

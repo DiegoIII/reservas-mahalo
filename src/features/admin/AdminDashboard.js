@@ -310,13 +310,7 @@ const AdminDashboard = ({ apiUrl }) => {
     <div className="event-reservation admin-dashboard">
       <h2>Panel de Administración</h2>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <div style={{ color: '#6c757d' }}>Total: {totalCount} • Página {page} de {totalPages}</div>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <button disabled={page <= 1} onClick={() => setPage(p => Math.max(1, p - 1))}>Anterior</button>
-          <button disabled={page >= totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>Siguiente</button>
-        </div>
-      </div>
+      
 
       <div className="admin-dashboard-nav" role="tablist" aria-label="Secciones del panel">
         {adminSections.map((section) => (

@@ -122,10 +122,16 @@ function updateMembership(id, member_number) {
 }
 
 async function addReservation(res) {
+  if (!res || typeof res !== 'object') throw new Error('Datos de reserva inválidos');
+  if (!res.email || !res.name) throw new Error('Faltan campos requeridos');
+  if (!res.type) throw new Error('Tipo de reserva requerido');
   const id = nextReservationId++;
   const r = { id, ...res };
   reservations.push(r);
-  if (hasKv) await kvAddReservation(r);
+  if (hasKv) {
+    const ok = await kvAddReservation(r);
+    if (!ok) console.error('kv:add:error', { id: r.id, email: r.email, type: r.type });
+  }
   return r;
 }
 
