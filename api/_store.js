@@ -1,6 +1,6 @@
 let nextUserId = 3;
 let nextReservationId = 1001;
-const { kvAddReservation, kvGetReservations, kvUpdateReservation, hasKv } = require('./_kv');
+const { kvAddReservation, kvGetReservations, kvCountReservations, kvGetReservationsRange, kvAddNotification, kvUpdateReservation, hasKv } = require('./_kv');
 
 const ADMIN_EMAIL = 'clubdeplaya@mahaloclubofficial.com';
 
@@ -150,6 +150,34 @@ async function getReservations() {
   return reservations;
 }
 
+async function getReservationsPaged({ page = 1, pageSize = 20, email, type, status, search }) {
+  const p = Math.max(1, Number(page || 1));
+  const ps = Math.max(1, Math.min(100, Number(pageSize || 20)));
+  let items = [];
+  let total = 0;
+  if (hasKv) {
+    total = await kvCountReservations();
+    const start = (p - 1) * ps;
+    const stop = start + ps - 1;
+    items = await kvGetReservationsRange(start, stop);
+  } else {
+    items = reservations.slice((p - 1) * ps, p * ps);
+    total = reservations.length;
+  }
+  const filtered = items.filter(r => {
+    if (email && String(r.email).toLowerCase() !== String(email).toLowerCase()) return false;
+    if (type && r.type !== type) return false;
+    if (status && r.status !== status) return false;
+    if (search) {
+      const s = String(search).toLowerCase();
+      const blob = JSON.stringify(r).toLowerCase();
+      if (!blob.includes(s)) return false;
+    }
+    return true;
+  });
+  return { items: filtered, total };
+}
+
 module.exports = {
   ADMIN_EMAIL,
   users,
@@ -164,5 +192,7 @@ module.exports = {
   updateMembership,
   addReservation,
   checkoutRoom,
-  getReservations
+  getReservations,
+  getReservationsPaged,
+  addNotification: kvAddNotification
 };

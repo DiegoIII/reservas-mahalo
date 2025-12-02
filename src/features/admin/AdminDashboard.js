@@ -34,17 +34,17 @@ const AdminDashboard = ({ apiUrl }) => {
     };
   }, [isRoomModalOpen]);
 
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(20);
+  const [totalCount, setTotalCount] = useState(0);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const resp = await fetch(`${apiUrl}/api/admin/reservations`);
+        const resp = await fetch(`${apiUrl}/api/admin/reservations?page=${page}&pageSize=${pageSize}`);
         const data = await resp.json();
-        // Debug: log first reservation to check member data
-        if (data && data.length > 0) {
-          console.log('Sample reservation data:', data[0]);
-          console.log('Member number in sample:', data[0].member_number);
-          console.log('All keys in sample:', Object.keys(data[0]));
-        }
+        const total = Number(resp.headers.get('X-Total-Count') || 0);
+        setTotalCount(total);
         setReservations(Array.isArray(data) ? data : []);
       } catch (e) {
         setError(e.message);
@@ -53,7 +53,7 @@ const AdminDashboard = ({ apiUrl }) => {
       }
     };
     fetchData();
-  }, [apiUrl]);
+  }, [apiUrl, page, pageSize]);
 
   // Format date to dd/mm/yy
   const formatDate = (dateString) => {
@@ -179,6 +179,8 @@ const AdminDashboard = ({ apiUrl }) => {
     const groupedEvents = Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
     return { restaurantList: restaurant, roomList: room, eventList: events, eventsByDate: groupedEvents };
   }, [reservations]);
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
   const adminSections = useMemo(() => ([
     {
@@ -307,6 +309,14 @@ const AdminDashboard = ({ apiUrl }) => {
   return (
     <div className="event-reservation admin-dashboard">
       <h2>Panel de Administración</h2>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <div style={{ color: '#6c757d' }}>Total: {totalCount} • Página {page} de {totalPages}</div>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button disabled={page <= 1} onClick={() => setPage(p => Math.max(1, p - 1))}>Anterior</button>
+          <button disabled={page >= totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>Siguiente</button>
+        </div>
+      </div>
 
       <div className="admin-dashboard-nav" role="tablist" aria-label="Secciones del panel">
         {adminSections.map((section) => (
@@ -1196,4 +1206,3 @@ const AdminDashboard = ({ apiUrl }) => {
 };
 
 export default AdminDashboard;
-

@@ -59,6 +59,7 @@ module.exports = async (req, res) => {
   };
   try {
     const r = await addReservation(payload);
+    await require('../_store').addNotification({ type: 'confirmation', reservation_id: r.id, email: r.email });
     console.log('room:create', { id: r.id, email: r.email, guests: r.guests, location: r.location, date: r.date, check_out: r.check_out });
     res.status(201).json(r);
   } catch (e) {

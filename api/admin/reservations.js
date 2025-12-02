@@ -1,4 +1,4 @@
-const { getReservations } = require('../_store');
+const { getReservations, getReservationsPaged } = require('../_store');
 
 const allowed = new Set(['http://localhost:3000', 'https://mahalo-oficial.vercel.app']);
 
@@ -25,6 +25,16 @@ module.exports = async (req, res) => {
     return;
   }
   try {
+    const { page, pageSize, email, type, status, search } = req.query || {};
+    if (page || email || type || status || search) {
+      const result = await getReservationsPaged({ page, pageSize, email, type, status, search });
+      res.setHeader('X-Total-Count', String(result.total));
+      res.setHeader('X-Page', String(page || 1));
+      res.setHeader('X-Page-Size', String(pageSize || 20));
+      console.log('reservations:list', { count: result.items.length, total: result.total, page, pageSize });
+      res.status(200).json(result.items);
+      return;
+    }
     const items = await getReservations();
     console.log('reservations:list', { count: Array.isArray(items) ? items.length : 0 });
     res.status(200).json(items);

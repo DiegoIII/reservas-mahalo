@@ -13,10 +13,11 @@ const MyReservations = ({ user, apiUrl }) => {
       setLoading(true);
       setError('');
       try {
-        const resp = await fetch(`${apiUrl}/api/admin/reservations`);
+        const params = new URLSearchParams({ email });
+        const resp = await fetch(`${apiUrl}/api/admin/reservations?${params.toString()}`);
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const data = await resp.json();
-        const mine = Array.isArray(data) ? data.filter(r => String(r.email).toLowerCase() === String(email).toLowerCase()) : [];
+        const mine = Array.isArray(data) ? data : [];
         if (alive) setItems(mine);
       } catch (e) {
         if (alive) setError('No se pudieron cargar tus reservas');
@@ -128,4 +129,3 @@ const MyReservations = ({ user, apiUrl }) => {
 };
 
 export default MyReservations;
-

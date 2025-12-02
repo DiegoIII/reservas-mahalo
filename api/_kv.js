@@ -39,6 +39,47 @@ async function kvGetReservations() {
   }
 }
 
+async function kvCountReservations() {
+  if (!client) return 0;
+  try {
+    const count = await client.llen('reservations');
+    return Number(count || 0);
+  } catch (_) {
+    return 0;
+  }
+}
+
+async function kvGetReservationsRange(start, stop) {
+  if (!client) return [];
+  try {
+    const arr = await client.lrange('reservations', start, stop);
+    return arr.map(x => {
+      try { return JSON.parse(x); } catch (_) { return null; }
+    }).filter(Boolean);
+  } catch (_) {
+    return [];
+  }
+}
+
+async function kvAddNotification(note) {
+  if (!client) return false;
+  const payload = JSON.stringify({ ...note, ts: Date.now() });
+  const max = 3;
+  for (let attempt = 0; attempt < max; attempt++) {
+    try {
+      await client.rpush('notifications', payload);
+      return true;
+    } catch (e) {
+      if (attempt === max - 1) {
+        console.error('kv:notification:error', e);
+        return false;
+      }
+      await new Promise(r => setTimeout(r, 200 * Math.pow(2, attempt)));
+    }
+  }
+  return false;
+}
+
 async function kvUpdateReservation(id, patch) {
   if (!client) return false;
   try {
@@ -59,6 +100,9 @@ async function kvUpdateReservation(id, patch) {
 module.exports = {
   kvAddReservation,
   kvGetReservations,
+  kvCountReservations,
+  kvGetReservationsRange,
+  kvAddNotification,
   kvUpdateReservation,
   hasKv: !!client
 };
