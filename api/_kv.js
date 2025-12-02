@@ -10,12 +10,21 @@ try {
 
 async function kvAddReservation(r) {
   if (!client) return false;
-  try {
-    await client.rpush('reservations', JSON.stringify(r));
-    return true;
-  } catch (_) {
-    return false;
+  const payload = JSON.stringify(r);
+  const max = 3;
+  for (let attempt = 0; attempt < max; attempt++) {
+    try {
+      await client.rpush('reservations', payload);
+      return true;
+    } catch (e) {
+      if (attempt === max - 1) {
+        console.error('kv:rpush:error', e);
+        return false;
+      }
+      await new Promise(r => setTimeout(r, 200 * Math.pow(2, attempt)));
+    }
   }
+  return false;
 }
 
 async function kvGetReservations() {
@@ -51,69 +60,5 @@ module.exports = {
   kvAddReservation,
   kvGetReservations,
   kvUpdateReservation,
-  async kvGetUserByEmail(email) {
-    if (!client) return null;
-    try {
-      const list = await client.lrange('users', 0, -1);
-      const lower = String(email || '').toLowerCase();
-      for (const raw of list) {
-        try {
-          const u = JSON.parse(raw);
-          if (String(u.email || '').toLowerCase() === lower) return u;
-        } catch (_) {}
-      }
-      return null;
-    } catch (_) {
-      return null;
-    }
-  },
-  async kvGetUserByName(name) {
-    if (!client) return null;
-    try {
-      const list = await client.lrange('users', 0, -1);
-      const target = String(name || '').toLowerCase();
-      for (const raw of list) {
-        try {
-          const u = JSON.parse(raw);
-          if (String(u.name || '').toLowerCase() === target) return u;
-        } catch (_) {}
-      }
-      return null;
-    } catch (_) {
-      return null;
-    }
-  },
-  async kvUpsertUser(user) {
-    if (!client) return false;
-    try {
-      const list = await client.lrange('users', 0, -1);
-      const lower = String(user.email || '').toLowerCase();
-      let items = [];
-      for (const raw of list) {
-        try {
-          const u = JSON.parse(raw);
-          if (String(u.email || '').toLowerCase() === lower) continue;
-          items.push(u);
-        } catch (_) {}
-      }
-      items.push(user);
-      await client.del('users');
-      if (items.length > 0) {
-        await client.rpush('users', ...items.map(x => JSON.stringify(x)));
-      }
-      return true;
-    } catch (_) {
-      return false;
-    }
-  },
-  async kvListUsers() {
-    if (!client) return [];
-    try {
-      const list = await client.lrange('users', 0, -1);
-      return list.map(raw => { try { return JSON.parse(raw); } catch (_) { return null; } }).filter(Boolean);
-    } catch (_) {
-      return [];
-    }
-  },
   hasKv: !!client
 };

@@ -1,6 +1,6 @@
 let nextUserId = 3;
 let nextReservationId = 1001;
-const { kvAddReservation, kvGetReservations, kvUpdateReservation, kvGetUserByEmail, kvGetUserByName, kvUpsertUser, kvListUsers, hasKv } = require('./_kv');
+const { kvAddReservation, kvGetReservations, kvUpdateReservation, hasKv } = require('./_kv');
 
 const ADMIN_EMAIL = 'clubdeplaya@mahaloclubofficial.com';
 
@@ -107,9 +107,6 @@ function addUser(user) {
   const id = nextUserId++;
   const u = { id, is_member: false, ...user };
   users.push(u);
-  if (hasKv) {
-    kvUpsertUser(u).catch(() => {});
-  }
   return u;
 }
 
@@ -124,17 +121,7 @@ async function addReservation(res) {
   const id = nextReservationId++;
   const r = { id, ...res };
   reservations.push(r);
-  if (hasKv) {
-    let ok = false;
-    for (let i = 0; i < 3 && !ok; i++) {
-      try {
-        await kvAddReservation(r);
-        ok = true;
-      } catch (_) {
-        await new Promise(resolve => setTimeout(resolve, 200 * Math.pow(2, i)));
-      }
-    }
-  }
+  if (hasKv) await kvAddReservation(r);
   return r;
 }
 
@@ -142,28 +129,12 @@ async function checkoutRoom(reservation_id) {
   const idx = reservations.findIndex(r => r.type === 'room' && Number(r.id) === Number(reservation_id));
   if (idx === -1) {
     if (hasKv) {
-      for (let i = 0; i < 3; i++) {
-        try {
-          await kvUpdateReservation(reservation_id, { checked_out: true });
-          break;
-        } catch (_) {
-          await new Promise(resolve => setTimeout(resolve, 200 * Math.pow(2, i)));
-        }
-      }
+      await kvUpdateReservation(reservation_id, { checked_out: true });
     }
     return null;
   }
   reservations[idx] = { ...reservations[idx], checked_out: true };
-  if (hasKv) {
-    for (let i = 0; i < 3; i++) {
-      try {
-        await kvUpdateReservation(reservation_id, { checked_out: true });
-        break;
-      } catch (_) {
-        await new Promise(resolve => setTimeout(resolve, 200 * Math.pow(2, i)));
-      }
-    }
-  }
+  if (hasKv) await kvUpdateReservation(reservation_id, { checked_out: true });
   return reservations[idx];
 }
 
@@ -173,31 +144,6 @@ async function getReservations() {
     return kvItems.length ? kvItems : reservations;
   }
   return reservations;
-}
-
-async function getUserByEmail(email) {
-  if (hasKv) {
-    const u = await kvGetUserByEmail(email);
-    if (u) return u;
-  }
-  return users.find(u => String(u.email).toLowerCase() === String(email).toLowerCase()) || null;
-}
-
-async function getUserByName(name) {
-  if (hasKv) {
-    const u = await kvGetUserByName(name);
-    if (u) return u;
-  }
-  const target = String(name || '').toLowerCase();
-  return users.find(u => String(u.name || '').toLowerCase() === target) || null;
-}
-
-async function listUsers() {
-  if (hasKv) {
-    const list = await kvListUsers();
-    return list.length ? list : users;
-  }
-  return users;
 }
 
 module.exports = {
@@ -210,9 +156,6 @@ module.exports = {
   getSeasons: () => seasons,
   setSeasons: (s) => { seasons = Array.isArray(s) ? s : []; },
   addUser,
-  getUserByEmail,
-  getUserByName,
-  listUsers,
   updateMembership,
   addReservation,
   checkoutRoom,

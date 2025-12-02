@@ -9,7 +9,6 @@ import AuthModal from './components/AuthModal';
 import LogoutModal from './components/LogoutModal';
 import useAlert from './hooks/useAlert';
 import useLocalStorage from './hooks/useLocalStorage';
-import { formatUserDisplayName } from './utils/userDisplay';
 import { mahaloLogo } from './assets/images';
 
 // Componentes (lazy)
@@ -34,7 +33,7 @@ function App() {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [authMode, setAuthMode] = useState('login');
   const [authForm, setAuthForm] = useState({
-    name: '', email: '', username: '', phone: '', password: ''
+    name: '', email: '', phone: '', password: ''
   });
 
   const { alertState, hideAlert, showError, showSuccess } = useAlert();
@@ -103,7 +102,7 @@ function App() {
 
   const openAuth = useCallback((mode) => {
     setAuthMode(mode);
-    setAuthForm({ name: '', email: '', username: '', phone: '', password: '' });
+    setAuthForm({ name: '', email: '', phone: '', password: '' });
     setShowAuthModal(true);
   }, []);
 
@@ -159,7 +158,7 @@ function App() {
     const isSignup = authMode === 'signup';
     const requiredFields = isSignup 
       ? ['name', 'email', 'password']
-      : ['username', 'password'];
+      : ['email', 'password'];
 
     const missingFields = requiredFields.filter(field => !authForm[field]);
     if (missingFields.length > 0) {
@@ -171,7 +170,7 @@ function App() {
       const endpoint = isSignup ? SIGNUP_ENDPOINT : LOGIN_ENDPOINT;
       const payload = isSignup 
         ? { name: authForm.name, email: authForm.email, phone: authForm.phone || '', password: authForm.password }
-        : { username: authForm.username, password: authForm.password };
+        : { email: authForm.email, password: authForm.password };
 
       const resp = await fetch(`${API_URL}${endpoint}`, {
         method: 'POST',
@@ -456,7 +455,7 @@ const AuthSection = React.memo(({ user, greeting, onOpenAuth, onLogoutClick }) =
           <div className="user-avatar">
             <UserIcon />
           </div>
-          <span className="greeting">{greeting}, {formatUserDisplayName(user)}</span>
+          <span className="greeting">{greeting}, {user.name || user.email}</span>
           <button onClick={() => navigate('/mis-reservas')} className="auth-button" title="Mis Reservas">
             <ReservationsIcon />
             Mis Reservas

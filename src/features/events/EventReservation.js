@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
+import { fetchWithRetry } from '../../utils/network';
 import { 
   FaCalendarAlt, 
   FaClock, 
@@ -32,7 +33,6 @@ import {
 import './EventReservation.css';
 import CustomAlert from '../../components/CustomAlert';
 import useAlert from '../../hooks/useAlert';
-import { fetchWithRetry } from '../../utils/fetchWithRetry';
 
 const EventReservation = ({ user, apiUrl }) => {
   const initialFormData = {
@@ -346,18 +346,13 @@ const EventReservation = ({ user, apiUrl }) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
-      }, 3, 200);
-      
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({}));
-        throw new Error(err.error || 'No se pudo guardar el evento');
-      }
+      });
       
       showSuccess('¡Reserva de evento confirmada! Te contactaremos pronto para coordinar los detalles.', 'Reserva exitosa');
       setShowConfirmation(false);
       setFormData(initialFormData);
     } catch (e) {
-      showError(e.message, 'Error al confirmar reserva');
+      showError(e.message || 'Error temporal al confirmar reserva. Intenta nuevamente.', 'Error al confirmar reserva');
     }
   };
 

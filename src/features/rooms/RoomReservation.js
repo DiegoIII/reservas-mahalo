@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { fetchWithRetry } from '../../utils/network';
 import { FaCamera, FaBed, FaCalendarAlt, FaUsers, FaUser, FaEnvelope, FaPhone, FaComment, FaDollarSign, FaMoon, FaCheckCircle, FaInfoCircle, FaSpinner, FaIdCard, FaTag } from 'react-icons/fa';
 import './RoomReservation.css';
-import { fetchWithRetry } from '../../utils/fetchWithRetry';
 import CustomAlert from '../../components/CustomAlert';
 import RoomModal from './RoomModal';
 import useAlert from '../../hooks/useAlert';
@@ -323,18 +323,13 @@ const RoomReservation = ({ user, apiUrl }) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
-      }, 3, 200);
-      
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({}));
-        throw new Error(err.error || 'No se pudo guardar la reserva');
-      }
+      });
       
       showSuccess('¡Reserva confirmada! Te enviaremos un email de confirmación.', 'Reserva exitosa');
       setShowConfirmation(false);
       setFormData(initialFormData);
     } catch (e) {
-      showError(e.message, 'Error al confirmar reserva');
+      showError(e.message || 'Error temporal al confirmar reserva. Intenta nuevamente.', 'Error al confirmar reserva');
     }
   };
 

@@ -1,4 +1,4 @@
-const { ADMIN_EMAIL, addUser, getUserByName } = require('./_store');
+const { ADMIN_EMAIL, addUser, users } = require('./_store');
 
 const allowed = new Set(['http://localhost:3000', 'https://mahalo-oficial.vercel.app']);
 
@@ -13,7 +13,7 @@ function cors(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
 }
 
-module.exports = async (req, res) => {
+module.exports = (req, res) => {
   cors(req, res);
   if (req.method === 'OPTIONS') {
     res.status(200).end();
@@ -24,18 +24,15 @@ module.exports = async (req, res) => {
     return;
   }
   const body = req.body || {};
-  const username = String(body.username || body.name || '').trim();
+  const email = String(body.email || '').trim().toLowerCase();
   const password = String(body.password || '').trim();
-  if (!username || !password) {
-    res.status(400).json({ error: 'usuario y password requeridos' });
+  if (!email || !password) {
+    res.status(400).json({ error: 'email y password requeridos' });
     return;
   }
-  try {
-    const existing = await getUserByName(username);
-    const base = existing || addUser({ name: username, email: body.email || '' });
-    const user = base.email === ADMIN_EMAIL ? { ...base, is_admin: 1 } : base;
-    res.status(200).json(user);
-  } catch (e) {
-    res.status(500).json({ error: 'Error al iniciar sesión' });
-  }
+  const existing = users.find(u => String(u.email).toLowerCase() === email);
+  const base = existing || addUser({ email, name: body.name || email.split('@')[0] });
+  const user = email === ADMIN_EMAIL ? { ...base, is_admin: 1 } : base;
+  res.status(200).json(user);
 };
+

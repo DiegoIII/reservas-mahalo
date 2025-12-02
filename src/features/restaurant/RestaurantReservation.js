@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { fetchWithRetry } from '../../utils/network';
 import { 
   FaCalendarAlt, 
   FaClock, 
@@ -25,7 +26,6 @@ import './RestaurantReservation.css';
 import CustomAlert from '../../components/CustomAlert';
 import useAlert from '../../hooks/useAlert';
 import { ESTABLISHMENT_TZ, nowInTimeZone, isPastSameDayReservation } from '../../utils/time';
-import { fetchWithRetry } from '../../utils/fetchWithRetry';
 
 const RestaurantReservation = ({ user, apiUrl }) => {
   const initialFormData = {
@@ -301,18 +301,13 @@ const RestaurantReservation = ({ user, apiUrl }) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
-      }, 3, 200);
-      
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({}));
-        throw new Error(err.error || 'No se pudo guardar la reserva');
-      }
+      });
       
       showSuccess('¡Reserva confirmada! Te enviaremos un email de confirmación.', 'Reserva exitosa');
       setShowConfirmation(false);
       setFormData(initialFormData);
     } catch (e) {
-      showError(e.message, 'Error al confirmar reserva');
+      showError(e.message || 'Error temporal al confirmar reserva. Intenta nuevamente.', 'Error al confirmar reserva');
     }
   };
 
