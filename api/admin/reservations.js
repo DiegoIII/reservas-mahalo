@@ -12,6 +12,7 @@ function cors(req, res) {
   }
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Cache-Control', 'no-store');
 }
 
 module.exports = async (req, res) => {
