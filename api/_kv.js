@@ -67,6 +67,22 @@ module.exports = {
       return null;
     }
   },
+  async kvGetUserByName(name) {
+    if (!client) return null;
+    try {
+      const list = await client.lrange('users', 0, -1);
+      const target = String(name || '').toLowerCase();
+      for (const raw of list) {
+        try {
+          const u = JSON.parse(raw);
+          if (String(u.name || '').toLowerCase() === target) return u;
+        } catch (_) {}
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  },
   async kvUpsertUser(user) {
     if (!client) return false;
     try {

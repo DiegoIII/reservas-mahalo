@@ -1,6 +1,6 @@
 let nextUserId = 3;
 let nextReservationId = 1001;
-const { kvAddReservation, kvGetReservations, kvUpdateReservation, kvGetUserByEmail, kvUpsertUser, kvListUsers, hasKv } = require('./_kv');
+const { kvAddReservation, kvGetReservations, kvUpdateReservation, kvGetUserByEmail, kvGetUserByName, kvUpsertUser, kvListUsers, hasKv } = require('./_kv');
 
 const ADMIN_EMAIL = 'clubdeplaya@mahaloclubofficial.com';
 
@@ -183,6 +183,15 @@ async function getUserByEmail(email) {
   return users.find(u => String(u.email).toLowerCase() === String(email).toLowerCase()) || null;
 }
 
+async function getUserByName(name) {
+  if (hasKv) {
+    const u = await kvGetUserByName(name);
+    if (u) return u;
+  }
+  const target = String(name || '').toLowerCase();
+  return users.find(u => String(u.name || '').toLowerCase() === target) || null;
+}
+
 async function listUsers() {
   if (hasKv) {
     const list = await kvListUsers();
@@ -202,6 +211,7 @@ module.exports = {
   setSeasons: (s) => { seasons = Array.isArray(s) ? s : []; },
   addUser,
   getUserByEmail,
+  getUserByName,
   listUsers,
   updateMembership,
   addReservation,

@@ -34,7 +34,7 @@ function App() {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [authMode, setAuthMode] = useState('login');
   const [authForm, setAuthForm] = useState({
-    name: '', email: '', phone: '', password: ''
+    name: '', email: '', username: '', phone: '', password: ''
   });
 
   const { alertState, hideAlert, showError, showSuccess } = useAlert();
@@ -103,7 +103,7 @@ function App() {
 
   const openAuth = useCallback((mode) => {
     setAuthMode(mode);
-    setAuthForm({ name: '', email: '', phone: '', password: '' });
+    setAuthForm({ name: '', email: '', username: '', phone: '', password: '' });
     setShowAuthModal(true);
   }, []);
 
@@ -159,7 +159,7 @@ function App() {
     const isSignup = authMode === 'signup';
     const requiredFields = isSignup 
       ? ['name', 'email', 'password']
-      : ['email', 'password'];
+      : ['username', 'password'];
 
     const missingFields = requiredFields.filter(field => !authForm[field]);
     if (missingFields.length > 0) {
@@ -171,7 +171,7 @@ function App() {
       const endpoint = isSignup ? SIGNUP_ENDPOINT : LOGIN_ENDPOINT;
       const payload = isSignup 
         ? { name: authForm.name, email: authForm.email, phone: authForm.phone || '', password: authForm.password }
-        : { email: authForm.email, password: authForm.password };
+        : { username: authForm.username, password: authForm.password };
 
       const resp = await fetch(`${API_URL}${endpoint}`, {
         method: 'POST',

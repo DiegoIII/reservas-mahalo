@@ -47,23 +47,43 @@ const AuthModal = ({ isOpen, onClose, mode, form, onInputChange, onSubmit }) => 
             </div>
           )}
 
-          <div className="form-group">
-            <label htmlFor="email">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                <path d="M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z"/>
-              </svg>
-              Correo electrónico
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={form.email}
-              onChange={onInputChange}
-              placeholder="tu@email.com"
-              required
-            />
-          </div>
+          {isSignup ? (
+            <div className="form-group">
+              <label htmlFor="email">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                  <path d="M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z"/>
+                </svg>
+                Correo electrónico
+              </label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={form.email}
+                onChange={onInputChange}
+                placeholder="tu@email.com"
+                required
+              />
+            </div>
+          ) : (
+            <div className="form-group">
+              <label htmlFor="username">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                  <path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
+                </svg>
+                Nombre de Usuario
+              </label>
+              <input
+                type="text"
+                id="username"
+                name="username"
+                value={form.username || ''}
+                onChange={onInputChange}
+                placeholder="Ingresa tu usuario"
+                required
+              />
+            </div>
+          )}
 
           {isSignup && (
             <div className="form-group">
