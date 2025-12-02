@@ -15,6 +15,7 @@ function cors(req, res) {
 
 module.exports = async (req, res) => {
   cors(req, res);
+  res.setHeader('Cache-Control', 'no-store');
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
@@ -25,8 +26,10 @@ module.exports = async (req, res) => {
   }
   try {
     const items = await getReservations();
+    console.log('reservations:list', { count: Array.isArray(items) ? items.length : 0 });
     res.status(200).json(items);
   } catch (e) {
+    console.error('reservations:error', e);
     res.status(500).json({ error: 'Error al obtener reservas' });
   }
 };

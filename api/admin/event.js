@@ -15,6 +15,7 @@ function cors(req, res) {
 
 module.exports = async (req, res) => {
   cors(req, res);
+  res.setHeader('Cache-Control', 'no-store');
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
@@ -24,15 +25,34 @@ module.exports = async (req, res) => {
     return;
   }
   const b = req.body || {};
+  const email = String(b.email || '').trim();
+  const name = String(b.name || '').trim();
+  const guests = Number(b.guests || 0);
+  const date = String(b.date || '').trim();
+  const start = String(b.start_time || '').trim();
+  const end = String(b.end_time || '').trim();
+  const venue = String(b.venue || '').trim();
+  if (!email || !name) {
+    res.status(400).json({ error: 'nombre y email requeridos' });
+    return;
+  }
+  if (!date || !start || !end || !venue) {
+    res.status(400).json({ error: 'fecha, horario y lugar requeridos' });
+    return;
+  }
+  if (!guests || guests < 1) {
+    res.status(400).json({ error: 'número de asistentes inválido' });
+    return;
+  }
   const payload = {
     type: 'event',
-    date: String(b.date || ''),
-    start_time: String(b.start_time || ''),
-    end_time: String(b.end_time || ''),
-    guests: Number(b.guests || 0),
-    location: String(b.venue || ''),
-    name: String(b.name || ''),
-    email: String(b.email || ''),
+    date,
+    start_time: start,
+    end_time: end,
+    guests,
+    location: venue,
+    name,
+    email,
     phone: b.phone || null,
     company: b.company || null,
     special_requests: b.special_requests || null,
@@ -41,8 +61,10 @@ module.exports = async (req, res) => {
   };
   try {
     const r = await addReservation(payload);
+    console.log('event:create', { id: r.id, email: r.email, guests: r.guests, location: r.location, date: r.date, start: r.start_time, end: r.end_time });
     res.status(201).json(r);
   } catch (e) {
+    console.error('event:error', e);
     res.status(500).json({ error: 'Error al crear reserva' });
   }
 };

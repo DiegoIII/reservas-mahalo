@@ -15,6 +15,7 @@ function cors(req, res) {
 
 module.exports = async (req, res) => {
   cors(req, res);
+  res.setHeader('Cache-Control', 'no-store');
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
@@ -26,8 +27,10 @@ module.exports = async (req, res) => {
   const b = req.body || {};
   const updated = await checkoutRoom(b.reservation_id);
   if (!updated) {
+    console.error('checkout:error', { reservation_id: b.reservation_id });
     res.status(404).json({ error: 'Reserva no encontrada' });
     return;
   }
+  console.log('checkout:ok', { reservation_id: b.reservation_id });
   res.status(200).json({ ok: true });
 };

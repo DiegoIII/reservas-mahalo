@@ -15,6 +15,7 @@ function cors(req, res) {
 
 module.exports = async (req, res) => {
   cors(req, res);
+  res.setHeader('Cache-Control', 'no-store');
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
@@ -24,6 +25,23 @@ module.exports = async (req, res) => {
     return;
   }
   const b = req.body || {};
+  const email = String(b.email || '').trim();
+  const name = String(b.name || '').trim();
+  const guests = Number(b.party_size || 0);
+  const tableType = String(b.table_type || '').trim();
+  const daypassType = String(b.daypass_type || '').trim();
+  if (!email || !name) {
+    res.status(400).json({ error: 'nombre y email requeridos' });
+    return;
+  }
+  if (!(tableType || daypassType)) {
+    res.status(400).json({ error: 'Selecciona daypass o tipo de mesa' });
+    return;
+  }
+  if (!guests || guests < 1) {
+    res.status(400).json({ error: 'número de personas inválido' });
+    return;
+  }
   const payload = {
     type: 'restaurant',
     date: String(b.date || ''),
@@ -32,8 +50,8 @@ module.exports = async (req, res) => {
     table_type: String(b.table_type || ''),
     location: String(b.location_area || ''),
     daypass_type: b.daypass_type || null,
-    name: String(b.name || ''),
-    email: String(b.email || ''),
+    name,
+    email,
     phone: b.phone || null,
     special_requests: b.special_requests || null,
     member_number: b.member_number || null,
@@ -41,8 +59,10 @@ module.exports = async (req, res) => {
   };
   try {
     const r = await addReservation(payload);
+    console.log('restaurant:create', { id: r.id, email: r.email, guests: r.guests, table_type: r.table_type, daypass_type: r.daypass_type });
     res.status(201).json(r);
   } catch (e) {
+    console.error('restaurant:error', e);
     res.status(500).json({ error: 'Error al crear reserva' });
   }
 };

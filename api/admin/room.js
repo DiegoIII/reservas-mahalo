@@ -15,6 +15,7 @@ function cors(req, res) {
 
 module.exports = async (req, res) => {
   cors(req, res);
+  res.setHeader('Cache-Control', 'no-store');
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
@@ -24,14 +25,32 @@ module.exports = async (req, res) => {
     return;
   }
   const b = req.body || {};
+  const email = String(b.email || '').trim();
+  const name = String(b.name || '').trim();
+  const guests = Number(b.guests || 0);
+  const checkIn = String(b.check_in || '').trim();
+  const checkOut = String(b.check_out || '').trim();
+  const roomType = String(b.room_type || '').trim();
+  if (!email || !name) {
+    res.status(400).json({ error: 'nombre y email requeridos' });
+    return;
+  }
+  if (!checkIn || !checkOut || !roomType) {
+    res.status(400).json({ error: 'fechas y habitación requeridas' });
+    return;
+  }
+  if (!guests || guests < 1) {
+    res.status(400).json({ error: 'número de huéspedes inválido' });
+    return;
+  }
   const payload = {
     type: 'room',
-    date: String(b.check_in || ''),
-    check_out: String(b.check_out || ''),
-    guests: Number(b.guests || 1),
-    location: String(b.room_type || ''),
-    name: String(b.name || ''),
-    email: String(b.email || ''),
+    date: checkIn,
+    check_out: checkOut,
+    guests: guests,
+    location: roomType,
+    name,
+    email,
     phone: b.phone || null,
     special_requests: b.special_requests || null,
     member_number: b.member_number || null,
@@ -40,8 +59,10 @@ module.exports = async (req, res) => {
   };
   try {
     const r = await addReservation(payload);
+    console.log('room:create', { id: r.id, email: r.email, guests: r.guests, location: r.location, date: r.date, check_out: r.check_out });
     res.status(201).json(r);
   } catch (e) {
+    console.error('room:error', e);
     res.status(500).json({ error: 'Error al crear reserva' });
   }
 };
