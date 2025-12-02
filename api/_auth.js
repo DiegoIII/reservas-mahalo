@@ -1,23 +1,16 @@
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const { getUserByEmail } = require('./_store');
-const { Redis } = (() => { try { return require('@upstash/redis'); } catch (_) { return {}; } })();
-
-let client = null;
-try {
-  if (Redis && Redis.Redis && process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
-    client = new Redis.Redis({ url: process.env.UPSTASH_REDIS_REST_URL, token: process.env.UPSTASH_REDIS_REST_TOKEN });
-  }
-} catch (_) {}
+const { kvGet, kvIncr, kvExpire, kvDel, hasKv } = require('./_kv');
 
 const MAX_ATTEMPTS = 5;
 const BLOCK_TTL_SEC = 15 * 60;
 const attemptsMem = new Map();
 
 async function isBlocked(key) {
-  if (client) {
+  if (hasKv) {
     try {
-      const count = await client.get(`login:fail:${key}`);
+      const count = await kvGet(`login:fail:${key}`);
       return Number(count || 0) >= MAX_ATTEMPTS;
     } catch (_) {}
   }
@@ -29,10 +22,10 @@ async function isBlocked(key) {
 }
 
 async function recordFailedAttempt(key) {
-  if (client) {
+  if (hasKv) {
     try {
-      const count = await client.incr(`login:fail:${key}`);
-      if (Number(count) === 1) await client.expire(`login:fail:${key}`, BLOCK_TTL_SEC);
+      const count = await kvIncr(`login:fail:${key}`);
+      if (Number(count) === 1) await kvExpire(`login:fail:${key}`, BLOCK_TTL_SEC);
       return;
     } catch (_) {}
   }
@@ -45,8 +38,8 @@ async function recordFailedAttempt(key) {
 }
 
 async function resetAttempts(key) {
-  if (client) {
-    try { await client.del(`login:fail:${key}`); } catch (_) {}
+  if (hasKv) {
+    try { await kvDel(`login:fail:${key}`); } catch (_) {}
   }
   attemptsMem.delete(key);
 }
@@ -83,4 +76,3 @@ module.exports = {
   requireCsrf,
   verifyPassword,
 };
-

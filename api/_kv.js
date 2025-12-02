@@ -1,69 +1,69 @@
-let client = null;
-try {
-  const { Redis } = require('@upstash/redis');
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (url && token) {
-    client = new Redis({ url, token });
-    console.log('kv:init:enabled');
-  } else {
-    console.warn('kv:init:disabled');
+const baseUrl = process.env.UPSTASH_REDIS_REST_URL;
+const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+const hasKv = !!(baseUrl && token);
+if (hasKv) console.log('kv:init:enabled'); else console.warn('kv:init:disabled');
+
+async function kvCommand(args) {
+  if (!hasKv) return null;
+  try {
+    const resp = await fetch(baseUrl, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(args)
+    });
+    if (!resp.ok) {
+      const txt = await resp.text().catch(() => '');
+      console.error('kv:command:http_error', resp.status, txt);
+      return null;
+    }
+    const data = await resp.json().catch(() => ({}));
+    return data?.result ?? null;
+  } catch (e) {
+    console.error('kv:command:error', e);
+    return null;
   }
-} catch (_) {}
+}
 
 async function kvAddReservation(r) {
-  if (!client) return false;
+  if (!hasKv) return false;
   const payload = JSON.stringify(r);
   const max = 3;
   for (let attempt = 0; attempt < max; attempt++) {
-    try {
-      await client.rpush('reservations', payload);
-      return true;
-    } catch (e) {
-      if (attempt === max - 1) {
-        console.error('kv:rpush:error', e);
-        return false;
-      }
-      await new Promise(r => setTimeout(r, 200 * Math.pow(2, attempt)));
+    const result = await kvCommand(['RPUSH', 'reservations', payload]);
+    if (result !== null) return true;
+    if (attempt === max - 1) {
+      console.error('kv:rpush:error');
+      return false;
     }
+    await new Promise(r => setTimeout(r, 200 * Math.pow(2, attempt)));
   }
   return false;
 }
 
 async function kvGetReservations() {
-  if (!client) return [];
-  try {
-    const arr = await client.lrange('reservations', 0, -1);
-    return arr.map(x => {
-      try { return JSON.parse(x); } catch (_) { return null; }
-    }).filter(Boolean);
-  } catch (e) {
-    console.error('kv:lrange:error', e);
+  if (!hasKv) return [];
+  const arr = await kvCommand(['LRANGE', 'reservations', 0, -1]);
+  if (!Array.isArray(arr)) {
+    console.error('kv:lrange:error', arr);
     return [];
   }
+  return arr.map(x => { try { return JSON.parse(x); } catch (_) { return null; } }).filter(Boolean);
 }
 
 async function kvCountReservations() {
-  if (!client) return 0;
-  try {
-    const count = await client.llen('reservations');
-    return Number(count || 0);
-  } catch (_) {
-    return 0;
-  }
+  if (!hasKv) return 0;
+  const count = await kvCommand(['LLEN', 'reservations']);
+  return Number(count || 0);
 }
 
 async function kvGetReservationsRange(start, stop) {
-  if (!client) return [];
-  try {
-    const arr = await client.lrange('reservations', start, stop);
-    return arr.map(x => {
-      try { return JSON.parse(x); } catch (_) { return null; }
-    }).filter(Boolean);
-  } catch (e) {
-    console.error('kv:lrange:error', e);
+  if (!hasKv) return [];
+  const arr = await kvCommand(['LRANGE', 'reservations', Number(start), Number(stop)]);
+  if (!Array.isArray(arr)) {
+    console.error('kv:lrange:error', arr);
     return [];
   }
+  return arr.map(x => { try { return JSON.parse(x); } catch (_) { return null; } }).filter(Boolean);
 }
 
 async function kvStatus() {
@@ -78,40 +78,43 @@ async function kvStatus() {
 }
 
 async function kvAddNotification(note) {
-  if (!client) return false;
+  if (!hasKv) return false;
   const payload = JSON.stringify({ ...note, ts: Date.now() });
   const max = 3;
   for (let attempt = 0; attempt < max; attempt++) {
-    try {
-      await client.rpush('notifications', payload);
-      return true;
-    } catch (e) {
-      if (attempt === max - 1) {
-        console.error('kv:notification:error', e);
-        return false;
-      }
-      await new Promise(r => setTimeout(r, 200 * Math.pow(2, attempt)));
+    const result = await kvCommand(['RPUSH', 'notifications', payload]);
+    if (result !== null) return true;
+    if (attempt === max - 1) {
+      console.error('kv:notification:error');
+      return false;
     }
+    await new Promise(r => setTimeout(r, 200 * Math.pow(2, attempt)));
   }
   return false;
 }
 
 async function kvUpdateReservation(id, patch) {
-  if (!client) return false;
+  if (!hasKv) return false;
   try {
     const items = await kvGetReservations();
     const idx = items.findIndex(x => Number(x.id) === Number(id));
     if (idx === -1) return false;
     items[idx] = { ...items[idx], ...patch };
-    await client.del('reservations');
-    if (items.length > 0) {
-      await client.rpush('reservations', ...items.map(x => JSON.stringify(x)));
+    await kvCommand(['DEL', 'reservations']);
+    for (const item of items) {
+      await kvCommand(['RPUSH', 'reservations', JSON.stringify(item)]);
     }
     return true;
-  } catch (_) {
+  } catch (e) {
+    console.error('kv:update:error', e);
     return false;
   }
 }
+
+async function kvGet(key) { return kvCommand(['GET', key]); }
+async function kvDel(key) { return kvCommand(['DEL', key]); }
+async function kvExpire(key, seconds) { return kvCommand(['EXPIRE', key, Number(seconds)]); }
+async function kvIncr(key) { return kvCommand(['INCR', key]); }
 
 module.exports = {
   kvAddReservation,
@@ -121,5 +124,9 @@ module.exports = {
   kvAddNotification,
   kvUpdateReservation,
   kvStatus,
-  hasKv: !!client
+  kvGet,
+  kvDel,
+  kvExpire,
+  kvIncr,
+  hasKv
 };
