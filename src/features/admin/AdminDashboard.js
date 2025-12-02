@@ -21,6 +21,7 @@ const AdminDashboard = ({ apiUrl }) => {
   const [memberNumberInput, setMemberNumberInput] = useState('');
   const [savingMembership, setSavingMembership] = useState(false);
   const [activeSection, setActiveSection] = useState('reservas');
+  const [memberSearchQuery, setMemberSearchQuery] = useState('');
 
   // Lock body scroll when room modal is open
   useEffect(() => {
@@ -243,6 +244,18 @@ const AdminDashboard = ({ apiUrl }) => {
       fetchUsers();
     }
   }, [showMembers, hasLoadedUsers, loadingUsers, fetchUsers]);
+
+  const filteredVisitors = useMemo(() => {
+    if (!memberSearchQuery) return userBuckets.visitors;
+    const q = memberSearchQuery.toLowerCase();
+    return userBuckets.visitors.filter(u => String(u.name || u.email || '').toLowerCase().includes(q));
+  }, [memberSearchQuery, userBuckets.visitors]);
+
+  const filteredMembers = useMemo(() => {
+    if (!memberSearchQuery) return userBuckets.members;
+    const q = memberSearchQuery.toLowerCase();
+    return userBuckets.members.filter(u => String(u.name || u.email || '').toLowerCase().includes(q));
+  }, [memberSearchQuery, userBuckets.members]);
 
   const handleUserSelect = useCallback((user) => {
     setSelectedUser(user);
@@ -982,6 +995,28 @@ const AdminDashboard = ({ apiUrl }) => {
 
       {showMembers && (
         <div className="admin-section admin-members-section">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', marginBottom: '1rem' }}>
+            <div style={{ fontWeight: 700, color: '#03258C' }}>Buscar usuarios</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <input
+                type="search"
+                placeholder="Nombre o email"
+                value={memberSearchQuery}
+                onChange={(e) => setMemberSearchQuery(e.target.value)}
+                style={{ padding: '0.5rem 0.75rem', borderRadius: 8, border: '1px solid #cbd5f5', minWidth: 240 }}
+                aria-label="Buscar usuarios por nombre o email"
+              />
+              {memberSearchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setMemberSearchQuery('')}
+                  style={{ padding: '0.5rem 0.75rem', borderRadius: 8, border: '1px solid #e5e7eb', background: '#f8fafc', cursor: 'pointer' }}
+                >
+                  Limpiar
+                </button>
+              )}
+            </div>
+          </div>
           <div className="members-grid">
             <section className="members-panel">
               <div className="members-panel-header">
@@ -1001,7 +1036,7 @@ const AdminDashboard = ({ apiUrl }) => {
                 </div>
               ) : (
                 <ul className="members-list">
-                  {userBuckets.visitors.map((user) => (
+                  {filteredVisitors.map((user) => (
                     <li key={user.id}>
                       <button
                         type="button"
@@ -1039,7 +1074,7 @@ const AdminDashboard = ({ apiUrl }) => {
                 </div>
               ) : (
                 <ul className="members-list">
-                  {userBuckets.members.map((user) => (
+                  {filteredMembers.map((user) => (
                     <li key={user.id}>
                       <button
                         type="button"

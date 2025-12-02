@@ -325,7 +325,7 @@ const RoomReservation = ({ user, apiUrl }) => {
         body: JSON.stringify(payload)
       });
       
-      showSuccess('¡Reserva confirmada! Te enviaremos un email de confirmación.', 'Reserva exitosa');
+      showSuccess('Reserva Existosa', '¡Te estaremos esperando!');
       setShowConfirmation(false);
       setFormData(initialFormData);
     } catch (e) {

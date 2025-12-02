@@ -348,7 +348,7 @@ const EventReservation = ({ user, apiUrl }) => {
         body: JSON.stringify(payload)
       });
       
-      showSuccess('¡Reserva de evento confirmada! Te contactaremos pronto para coordinar los detalles.', 'Reserva exitosa');
+      showSuccess('Reserva Existosa', '¡Te estaremos esperando!');
       setShowConfirmation(false);
       setFormData(initialFormData);
     } catch (e) {

@@ -42,6 +42,20 @@
   line-height: 1.6;
 }
 
+/* Desktop header content order */
+@media (min-width: 769px) {
+  .reservation-header .header-content {
+    display: flex;
+    flex-direction: column;
+  }
+  .reservation-header .header-content h1 {
+    order: 0;
+  }
+  .reservation-header .header-content .reservation-subtitle {
+    order: 1;
+  }
+}
+
 /* Progress Steps */
 .progress-steps {
   margin-bottom: 3rem;
@@ -718,8 +732,18 @@
   }
   
   .steps-container {
-    flex-direction: column;
+    flex-direction: row;
     gap: 1rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 0.5rem;
+  }
+  
+  .step {
+    flex: 0 0 auto;
+    scroll-snap-align: center;
+    min-width: 100px;
   }
   
   .step-connector {

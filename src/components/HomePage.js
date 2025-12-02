@@ -38,8 +38,8 @@ const HomePage = ({ onViewChange, user }) => {
       description: "Disfruta de atardeceres espectaculares desde nuestras instalaciones"
     },
     {
-      title: "Alberca Infinity de Lujo",
-      description: "Relájate en nuestra alberca con vista infinita al mar"
+      title: "Alberca a tu disposición",
+      description: "Pasa un día en familia o con amigos en nuestra alberca"
     },
     {
       title: "Gastronomía Excepcional",
@@ -242,7 +242,7 @@ const HomePage = ({ onViewChange, user }) => {
                   <div className="feature-icon">
                     <FaSwimmingPool />
                   </div>
-                  <h3>Alberca Infinity</h3>
+                  <h3>Alberca</h3>
                   <div className="feature-rating">
                     <FaStar className="star" />
                     <span>4.9</span>
@@ -272,7 +272,7 @@ const HomePage = ({ onViewChange, user }) => {
                   <div className="feature-icon">
                     <FaUtensils />
                   </div>
-                  <h3>Gastronomía Premium</h3>
+                  <h3>Alimentos de Mahalo</h3>
                   <div className="feature-rating">
                     <FaStar className="star" />
                     <span>4.8</span>
@@ -329,7 +329,7 @@ const HomePage = ({ onViewChange, user }) => {
               <FaCheckCircle className="badge-icon" />
               Servicios Incluidos
             </div>
-            <h2>Comodidades Premium</h2>
+            <h2>Comodidades Mahalo</h2>
             <p className="section-description">
               Todo lo que necesitas para una experiencia inolvidable
             </p>
@@ -348,7 +348,7 @@ const HomePage = ({ onViewChange, user }) => {
               <div className="amenity-icon">
                 <FaCar />
               </div>
-              <h4>Estacionamiento Gratuito</h4>
+              <h4>Estacionamiento</h4>
               <p>Estacionamiento seguro y vigilado</p>
             </div>
             
@@ -428,7 +428,7 @@ const HomePage = ({ onViewChange, user }) => {
                       <FaCar />
                     </div>
                     <div className="detail-content">
-                      <strong>Estacionamiento Gratuito</strong>
+                      <strong>Estacionamiento</strong>
                       <p>Estacionamiento seguro y vigilado las 24 horas para todos nuestros huéspedes.</p>
                     </div>
                   </div>
