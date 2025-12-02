@@ -1,4 +1,5 @@
-const { checkoutRoom } = require('../_store');
+const { checkoutRoom, reservations } = require('../_store');
+const { getArray, setArray } = require('../_kv');
 
 const allowed = new Set(['http://localhost:3000', 'https://mahalo-oficial.vercel.app']);
 
@@ -13,7 +14,7 @@ function cors(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
 }
 
-module.exports = (req, res) => {
+module.exports = async (req, res) => {
   cors(req, res);
   if (req.method === 'OPTIONS') {
     res.status(200).end();
@@ -24,11 +25,28 @@ module.exports = (req, res) => {
     return;
   }
   const b = req.body || {};
-  const updated = checkoutRoom(b.reservation_id);
-  if (!updated) {
-    res.status(404).json({ error: 'Reserva no encontrada' });
+  let kv = await getArray('mahalo_reservations');
+  let found = false;
+  kv = kv.map(r => {
+    if (String(r.id) === String(b.reservation_id) && r.type === 'room') {
+      found = true;
+      return { ...r, checked_out: true };
+    }
+    return r;
+  });
+  if (!found) {
+    const updated = checkoutRoom(b.reservation_id);
+    if (!updated) {
+      res.status(404).json({ error: 'Reserva no encontrada' });
+      return;
+    }
+    try {
+      const fallback = reservations.map(r => (String(r.id) === String(b.reservation_id) && r.type === 'room') ? { ...r, checked_out: true } : r);
+      await setArray('mahalo_reservations', fallback);
+    } catch (_) {}
+    res.status(200).json({ ok: true });
     return;
   }
+  try { await setArray('mahalo_reservations', kv); } catch (_) {}
   res.status(200).json({ ok: true });
 };
-

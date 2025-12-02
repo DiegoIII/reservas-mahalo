@@ -1,4 +1,5 @@
-const { addReservation } = require('../_store');
+const { reservations } = require('../_store');
+const { getArray, setArray } = require('../_kv');
 
 const allowed = new Set(['http://localhost:3000', 'https://mahalo-oficial.vercel.app']);
 
@@ -13,7 +14,7 @@ function cors(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
 }
 
-module.exports = (req, res) => {
+module.exports = async (req, res) => {
   cors(req, res);
   if (req.method === 'OPTIONS') {
     res.status(200).end();
@@ -24,7 +25,11 @@ module.exports = (req, res) => {
     return;
   }
   const b = req.body || {};
-  const r = addReservation({
+  const kv = await getArray('mahalo_reservations');
+  const maxId = kv.reduce((m, it) => Math.max(m, Number(it.id || 0)), 0);
+  const id = maxId > 0 ? maxId + 1 : Date.now();
+  const r = {
+    id,
     type: 'event',
     date: String(b.date || ''),
     start_time: String(b.start_time || ''),
@@ -38,7 +43,11 @@ module.exports = (req, res) => {
     special_requests: b.special_requests || null,
     member_number: b.member_number || null,
     is_member: !!b.is_member
-  });
+  };
+  try {
+    const next = [...kv, r];
+    await setArray('mahalo_reservations', next);
+  } catch (_) {}
+  try { reservations.push(r); } catch (_) {}
   res.status(201).json(r);
 };
-
