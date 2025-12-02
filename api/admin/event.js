@@ -1,11 +1,10 @@
-const { reservations } = require('../_store');
-const { getArray, setArray } = require('../_kv');
+const { addReservation } = require('../_store');
 
 const allowed = new Set(['http://localhost:3000', 'https://mahalo-oficial.vercel.app']);
 
 function cors(req, res) {
   const origin = req.headers.origin || '';
-  if (allowed.has(origin) || (origin && origin.endsWith('.vercel.app'))) {
+  if (allowed.has(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Vary', 'Origin');
@@ -25,11 +24,7 @@ module.exports = async (req, res) => {
     return;
   }
   const b = req.body || {};
-  const kv = await getArray('mahalo_reservations');
-  const maxId = kv.reduce((m, it) => Math.max(m, Number(it.id || 0)), 0);
-  const id = maxId > 0 ? maxId + 1 : Date.now();
-  const r = {
-    id,
+  const payload = {
     type: 'event',
     date: String(b.date || ''),
     start_time: String(b.start_time || ''),
@@ -45,10 +40,9 @@ module.exports = async (req, res) => {
     is_member: !!b.is_member
   };
   try {
-    const next = [...kv, r];
-    await setArray('mahalo_reservations', next);
-  } catch (_) {}
-  try { reservations.push(r); } catch (_) {}
-  try { console.log('reservations:create:event', { id: r.id, email: r.email, date: r.date, start: r.start_time, end: r.end_time }); } catch (_) {}
-  res.status(201).json(r);
+    const r = await addReservation(payload);
+    res.status(201).json(r);
+  } catch (e) {
+    res.status(500).json({ error: 'Error al crear reserva' });
+  }
 };

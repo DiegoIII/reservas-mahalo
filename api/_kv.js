@@ -1,50 +1,56 @@
-const URL = process.env.KV_REST_API_URL || '';
-const TOKEN = process.env.KV_REST_TOKEN || '';
-
-async function kvGet(key) {
-  if (!URL || !TOKEN) return null;
-  try {
-    const r = await fetch(`${URL}/get/${encodeURIComponent(key)}`, {
-      headers: { Authorization: `Bearer ${TOKEN}` }
-    });
-    if (!r.ok) return null;
-    const data = await r.json().catch(() => null);
-    const v = data && Object.prototype.hasOwnProperty.call(data, 'result') ? data.result : null;
-    return v;
-  } catch (_) {
-    return null;
+let client = null;
+try {
+  const { Redis } = require('@upstash/redis');
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (url && token) {
+    client = new Redis({ url, token });
   }
-}
+} catch (_) {}
 
-async function kvSet(key, value) {
-  if (!URL || !TOKEN) return false;
+async function kvAddReservation(r) {
+  if (!client) return false;
   try {
-    const r = await fetch(`${URL}/set/${encodeURIComponent(key)}`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ value })
-    });
-    return r.ok;
+    await client.rpush('reservations', JSON.stringify(r));
+    return true;
   } catch (_) {
     return false;
   }
 }
 
-async function getArray(key) {
-  const v = await kvGet(key);
-  if (!v) return [];
-  if (Array.isArray(v)) return v;
+async function kvGetReservations() {
+  if (!client) return [];
   try {
-    const parsed = JSON.parse(v);
-    return Array.isArray(parsed) ? parsed : [];
+    const arr = await client.lrange('reservations', 0, -1);
+    return arr.map(x => {
+      try { return JSON.parse(x); } catch (_) { return null; }
+    }).filter(Boolean);
   } catch (_) {
     return [];
   }
 }
 
-async function setArray(key, arr) {
-  return kvSet(key, Array.isArray(arr) ? arr : []);
+async function kvUpdateReservation(id, patch) {
+  if (!client) return false;
+  try {
+    const items = await kvGetReservations();
+    const idx = items.findIndex(x => Number(x.id) === Number(id));
+    if (idx === -1) return false;
+    items[idx] = { ...items[idx], ...patch };
+    await client.del('reservations');
+    if (items.length > 0) {
+      await client.rpush('reservations', ...items.map(x => JSON.stringify(x)));
+    }
+    return true;
+  } catch (_) {
+    return false;
+  }
 }
 
-module.exports = { kvGet, kvSet, getArray, setArray };
+module.exports = {
+  kvAddReservation,
+  kvGetReservations,
+  kvUpdateReservation,
+  hasKv: !!client
+};
 

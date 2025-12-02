@@ -1,5 +1,6 @@
 let nextUserId = 3;
 let nextReservationId = 1001;
+const { kvAddReservation, kvGetReservations, kvUpdateReservation, hasKv } = require('./_kv');
 
 const ADMIN_EMAIL = 'clubdeplaya@mahaloclubofficial.com';
 
@@ -116,18 +117,33 @@ function updateMembership(id, member_number) {
   return users[idx];
 }
 
-function addReservation(res) {
+async function addReservation(res) {
   const id = nextReservationId++;
   const r = { id, ...res };
   reservations.push(r);
+  if (hasKv) await kvAddReservation(r);
   return r;
 }
 
-function checkoutRoom(reservation_id) {
+async function checkoutRoom(reservation_id) {
   const idx = reservations.findIndex(r => r.type === 'room' && Number(r.id) === Number(reservation_id));
-  if (idx === -1) return null;
+  if (idx === -1) {
+    if (hasKv) {
+      await kvUpdateReservation(reservation_id, { checked_out: true });
+    }
+    return null;
+  }
   reservations[idx] = { ...reservations[idx], checked_out: true };
+  if (hasKv) await kvUpdateReservation(reservation_id, { checked_out: true });
   return reservations[idx];
+}
+
+async function getReservations() {
+  if (hasKv) {
+    const kvItems = await kvGetReservations();
+    return kvItems.length ? kvItems : reservations;
+  }
+  return reservations;
 }
 
 module.exports = {
@@ -142,5 +158,6 @@ module.exports = {
   addUser,
   updateMembership,
   addReservation,
-  checkoutRoom
+  checkoutRoom,
+  getReservations
 };

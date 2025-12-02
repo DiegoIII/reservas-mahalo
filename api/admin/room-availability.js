@@ -2,7 +2,7 @@ const allowed = new Set(['http://localhost:3000', 'https://mahalo-oficial.vercel
 
 function cors(req, res) {
   const origin = req.headers.origin || '';
-  if (allowed.has(origin) || (origin && origin.endsWith('.vercel.app'))) {
+  if (allowed.has(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Vary', 'Origin');
@@ -35,3 +35,4 @@ module.exports = (req, res) => {
   const info = { room2: { nextAvailable: next || new Date(Date.now() + 86400000).toISOString().slice(0, 10) } };
   res.status(200).json({ availability, info });
 };
+

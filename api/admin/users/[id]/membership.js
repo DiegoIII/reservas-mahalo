@@ -1,5 +1,4 @@
-const { updateMembership, users } = require('../../../_store');
-const { getArray, setArray } = require('../../../_kv');
+const { updateMembership } = require('../../../_store');
 
 const allowed = new Set(['http://localhost:3000', 'https://mahalo-oficial.vercel.app']);
 
@@ -14,7 +13,7 @@ function cors(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'PUT, OPTIONS');
 }
 
-module.exports = async (req, res) => {
+module.exports = (req, res) => {
   cors(req, res);
   if (req.method === 'OPTIONS') {
     res.status(200).end();
@@ -36,11 +35,6 @@ module.exports = async (req, res) => {
     res.status(404).json({ error: 'Usuario no encontrado' });
     return;
   }
-  try {
-    const arr = await getArray('mahalo_users');
-    const next = arr.map(u => (String(u.id) === String(updated.id) ? { ...u, is_member: true, member_number: num } : u));
-    const fallback = users.map(u => (String(u.id) === String(updated.id) ? { ...u, is_member: true, member_number: num } : u));
-    await setArray('mahalo_users', next.length ? next : fallback);
-  } catch (_) {}
   res.status(200).json(updated);
 };
+

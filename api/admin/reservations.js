@@ -1,5 +1,4 @@
-const { reservations } = require('../_store');
-const { getArray } = require('../_kv');
+const { getReservations } = require('../_store');
 
 const allowed = new Set(['http://localhost:3000', 'https://mahalo-oficial.vercel.app']);
 
@@ -24,8 +23,10 @@ module.exports = async (req, res) => {
     res.status(405).json({ error: 'Method Not Allowed' });
     return;
   }
-  const kvReservations = await getArray('mahalo_reservations');
-  const merged = Array.isArray(kvReservations) && kvReservations.length > 0 ? kvReservations : reservations;
-  try { console.log('reservations:list', { count: merged.length }); } catch (_) {}
-  res.status(200).json(merged);
+  try {
+    const items = await getReservations();
+    res.status(200).json(items);
+  } catch (e) {
+    res.status(500).json({ error: 'Error al obtener reservas' });
+  }
 };
