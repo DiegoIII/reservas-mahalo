@@ -1,4 +1,5 @@
 const { users, addUser } = require('./_store');
+const { getArray, setArray } = require('./_kv');
 
 const allowed = new Set(['http://localhost:3000', 'https://mahalo-oficial.vercel.app']);
 
@@ -13,14 +14,16 @@ function cors(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
 }
 
-module.exports = (req, res) => {
+module.exports = async (req, res) => {
   cors(req, res);
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
   }
   if (req.method === 'GET') {
-    res.status(200).json(users);
+    const kvUsers = await getArray('mahalo_users');
+    const merged = Array.isArray(kvUsers) && kvUsers.length > 0 ? kvUsers : users;
+    res.status(200).json(merged);
     return;
   }
   if (req.method === 'POST') {
@@ -33,9 +36,14 @@ module.exports = (req, res) => {
       return;
     }
     const created = addUser({ email, name, phone });
+    try {
+      const arr = await getArray('mahalo_users');
+      const idx = arr.findIndex(u => String(u.email || '').toLowerCase() === email);
+      const next = idx >= 0 ? arr.map(u => (String(u.email || '').toLowerCase() === email ? created : u)) : [...arr, created];
+      await setArray('mahalo_users', next);
+    } catch (_) {}
     res.status(201).json(created);
     return;
   }
   res.status(405).json({ error: 'Method Not Allowed' });
 };
-
