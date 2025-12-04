@@ -241,6 +241,27 @@ async function cleanupExpiredReservations() {
   return { deleted: toDelete.length, ids: toDelete.map(r => r.id), details: toDelete };
 }
 
+async function deleteReservation(reservation_id) {
+  const all = await getReservations();
+  const idNum = Number(reservation_id);
+  const keep = all.filter(r => Number(r.id) !== idNum);
+  const deleted = all.find(r => Number(r.id) === idNum) || null;
+  if (!deleted) return null;
+  if (hasKv) {
+    await kvDel('reservations');
+    for (const item of keep) {
+      await kvAddReservation(item);
+    }
+  }
+  while (reservations.length) reservations.pop();
+  for (const item of keep) reservations.push(item);
+  try {
+    await kvAddNotification({ type: 'deletion', reservation_id: idNum, reason: 'manual', date: deleted.date, check_out: deleted.check_out, res_type: deleted.type, email: deleted.email });
+  } catch (_) {}
+  console.log('reservation:deleted', { id: idNum });
+  return deleted;
+}
+
 module.exports = {
   ADMIN_EMAIL,
   users,
@@ -258,5 +279,6 @@ module.exports = {
   getReservations,
   getReservationsPaged,
   addNotification: kvAddNotification,
-  cleanupExpiredReservations
+  cleanupExpiredReservations,
+  deleteReservation
 };
