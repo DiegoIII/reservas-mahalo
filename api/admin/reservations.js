@@ -1,4 +1,4 @@
-const { getReservations, getReservationsPaged } = require('../_store');
+const { getReservations, getReservationsPaged } = require('../../lib/server/store');
 
 const allowed = new Set(['http://localhost:3000', 'https://mahalo-oficial.vercel.app']);
 

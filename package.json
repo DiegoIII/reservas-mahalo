@@ -27,7 +27,7 @@
     "postinstall": "patch-package"
   },
   "engines": {
-    "node": "20.x"
+    "node": "24.x"
   },
   
   "devDependencies": {

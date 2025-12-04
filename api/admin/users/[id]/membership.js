@@ -1,4 +1,4 @@
-const { updateMembership } = require('../../../_store');
+const { updateMembership } = require('../../../../lib/server/store');
 
 const allowed = new Set(['http://localhost:3000', 'https://mahalo-oficial.vercel.app']);
 
@@ -37,4 +37,3 @@ module.exports = (req, res) => {
   }
   res.status(200).json(updated);
 };
-

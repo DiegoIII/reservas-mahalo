@@ -22,7 +22,6 @@ const AdminDashboard = ({ apiUrl }) => {
   const [savingMembership, setSavingMembership] = useState(false);
   const [activeSection, setActiveSection] = useState('reservas');
   const [memberSearchQuery, setMemberSearchQuery] = useState('');
-  const [deletingIds, setDeletingIds] = useState(new Set());
 
   // Lock body scroll when room modal is open
   useEffect(() => {
@@ -161,41 +160,13 @@ const AdminDashboard = ({ apiUrl }) => {
       });
     }
   };
-  const handleDelete = async (reservationId) => {
-    const ok = window.confirm('¿Eliminar esta reserva? Esta acción no se puede deshacer.');
-    if (!ok) return;
-    setDeletingIds(prev => new Set([...prev, reservationId]));
-    try {
-      const resp = await fetch(`${apiUrl}/api/admin/reservations/${reservationId}`, { method: 'DELETE' });
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({}));
-        throw new Error(err.error || 'No se pudo eliminar la reserva');
-      }
-      const resp2 = await fetch(`${apiUrl}/api/admin/reservations?page=${page}&pageSize=${pageSize}`);
-      const data = await resp2.json();
-      const total = Number(resp2.headers.get('X-Total-Count') || 0);
-      setTotalCount(total);
-      setReservations(Array.isArray(data) ? data : []);
-      showSuccess('Reserva eliminada correctamente', 'Eliminación exitosa');
-    } catch (e) {
-      showError(e.message || 'No se pudo eliminar la reserva', 'Error de eliminación');
-    } finally {
-      setDeletingIds(prev => {
-        const set = new Set(prev);
-        set.delete(reservationId);
-        return set;
-      });
-    }
-  };
 
   const { restaurantList, roomList, eventList, eventsByDate } = useMemo(() => {
     const sorted = [...reservations].sort((a, b) => {
       const da = String(a.date || '');
       const db = String(b.date || '');
       if (da !== db) return da.localeCompare(db);
-      const ta = String(a.time || a.start_time || '');
-      const tb = String(b.time || b.start_time || '');
-      return ta.localeCompare(tb);
+      return String(a.start_time || '').localeCompare(String(b.start_time || ''));
     });
     const restaurant = sorted.filter(r => r.type === 'restaurant');
     const room = sorted.filter(r => r.type === 'room');
@@ -503,15 +474,6 @@ const AdminDashboard = ({ apiUrl }) => {
                         Número de Socio
                       </div>
                     </th>
-                    <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                          <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" fill="none"/>
-                          <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1" stroke="currentColor" strokeWidth="2" fill="none"/>
-                        </svg>
-                        Acciones
-                      </div>
-                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -521,7 +483,7 @@ const AdminDashboard = ({ apiUrl }) => {
                       background: index % 2 === 0 ? 'white' : '#f8fafc'
                     }}>
                       <td style={{ padding: '1rem', fontWeight: '600', color: '#03258C' }}>{formatDate(r.date)}</td>
-                      <td style={{ padding: '1rem' }}>{r.time || r.start_time || '--'}</td>
+                      <td style={{ padding: '1rem' }}>{r.start_time || '--'}</td>
                       <td style={{ padding: '1rem' }}>{r.location || '--'}</td>
                       <td style={{ padding: '1rem', textAlign: 'center' }}>
                         <span style={{ background: '#e0f2fe', color: '#0369a1', borderRadius: '20px', padding: '0.25rem 0.75rem', fontSize: 12, fontWeight: 600 }}>
@@ -535,23 +497,18 @@ const AdminDashboard = ({ apiUrl }) => {
                         {getMemberNumber(r) ? (
                           <span style={{ 
                             background: 'linear-gradient(135deg, #F25C05 0%, #F27E93 100%)', 
-                            color: 'white', borderRadius: '20px', padding: '0.25rem 0.75rem', fontSize: 12, fontWeight: 600, display: 'inline-block'
+                            color: 'white', 
+                            borderRadius: '20px', 
+                            padding: '0.25rem 0.75rem', 
+                            fontSize: 12, 
+                            fontWeight: 600,
+                            display: 'inline-block'
                           }}>
                             {getMemberNumber(r)}
                           </span>
                         ) : (
                           <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>—</span>
                         )}
-                      </td>
-                      <td style={{ padding: '1rem', textAlign: 'center' }}>
-                        <button
-                          onClick={() => handleDelete(r.id)}
-                          disabled={deletingIds.has(r.id)}
-                          style={{ background: deletingIds.has(r.id) ? '#9ca3af' : 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)', color: 'white', border: 'none', borderRadius: '8px', padding: '0.5rem 1rem', fontSize: '12px', fontWeight: '600', cursor: deletingIds.has(r.id) ? 'not-allowed' : 'pointer', transition: 'all 0.3s ease' }}
-                          title="Eliminar reserva"
-                        >
-                          {deletingIds.has(r.id) ? 'Eliminando...' : 'Eliminar'}
-                        </button>
                       </td>
                     </tr>
                   ))}
@@ -748,26 +705,42 @@ const AdminDashboard = ({ apiUrl }) => {
                         </span>
                       </td>
                       <td style={{ padding: '1rem', textAlign: 'center' }}>
-                        <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
-                          {!r.checked_out && (
-                            <button
-                              onClick={() => handleCheckout(r.id)}
-                              disabled={checkingOut.has(r.id)}
-                              style={{ background: checkingOut.has(r.id) ? '#9ca3af' : 'linear-gradient(135deg, #0785F2 0%, #0369a1 100%)', color: 'white', border: 'none', borderRadius: '8px', padding: '0.5rem 1rem', fontSize: '12px', fontWeight: '600', cursor: checkingOut.has(r.id) ? 'not-allowed' : 'pointer', transition: 'all 0.3s ease' }}
-                              title="Checkout"
-                            >
-                              {checkingOut.has(r.id) ? 'Procesando...' : 'Checkout'}
-                            </button>
-                          )}
+                        {!r.checked_out && (
                           <button
-                            onClick={() => handleDelete(r.id)}
-                            disabled={deletingIds.has(r.id)}
-                            style={{ background: deletingIds.has(r.id) ? '#9ca3af' : 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)', color: 'white', border: 'none', borderRadius: '8px', padding: '0.5rem 1rem', fontSize: '12px', fontWeight: '600', cursor: deletingIds.has(r.id) ? 'not-allowed' : 'pointer', transition: 'all 0.3s ease' }}
-                            title="Eliminar reserva"
+                            onClick={() => handleCheckout(r.id)}
+                            disabled={checkingOut.has(r.id)}
+                            style={{
+                              background: checkingOut.has(r.id) ? '#9ca3af' : 'linear-gradient(135deg, #0785F2 0%, #0369a1 100%)',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '8px',
+                              padding: '0.5rem 1rem',
+                              fontSize: '12px',
+                              fontWeight: '600',
+                              cursor: checkingOut.has(r.id) ? 'not-allowed' : 'pointer',
+                              transition: 'all 0.3s ease'
+                            }}
                           >
-                            {deletingIds.has(r.id) ? 'Eliminando...' : 'Eliminar'}
+                            {checkingOut.has(r.id) ? (
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+                                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none"/>
+                                  <path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                                </svg>
+                                Procesando...
+                              </span>
+                            ) : (
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+                                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="currentColor" strokeWidth="2" fill="none"/>
+                                  <polyline points="16,17 21,12 16,7" stroke="currentColor" strokeWidth="2" fill="none"/>
+                                  <line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" strokeWidth="2" fill="none"/>
+                                </svg>
+                                Checkout
+                              </span>
+                            )}
                           </button>
-                        </div>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -921,15 +894,6 @@ const AdminDashboard = ({ apiUrl }) => {
                             Notas
                           </div>
                         </th>
-                        <th style={{ padding: '1rem', fontSize: 14, fontWeight: 700 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                              <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" fill="none"/>
-                              <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1" stroke="currentColor" strokeWidth="2" fill="none"/>
-                            </svg>
-                            Acciones
-                          </div>
-                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -940,16 +904,6 @@ const AdminDashboard = ({ apiUrl }) => {
                         }}>
                           <td style={{ padding: '1rem', fontWeight: '600', color: '#03258C', whiteSpace: 'nowrap' }}>
                             {ev.start_time || '--'}{ev.end_time ? ` – ${ev.end_time}` : ''}
-                          </td>
-                          <td style={{ padding: '1rem', textAlign: 'center' }}>
-                            <button
-                              onClick={() => handleDelete(ev.id)}
-                              disabled={deletingIds.has(ev.id)}
-                              style={{ background: deletingIds.has(ev.id) ? '#9ca3af' : 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)', color: 'white', border: 'none', borderRadius: '8px', padding: '0.5rem 1rem', fontSize: '12px', fontWeight: '600', cursor: deletingIds.has(ev.id) ? 'not-allowed' : 'pointer', transition: 'all 0.3s ease' }}
-                              title="Eliminar reserva"
-                            >
-                              {deletingIds.has(ev.id) ? 'Eliminando...' : 'Eliminar'}
-                            </button>
                           </td>
                           <td style={{ padding: '1rem' }}>
                             <span style={{ 

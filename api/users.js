@@ -1,4 +1,4 @@
-const { users, addUser } = require('./_store');
+const { users, addUser } = require('../lib/server/store');
 const bcrypt = require('bcryptjs');
 
 const allowed = new Set(['http://localhost:3000', 'https://mahalo-oficial.vercel.app']);

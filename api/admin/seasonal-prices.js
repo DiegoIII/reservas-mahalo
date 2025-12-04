@@ -1,4 +1,4 @@
-const { getSeasons, setSeasons } = require('../_store');
+const { getSeasons, setSeasons } = require('../../lib/server/store');
 
 const allowed = new Set(['http://localhost:3000', 'https://mahalo-oficial.vercel.app']);
 
@@ -32,4 +32,3 @@ module.exports = (req, res) => {
   }
   res.status(405).json({ error: 'Method Not Allowed' });
 };
-

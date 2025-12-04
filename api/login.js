@@ -1,5 +1,5 @@
-const { users, ADMIN_EMAIL, getUserByEmail } = require('./_store');
-const { isBlocked, recordFailedAttempt, resetAttempts, issueCsrf, requireCsrf, verifyPassword } = require('./_auth');
+const { users, ADMIN_EMAIL, getUserByEmail } = require('../lib/server/store');
+const { isBlocked, recordFailedAttempt, resetAttempts, issueCsrf, requireCsrf, verifyPassword } = require('../lib/server/auth');
 
 const allowed = new Set(['http://localhost:3000', 'https://mahalo-oficial.vercel.app']);
 function cors(req, res) {

@@ -1,4 +1,4 @@
-const { getPrices, setPrices } = require('../_store');
+const { getPrices, setPrices } = require('../../lib/server/store');
 
 const allowed = new Set(['http://localhost:3000', 'https://mahalo-oficial.vercel.app']);
 

@@ -1,4 +1,4 @@
-const { addReservation } = require('../_store');
+const { addReservation } = require('../../lib/server/store');
 
 const allowed = new Set(['http://localhost:3000', 'https://mahalo-oficial.vercel.app']);
 
@@ -30,14 +30,8 @@ module.exports = async (req, res) => {
   const guests = Number(b.party_size || 0);
   const tableType = String(b.table_type || '').trim();
   const daypassType = String(b.daypass_type || '').trim();
-  const date = String(b.date || '').trim();
-  const time = String(b.time || '').trim();
   if (!email || !name) {
     res.status(400).json({ error: 'nombre y email requeridos' });
-    return;
-  }
-  if (!date || !time) {
-    res.status(400).json({ error: 'fecha y hora requeridas' });
     return;
   }
   if (!(tableType || daypassType)) {
@@ -50,8 +44,8 @@ module.exports = async (req, res) => {
   }
   const payload = {
     type: 'restaurant',
-    date,
-    time,
+    date: String(b.date || ''),
+    time: String(b.time || ''),
     guests: Number(b.party_size || 1),
     table_type: String(b.table_type || ''),
     location: String(b.location_area || ''),
@@ -65,7 +59,7 @@ module.exports = async (req, res) => {
   };
   try {
     const r = await addReservation(payload);
-    await require('../_store').addNotification({ type: 'confirmation', reservation_id: r.id, email: r.email });
+    await require('../../lib/server/store').addNotification({ type: 'confirmation', reservation_id: r.id, email: r.email });
     console.log('restaurant:create', { id: r.id, email: r.email, guests: r.guests, table_type: r.table_type, daypass_type: r.daypass_type });
     res.status(201).json(r);
   } catch (e) {

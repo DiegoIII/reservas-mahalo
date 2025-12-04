@@ -1,4 +1,4 @@
-const { addReservation } = require('../_store');
+const { addReservation } = require('../../lib/server/store');
 
 const allowed = new Set(['http://localhost:3000', 'https://mahalo-oficial.vercel.app']);
 
@@ -61,7 +61,7 @@ module.exports = async (req, res) => {
   };
   try {
     const r = await addReservation(payload);
-    await require('../_store').addNotification({ type: 'confirmation', reservation_id: r.id, email: r.email });
+    await require('../../lib/server/store').addNotification({ type: 'confirmation', reservation_id: r.id, email: r.email });
     console.log('event:create', { id: r.id, email: r.email, guests: r.guests, location: r.location, date: r.date, start: r.start_time, end: r.end_time });
     res.status(201).json(r);
   } catch (e) {
