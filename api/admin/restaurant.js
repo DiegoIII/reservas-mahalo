@@ -30,8 +30,14 @@ module.exports = async (req, res) => {
   const guests = Number(b.party_size || 0);
   const tableType = String(b.table_type || '').trim();
   const daypassType = String(b.daypass_type || '').trim();
+  const date = String(b.date || '').trim();
+  const time = String(b.time || '').trim();
   if (!email || !name) {
     res.status(400).json({ error: 'nombre y email requeridos' });
+    return;
+  }
+  if (!date || !time) {
+    res.status(400).json({ error: 'fecha y hora requeridas' });
     return;
   }
   if (!(tableType || daypassType)) {
@@ -44,8 +50,8 @@ module.exports = async (req, res) => {
   }
   const payload = {
     type: 'restaurant',
-    date: String(b.date || ''),
-    time: String(b.time || ''),
+    date,
+    time,
     guests: Number(b.party_size || 1),
     table_type: String(b.table_type || ''),
     location: String(b.location_area || ''),

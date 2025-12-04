@@ -166,7 +166,9 @@ const AdminDashboard = ({ apiUrl }) => {
       const da = String(a.date || '');
       const db = String(b.date || '');
       if (da !== db) return da.localeCompare(db);
-      return String(a.start_time || '').localeCompare(String(b.start_time || ''));
+      const ta = String(a.time || a.start_time || '');
+      const tb = String(b.time || b.start_time || '');
+      return ta.localeCompare(tb);
     });
     const restaurant = sorted.filter(r => r.type === 'restaurant');
     const room = sorted.filter(r => r.type === 'room');
@@ -483,7 +485,7 @@ const AdminDashboard = ({ apiUrl }) => {
                       background: index % 2 === 0 ? 'white' : '#f8fafc'
                     }}>
                       <td style={{ padding: '1rem', fontWeight: '600', color: '#03258C' }}>{formatDate(r.date)}</td>
-                      <td style={{ padding: '1rem' }}>{r.start_time || '--'}</td>
+                      <td style={{ padding: '1rem' }}>{r.time || r.start_time || '--'}</td>
                       <td style={{ padding: '1rem' }}>{r.location || '--'}</td>
                       <td style={{ padding: '1rem', textAlign: 'center' }}>
                         <span style={{ background: '#e0f2fe', color: '#0369a1', borderRadius: '20px', padding: '0.25rem 0.75rem', fontSize: 12, fontWeight: 600 }}>

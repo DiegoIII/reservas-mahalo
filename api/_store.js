@@ -1,6 +1,6 @@
 let nextUserId = 3;
 let nextReservationId = 1001;
-const { kvAddReservation, kvGetReservations, kvCountReservations, kvGetReservationsRange, kvAddNotification, kvUpdateReservation, hasKv } = require('./_kv');
+const { kvAddReservation, kvGetReservations, kvCountReservations, kvGetReservationsRange, kvAddNotification, kvUpdateReservation, kvDel, hasKv } = require('./_kv');
 
 const ADMIN_EMAIL = 'clubdeplaya@mahaloclubofficial.com';
 
@@ -184,6 +184,63 @@ async function getReservationsPaged({ page = 1, pageSize = 20, email, type, stat
   return { items: filtered, total };
 }
 
+async function cleanupExpiredReservations() {
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0, 10);
+  const isPastDate = (dateStr) => {
+    if (!dateStr) return false;
+    try {
+      const d = new Date(String(dateStr));
+      const ds = d.toISOString().slice(0, 10);
+      return ds < todayStr;
+    } catch (_) {
+      return false;
+    }
+  };
+
+  const all = await getReservations();
+  const toDelete = [];
+  const keep = [];
+  for (const r of all) {
+    let expired = false;
+    if (r.type === 'room') {
+      expired = isPastDate(r.check_out || r.date);
+    } else if (r.type === 'restaurant') {
+      expired = isPastDate(r.date);
+    } else if (r.type === 'event') {
+      expired = isPastDate(r.date);
+    }
+    if (expired) {
+      toDelete.push(r);
+    } else {
+      keep.push(r);
+    }
+  }
+
+  if (toDelete.length === 0) {
+    return { deleted: 0, ids: [], details: [] };
+  }
+
+  if (hasKv) {
+    await kvDel('reservations');
+    for (const item of keep) {
+      await kvAddReservation(item);
+    }
+  } else {
+    while (reservations.length) reservations.pop();
+    for (const item of keep) reservations.push(item);
+  }
+
+  for (const r of toDelete) {
+    try {
+      await kvAddNotification({ type: 'deletion', reservation_id: r.id, reason: 'expired', date: r.date, check_out: r.check_out, res_type: r.type, email: r.email });
+    } catch (_) {}
+    console.log('cleanup:deleted', { id: r.id, type: r.type, date: r.date, check_out: r.check_out });
+  }
+
+  return { deleted: toDelete.length, ids: toDelete.map(r => r.id), details: toDelete };
+}
+
 module.exports = {
   ADMIN_EMAIL,
   users,
@@ -200,5 +257,6 @@ module.exports = {
   checkoutRoom,
   getReservations,
   getReservationsPaged,
-  addNotification: kvAddNotification
+  addNotification: kvAddNotification,
+  cleanupExpiredReservations
 };
