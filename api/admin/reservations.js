@@ -1,4 +1,4 @@
-const { getReservations, getReservationsPaged } = require('../../lib/server/store');
+const { getReservations, getReservationsPaged, deleteReservation, clearReservations } = require('../../lib/server/store');
 
 const allowed = new Set(['http://localhost:3000', 'https://mahalo-oficial.vercel.app']);
 
@@ -9,8 +9,8 @@ function cors(req, res) {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Vary', 'Origin');
   }
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Admin-Token');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, DELETE, OPTIONS');
 }
 
 module.exports = async (req, res) => {
@@ -20,10 +20,34 @@ module.exports = async (req, res) => {
     res.status(200).end();
     return;
   }
-  if (req.method !== 'GET') {
-    res.status(405).json({ error: 'Method Not Allowed' });
+  if (req.method === 'DELETE') {
+    const token = process.env.ADMIN_API_TOKEN || '';
+    if (token && req.headers['x-admin-token'] !== token) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+    try {
+      const { id, all } = req.query || {};
+      if (String(all) === 'true') {
+        await clearReservations();
+        console.log('reservations:clear');
+        res.status(200).json({ ok: true, cleared: true });
+        return;
+      }
+      if (!id) {
+        res.status(400).json({ error: 'id requerido' });
+        return;
+      }
+      await deleteReservation(id);
+      console.log('reservations:delete', { id });
+      res.status(200).json({ ok: true, id: Number(id) });
+    } catch (e) {
+      console.error('reservations:delete:error', e);
+      res.status(500).json({ error: 'Error al borrar reservas' });
+    }
     return;
   }
+  if (req.method !== 'GET') { res.status(405).json({ error: 'Method Not Allowed' }); return; }
   try {
     const { page, pageSize, email, type, status, search } = req.query || {};
     if (page || type || status || search) {
