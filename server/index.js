@@ -165,7 +165,7 @@ app.get('/api/users', async (_req, res) => {
 // Update membership info for a user
 app.put('/api/admin/users/:id/membership', async (req, res) => {
   const { id } = req.params;
-  const { member_number } = req.body || {};
+  const { member_number, email } = req.body || {};
   const finalNumber = member_number != null ? String(member_number).trim() : '';
 
   if (!finalNumber) {
@@ -188,6 +188,24 @@ app.put('/api/admin/users/:id/membership', async (req, res) => {
       [finalNumber, id]
     );
     if (result.affectedRows === 0) {
+      if (email) {
+        const [dupRows2] = await pool.query('SELECT COUNT(*) AS c FROM app_user WHERE member_number = ? AND email <> ?', [finalNumber, email]);
+        if (dupRows2[0].c > 0) {
+          return res.status(409).json({ error: 'Número de socio duplicado' });
+        }
+        const [resultByEmail] = await pool.query(
+          'UPDATE app_user SET is_member = 1, member_number = ? WHERE email = ?',
+          [finalNumber, email]
+        );
+        if (resultByEmail.affectedRows === 0) {
+          return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+        const [rowsByEmail] = await pool.query(
+          'SELECT id, name, email, phone, is_admin, COALESCE(is_member, 0) AS is_member, member_number, created_at FROM app_user WHERE email = ?',
+          [email]
+        );
+        return res.json(rowsByEmail[0]);
+      }
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
     const [rows] = await pool.query(
@@ -470,4 +488,3 @@ const PORT = Number(process.env.PORT || 3000);
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
-

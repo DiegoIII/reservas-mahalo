@@ -288,7 +288,7 @@ const AdminDashboard = ({ apiUrl }) => {
       const resp = await fetch(`${apiUrl}/api/admin/users/${selectedUser.id}/membership`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ member_number: trimmedNumber })
+        body: JSON.stringify({ member_number: trimmedNumber, email: selectedUser.email })
       });
       const rawText = await resp.text();
       let data = null;
