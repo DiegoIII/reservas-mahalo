@@ -273,6 +273,7 @@ const EventReservation = ({ user, apiUrl }) => {
       
       // Validación especial para número de socio: solo números, máximo 10 caracteres
       if (name === 'memberNumber') {
+        if (isMember) return prev; // Socio: no permitir modificar el número
         const numericValue = value.replace(/\D/g, ''); // Remover todo lo que no sea número
         const limitedValue = numericValue.slice(0, 10); // Limitar a 10 caracteres
         newData[name] = limitedValue;
@@ -338,7 +339,7 @@ const EventReservation = ({ user, apiUrl }) => {
         phone: formData.phone || null,
         company: formData.company || null, 
         special_requests: formData.specialRequests || null,
-        member_number: formData.memberNumber || null,
+        member_number: isMember ? (user?.member_number || formData.memberNumber || null) : null,
         is_member: isMember
       };
       
@@ -785,25 +786,28 @@ const EventReservation = ({ user, apiUrl }) => {
                       placeholder="Decoración especial, catering, equipo audiovisual, accesibilidad, preferencias de menú, etc..." 
                     />
                   </div>
-                  {isMember && (
-                    <div className="input-group">
-                      <label htmlFor="memberNumber">
-                        <FaIdCard className="input-icon" />
-                        Número de Socio
-                      </label>
-                      <input 
-                        type="text" 
-                        id="memberNumber" 
-                        name="memberNumber" 
-                        value={formData.memberNumber}
-                        onChange={handleInputChange}
-                        placeholder="Ingresa tu número de socio (máx. 10 dígitos)" 
-                        maxLength={10}
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                      />
-                    </div>
-                  )}
+                {isMember && (
+                  <div className="input-group">
+                    <label htmlFor="memberNumber">
+                      <FaIdCard className="input-icon" />
+                      Número de Socio
+                    </label>
+                    <input 
+                      type="text" 
+                      id="memberNumber" 
+                      name="memberNumber" 
+                      value={formData.memberNumber}
+                      onChange={() => {}}
+                      placeholder="Asignado automáticamente" 
+                      maxLength={10}
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      readOnly
+                      disabled
+                      aria-readonly
+                    />
+                  </div>
+                )}
                 </div>
 
                 {/* Desglose de Precios movido aquí, debajo de Información de Contacto */}

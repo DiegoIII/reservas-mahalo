@@ -131,6 +131,7 @@ const RoomReservation = ({ user, apiUrl }) => {
     
     // Validación especial para número de socio: solo números, máximo 10 caracteres
     if (name === 'memberNumber') {
+      if (isMember) return; // Socio: no permitir modificar el número
       const numericValue = value.replace(/\D/g, ''); // Remover todo lo que no sea número
       const limitedValue = numericValue.slice(0, 10); // Limitar a 10 caracteres
       setFormData(prev => ({ ...prev, [name]: limitedValue }));
@@ -315,7 +316,7 @@ const RoomReservation = ({ user, apiUrl }) => {
         email: formData.email,
         phone: formData.phone || null, 
         special_requests: formData.specialRequests || null,
-        member_number: formData.memberNumber || null,
+        member_number: isMember ? (user?.member_number || formData.memberNumber || null) : null,
         is_member: isMember
       };
       
@@ -686,11 +687,14 @@ const RoomReservation = ({ user, apiUrl }) => {
                         id="memberNumber" 
                         name="memberNumber" 
                         value={formData.memberNumber}
-                        onChange={handleInputChange}
-                        placeholder="Ingresa tu número de socio (máx. 10 dígitos)" 
+                        onChange={() => {}}
+                        placeholder="Asignado automáticamente" 
                         maxLength={10}
                         inputMode="numeric"
                         pattern="[0-9]*"
+                        readOnly
+                        disabled
+                        aria-readonly
                       />
                     </div>
                   )}
