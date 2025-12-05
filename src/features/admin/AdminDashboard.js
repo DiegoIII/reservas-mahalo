@@ -19,6 +19,7 @@ const AdminDashboard = ({ apiUrl }) => {
   const [hasLoadedUsers, setHasLoadedUsers] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [memberNumberInput, setMemberNumberInput] = useState('');
+  const [memberDigits, setMemberDigits] = useState(6);
   const [savingMembership, setSavingMembership] = useState(false);
   const [activeSection, setActiveSection] = useState('reservas');
   const [memberSearchQuery, setMemberSearchQuery] = useState('');
@@ -274,6 +275,14 @@ const AdminDashboard = ({ apiUrl }) => {
       showError('Debes asignar un número de socio', 'Número requerido');
       return;
     }
+    if (!/^\d+$/.test(trimmedNumber)) {
+      showError('El número de socio debe ser numérico', 'Número inválido');
+      return;
+    }
+    if (trimmedNumber.length < 4 || trimmedNumber.length > 10) {
+      showError('El número de socio debe tener entre 4 y 10 dígitos', 'Número inválido');
+      return;
+    }
     setSavingMembership(true);
     try {
       const resp = await fetch(`${apiUrl}/api/admin/users/${selectedUser.id}/membership`, {
@@ -311,6 +320,29 @@ const AdminDashboard = ({ apiUrl }) => {
       setSavingMembership(false);
     }
   }, [apiUrl, selectedUser, memberNumberInput, fetchUsers, resetSelectedUser, showError, showSuccess]);
+
+  const handleGenerateMemberNumber = useCallback(async () => {
+    try {
+      const resp = await fetch(`${apiUrl}/api/admin/membership/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ digits: memberDigits })
+      });
+      const data = await resp.json();
+      if (!resp.ok) {
+        throw new Error(data?.error || `Error ${resp.status}`);
+      }
+      setMemberNumberInput(String(data.member_number || ''));
+    } catch (e) {
+      console.error('[membership] Error al generar número', e);
+      try {
+        const n = Math.max(4, Math.min(10, Number(memberDigits || 6)));
+        const candidate = String(Math.floor(Math.random() * Math.pow(10, n))).padStart(n, '0');
+        setMemberNumberInput(candidate);
+        showError('No se pudo verificar unicidad en el servidor. Se asignó un número local, verifique duplicados al guardar.', 'Generación local');
+      } catch (_) {}
+    }
+  }, [apiUrl, memberDigits, showError]);
 
   useEffect(() => {
     if (!showMembers) {
@@ -1122,6 +1154,26 @@ const AdminDashboard = ({ apiUrl }) => {
                     onChange={(e) => setMemberNumberInput(e.target.value)}
                   />
                 </label>
+                <div className="member-config-tools">
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    Dígitos
+                    <input
+                      type="number"
+                      min={4}
+                      max={10}
+                      value={memberDigits}
+                      onChange={(e) => setMemberDigits(Number(e.target.value || 6))}
+                      style={{ width: 80 }}
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    onClick={handleGenerateMemberNumber}
+                  >
+                    Generar aleatorio
+                  </button>
+                </div>
                 <p className="member-config-hint">
                   {selectedUser.is_member 
                     ? 'Este número aparecerá en todas las reservas futuras del socio. Puedes actualizarlo en cualquier momento.'

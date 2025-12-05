@@ -171,8 +171,18 @@ app.put('/api/admin/users/:id/membership', async (req, res) => {
   if (!finalNumber) {
     return res.status(400).json({ error: 'member_number is required' });
   }
+  if (finalNumber.length < 4 || finalNumber.length > 10) {
+    return res.status(400).json({ error: 'El número de socio debe tener entre 4 y 10 dígitos' });
+  }
+  if (!/^\d+$/.test(finalNumber)) {
+    return res.status(400).json({ error: 'El número de socio debe ser numérico' });
+  }
 
   try {
+    const [dupRows] = await pool.query('SELECT COUNT(*) AS c FROM app_user WHERE member_number = ? AND id <> ?', [finalNumber, id]);
+    if (dupRows[0].c > 0) {
+      return res.status(409).json({ error: 'Número de socio duplicado' });
+    }
     const [result] = await pool.query(
       'UPDATE app_user SET is_member = 1, member_number = ? WHERE id = ?',
       [finalNumber, id]
@@ -185,6 +195,31 @@ app.put('/api/admin/users/:id/membership', async (req, res) => {
       [id]
     );
     res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/admin/membership/generate', async (req, res) => {
+  const { digits } = req.body || {};
+  const n = Number(digits || 6);
+  if (!Number.isInteger(n) || n < 4 || n > 10) {
+    return res.status(400).json({ error: 'digits debe ser un entero entre 4 y 10' });
+  }
+  try {
+    let attempt = 0;
+    let candidate = '';
+    const maxAttempts = 100;
+    while (attempt < maxAttempts) {
+      candidate = String(Math.floor(Math.random() * Math.pow(10, n))).padStart(n, '0');
+      const [rows] = await pool.query('SELECT COUNT(*) AS c FROM app_user WHERE member_number = ?', [candidate]);
+      if (rows[0].c === 0) break;
+      attempt++;
+    }
+    if (attempt >= maxAttempts) {
+      return res.status(500).json({ error: 'No se pudo generar un número único, intenta nuevamente' });
+    }
+    res.json({ member_number: candidate });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -435,5 +470,4 @@ const PORT = Number(process.env.PORT || 3000);
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
-
 
