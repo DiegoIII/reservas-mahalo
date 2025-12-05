@@ -285,6 +285,7 @@ const AdminDashboard = ({ apiUrl }) => {
     }
     setSavingMembership(true);
     try {
+      console.info('[membership] intento de guardar', { id: selectedUser.id, email: selectedUser.email, member_number: trimmedNumber });
       // Pre-validación: verificar existencia del usuario en el servidor
       try {
         const verifyResp = await fetch(`${apiUrl}/api/users`);
@@ -335,6 +336,9 @@ const AdminDashboard = ({ apiUrl }) => {
         ? 'El usuario seleccionado no existe en el servidor actual. Recarga la lista de usuarios o intenta con el email.'
         : (e.message || 'No se pudo guardar la membresía');
       showError(msg, title);
+      if (e.status === 404) {
+        try { await fetchUsers(); } catch (_) {}
+      }
     } finally {
       setSavingMembership(false);
     }
