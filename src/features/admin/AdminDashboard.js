@@ -285,6 +285,19 @@ const AdminDashboard = ({ apiUrl }) => {
     }
     setSavingMembership(true);
     try {
+      // Pre-validación: verificar existencia del usuario en el servidor
+      try {
+        const verifyResp = await fetch(`${apiUrl}/api/users`);
+        if (verifyResp.ok) {
+          const serverUsers = await verifyResp.json();
+          const exists = Array.isArray(serverUsers) && serverUsers.some(u => String(u.id) === String(selectedUser.id) || String(u.email).toLowerCase() === String(selectedUser.email || '').toLowerCase());
+          if (!exists) {
+            showError('El usuario no existe en el servidor actual. Recarga la lista y reintenta.', 'Validación previa fallida');
+            setSavingMembership(false);
+            return;
+          }
+        }
+      } catch (_) {}
       const resp = await fetch(`${apiUrl}/api/admin/users/${selectedUser.id}/membership`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -301,7 +314,9 @@ const AdminDashboard = ({ apiUrl }) => {
       }
       if (!resp.ok) {
         const serverMessage = data?.error || rawText?.trim() || `Error ${resp.status}`;
-        throw new Error(serverMessage);
+        const err = new Error(serverMessage);
+        err.status = resp.status;
+        throw err;
       }
       console.info('[membership] Usuario actualizado', data);
       const isUpdate = selectedUser.is_member;
@@ -315,7 +330,11 @@ const AdminDashboard = ({ apiUrl }) => {
       await fetchUsers();
     } catch (e) {
       console.error('[membership] Error al guardar membresía', e);
-      showError(e.message || 'No se pudo guardar la membresía', 'No se pudo guardar la membresía');
+      const title = e.status === 404 ? 'Usuario no encontrado' : 'No se pudo guardar la membresía';
+      const msg = e.status === 404
+        ? 'El usuario seleccionado no existe en el servidor actual. Recarga la lista de usuarios o intenta con el email.'
+        : (e.message || 'No se pudo guardar la membresía');
+      showError(msg, title);
     } finally {
       setSavingMembership(false);
     }
@@ -1164,12 +1183,14 @@ const AdminDashboard = ({ apiUrl }) => {
                       value={memberDigits}
                       onChange={(e) => setMemberDigits(Number(e.target.value || 6))}
                       style={{ width: 80 }}
+                      aria-label="Cantidad de dígitos para el número de socio"
                     />
                   </label>
                   <button
                     type="button"
                     className="secondary-button"
                     onClick={handleGenerateMemberNumber}
+                    aria-label={`Generar número aleatorio de ${memberDigits} dígitos`}
                   >
                     Generar aleatorio
                   </button>
