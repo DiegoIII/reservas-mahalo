@@ -1,4 +1,4 @@
-const { users, addUser } = require('../lib/server/store');
+const { getUsers, addUser } = require('../lib/server/store');
 const bcrypt = require('bcryptjs');
 
 const allowed = new Set(['http://localhost:3000', 'https://mahalo-oficial.vercel.app']);
@@ -21,7 +21,9 @@ module.exports = (req, res) => {
     return;
   }
   if (req.method === 'GET') {
-    res.status(200).json(users);
+    getUsers()
+      .then(list => res.status(200).json(list))
+      .catch(e => { console.error('users:get:error', e); res.status(500).json({ error: 'Error al obtener usuarios' }); });
     return;
   }
   if (req.method === 'POST') {
@@ -39,8 +41,9 @@ module.exports = (req, res) => {
       return;
     }
     const password_hash = bcrypt.hashSync(password, 10);
-    const created = addUser({ email, name, phone, password_hash });
-    res.status(201).json(created);
+    addUser({ email, name, phone, password_hash })
+      .then(created => { console.log('users:create', { id: created.id, email }); res.status(201).json(created); })
+      .catch(e => { console.error('users:create:error', e); res.status(500).json({ error: 'Error al crear usuario' }); });
     return;
   }
   res.status(405).json({ error: 'Method Not Allowed' });

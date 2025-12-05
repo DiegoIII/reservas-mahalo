@@ -43,7 +43,7 @@ module.exports = async (req, res) => {
       return;
     }
     await resetAttempts(key);
-    const user = getUserByEmail(email);
+    const user = await getUserByEmail(email);
     const finalUser = user.email === ADMIN_EMAIL ? { ...user, is_admin: 1 } : user;
     const { password_hash, ...safe } = finalUser;
     res.status(200).json(safe);

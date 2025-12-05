@@ -30,10 +30,18 @@ module.exports = (req, res) => {
     res.status(400).json({ error: 'id y member_number requeridos' });
     return;
   }
-  const updated = updateMembership(id, num);
-  if (!updated) {
-    res.status(404).json({ error: 'Usuario no encontrado' });
-    return;
-  }
-  res.status(200).json(updated);
+  Promise.resolve(updateMembership(id, num))
+    .then(updated => {
+      if (!updated) {
+        console.warn('membership:update:not_found', { id });
+        res.status(404).json({ error: 'Usuario no encontrado' });
+        return;
+      }
+      console.log('membership:update:ok', { id });
+      res.status(200).json(updated);
+    })
+    .catch(e => {
+      console.error('membership:update:error', e);
+      res.status(500).json({ error: 'Error al actualizar membresía' });
+    });
 };
