@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import mysql from 'mysql2/promise';
+import kvpkg from '../lib/server/kv.js';
 import bcrypt from 'bcryptjs';
 
 dotenv.config();
@@ -36,6 +37,47 @@ function isPastSameDayReservation(dateStr, timeStr, tz) {
   const { date, time } = nowInTimeZone(tz);
   if (dateStr !== date) return false;
   return String(timeStr).padStart(5, '0') < String(time).padStart(5, '0');
+}
+
+async function cleanupReservationsDb() {
+  try {
+    const [oldRestaurant] = await pool.query(
+      `SELECT id FROM restaurant_reservation WHERE date < CURDATE() OR (date = CURDATE() AND time < CURTIME())`
+    );
+    const [oldRooms] = await pool.query(
+      `SELECT id FROM room_reservation WHERE check_out < CURDATE() OR checked_out = 1`
+    );
+    const [oldEvents] = await pool.query(
+      `SELECT id FROM event_reservation WHERE date < CURDATE() OR (date = CURDATE() AND COALESCE(end_time, '23:59') < CURTIME())`
+    );
+
+    const counts = { restaurant: oldRestaurant.length, rooms: oldRooms.length, events: oldEvents.length };
+    let removed = 0;
+    if (oldRestaurant.length) {
+      const ids = oldRestaurant.map(r => r.id);
+      await pool.query(`DELETE FROM restaurant_reservation WHERE id IN (${ids.map(() => '?').join(',')})`, ids);
+      removed += ids.length;
+    }
+    if (oldRooms.length) {
+      const ids = oldRooms.map(r => r.id);
+      await pool.query(`DELETE FROM room_reservation WHERE id IN (${ids.map(() => '?').join(',')})`, ids);
+      removed += ids.length;
+    }
+    if (oldEvents.length) {
+      const ids = oldEvents.map(r => r.id);
+      await pool.query(`DELETE FROM event_reservation WHERE id IN (${ids.map(() => '?').join(',')})`, ids);
+      removed += ids.length;
+    }
+    console.log('[cleanup:db] removed', removed, counts);
+    const { kvAddNotification, hasKv } = kvpkg || {};
+    if (hasKv && removed > 0) {
+      await kvAddNotification({ type: 'cleanup', title: 'Limpieza automática', message: `Eliminadas ${removed} reservas caducadas (${counts.restaurant} restaurante, ${counts.rooms} habitaciones, ${counts.events} eventos)`, severity: 'info' });
+    }
+    return { removed, counts };
+  } catch (err) {
+    console.error('[cleanup:db:error]', err.message);
+    throw err;
+  }
 }
 
 // Admin email whitelist (comma-separated emails in ADMIN_EMAILS)
@@ -251,6 +293,35 @@ app.post('/api/admin/membership/generate', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// Manual trigger for cleanup
+app.post('/api/admin/cleanup-reservations', async (_req, res) => {
+  try {
+    const result = await cleanupReservationsDb();
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Schedule daily cleanup at configured hour (default 03:00)
+function scheduleDailyCleanup() {
+  const hour = Number(process.env.CLEANUP_HOUR || 3);
+  const now = new Date();
+  const firstRun = new Date(now);
+  firstRun.setHours(hour, 0, 0, 0);
+  if (firstRun <= now) firstRun.setDate(firstRun.getDate() + 1);
+  const delay = firstRun.getTime() - now.getTime();
+  console.log('[cleanup:schedule] first at', firstRun.toISOString());
+  setTimeout(() => {
+    cleanupReservationsDb().catch((e) => console.error('[cleanup:schedule:error]', e.message));
+    setInterval(() => {
+      cleanupReservationsDb().catch((e) => console.error('[cleanup:schedule:error]', e.message));
+    }, 24 * 60 * 60 * 1000);
+  }, delay);
+}
+
+scheduleDailyCleanup();
 
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body || {};
